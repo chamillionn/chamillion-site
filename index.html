@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Orderbook</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      background: #0d1117;
+      color: #c9d1d9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 4px;
+      color: #e6edf3;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 12px;
+      color: #7d8590;
+      margin-bottom: 20px;
+    }
+
+    /* --- Spread banner --- */
+    .spread-bar {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      padding: 8px 0;
+      font-size: 12px;
+      color: #7d8590;
+      border-top: 1px solid #21262d;
+      border-bottom: 1px solid #21262d;
+      margin-bottom: 2px;
+    }
+    .spread-bar span { color: #e6edf3; font-weight: 600; }
+
+    /* --- Orderbook table --- */
+    .book-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 8px 12px 4px;
+      color: #7d8590;
+    }
+
+    .book-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 4px 12px;
+      font-size: 11px;
+      color: #484f58;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .book-header .right { text-align: right; }
+
+    .book-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 3px 12px;
+      font-size: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .book-row:hover { background: #161b22; }
+    .book-row .right { text-align: right; }
+
+    .book-row .depth-bar {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      opacity: 0.12;
+      pointer-events: none;
+      transition: width 0.3s ease;
+    }
+
+    .asks-section .book-row { color: #f85149; }
+    .asks-section .depth-bar { background: #f85149; }
+    .bids-section .book-row { color: #3fb950; }
+    .bids-section .depth-bar { background: #3fb950; }
+
+    .book-row .col-total { color: #484f58; }
+
+    /* --- Order form --- */
+    .order-form {
+      margin-top: 20px;
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .form-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #e6edf3;
+    }
+
+    .side-toggle {
+      display: flex;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #21262d;
+    }
+    .side-toggle button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #0d1117;
+      color: #7d8590;
+      transition: all 0.15s;
+    }
+    .side-toggle button.active-buy {
+      background: #123d2a;
+      color: #3fb950;
+    }
+    .side-toggle button.active-sell {
+      background: #3d1a1a;
+      color: #f85149;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-group label {
+      font-size: 11px;
+      color: #7d8590;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .form-group input {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: #e6edf3;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-group input:focus { border-color: #388bfd; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn.buy  { background: #238636; color: #fff; }
+    .submit-btn.sell { background: #da3633; color: #fff; }
+
+    /* --- Trade log --- */
+    .trade-log {
+      margin-top: 16px;
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 12px 16px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .trade-log-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #e6edf3;
+    }
+
+    .trade-log-empty {
+      font-size: 12px;
+      color: #484f58;
+    }
+
+    .trade-entry {
+      font-size: 12px;
+      padding: 3px 0;
+      border-bottom: 1px solid #21262d;
+    }
+    .trade-entry:last-child { border-bottom: none; }
+    .trade-entry .price-up { color: #3fb950; }
+    .trade-entry .price-down { color: #f85149; }
+    .trade-entry .time { color: #484f58; margin-right: 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Orderbook</h1>
+    <p class="subtitle">Click a price level to auto-fill the order form</p>
+
+    <!-- Spread -->
+    <div class="spread-bar">
+      <div>Spread: <span id="spread-val">—</span></div>
+      <div>Mid: <span id="mid-val">—</span></div>
+    </div>
+
+    <!-- Asks (sells) — displayed lowest-first so the best ask sits at the bottom -->
+    <div class="asks-section">
+      <div class="book-section-label">Asks</div>
+      <div class="book-header">
+        <div>Price</div>
+        <div class="right">Qty</div>
+        <div class="right">Total</div>
+      </div>
+      <div id="asks-body"></div>
+    </div>
+
+    <!-- Bids (buys) — best bid at top -->
+    <div class="bids-section">
+      <div class="book-section-label">Bids</div>
+      <div class="book-header">
+        <div>Price</div>
+        <div class="right">Qty</div>
+        <div class="right">Total</div>
+      </div>
+      <div id="bids-body"></div>
+    </div>
+
+    <!-- Order form -->
+    <div class="order-form">
+      <div class="form-title">Place a limit order</div>
+      <div class="side-toggle">
+        <button id="btn-buy" class="active-buy" onclick="setSide('buy')">Buy</button>
+        <button id="btn-sell" onclick="setSide('sell')">Sell</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price</label>
+          <input id="input-price" type="number" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label>Quantity</label>
+          <input id="input-qty" type="number" step="0.1" min="0.1" placeholder="0.0">
+        </div>
+      </div>
+      <button class="submit-btn buy" id="submit-btn" onclick="placeOrder()">Place Buy Order</button>
+    </div>
+
+    <!-- Trade log -->
+    <div class="trade-log">
+      <div class="trade-log-title">Trade History</div>
+      <div id="trade-log-body">
+        <div class="trade-log-empty">No trades yet — place an order that crosses the spread.</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────
+// bids: array of { price, qty }  sorted high → low
+// asks: array of { price, qty }  sorted low → high
+let bids = [];
+let asks = [];
+let trades = [];
+let side = 'buy';
+
+// ── Seed data ────────────────────────────────────────────────────────
+function seed() {
+  const mid = 100;
+  for (let i = 1; i <= 8; i++) {
+    bids.push({ price: +(mid - i * 0.25).toFixed(2), qty: +(Math.random() * 5 + 0.5).toFixed(1) });
+    asks.push({ price: +(mid + i * 0.25).toFixed(2), qty: +(Math.random() * 5 + 0.5).toFixed(1) });
+  }
+  sortBook();
+}
+
+function sortBook() {
+  bids.sort((a, b) => b.price - a.price);
+  asks.sort((a, b) => a.price - b.price);
+}
+
+// ── Matching engine ──────────────────────────────────────────────────
+function addOrder(orderSide, price, qty) {
+  let remaining = qty;
+
+  if (orderSide === 'buy') {
+    // Match against asks where ask price <= buy price
+    while (remaining > 0 && asks.length > 0 && asks[0].price <= price) {
+      const ask = asks[0];
+      const filled = Math.min(remaining, ask.qty);
+      remaining = +(remaining - filled).toFixed(4);
+      ask.qty = +(ask.qty - filled).toFixed(4);
+      logTrade(ask.price, filled, 'up');
+      if (ask.qty <= 0) asks.shift();
+    }
+    // Rest goes on the book
+    if (remaining > 0) {
+      bids.push({ price, qty: +remaining.toFixed(4) });
+    }
+  } else {
+    // Match against bids where bid price >= sell price
+    while (remaining > 0 && bids.length > 0 && bids[0].price >= price) {
+      const bid = bids[0];
+      const filled = Math.min(remaining, bid.qty);
+      remaining = +(remaining - filled).toFixed(4);
+      bid.qty = +(bid.qty - filled).toFixed(4);
+      logTrade(bid.price, filled, 'down');
+      if (bid.qty <= 0) bids.shift();
+    }
+    if (remaining > 0) {
+      asks.push({ price, qty: +remaining.toFixed(4) });
+    }
+  }
+
+  sortBook();
+  render();
+}
+
+function logTrade(price, qty, direction) {
+  const now = new Date();
+  const ts = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  trades.unshift({ price, qty, direction, ts });
+  if (trades.length > 50) trades.pop();
+}
+
+// ── Rendering ────────────────────────────────────────────────────────
+function render() {
+  renderSide('asks-body', asks, 'ask');
+  renderSide('bids-body', bids, 'bid');
+  renderSpread();
+  renderTrades();
+}
+
+function renderSide(containerId, orders, type) {
+  const el = document.getElementById(containerId);
+  if (orders.length === 0) {
+    el.innerHTML = '<div style="padding:6px 12px;font-size:12px;color:#484f58;">No orders</div>';
+    return;
+  }
+
+  // Compute cumulative totals and max for depth bars
+  let cumulative = 0;
+  const rows = orders.map(o => {
+    cumulative += o.qty;
+    return { ...o, total: +cumulative.toFixed(4) };
+  });
+  const maxTotal = rows[rows.length - 1].total;
+
+  // For asks, display reversed so the best ask is at the bottom (closest to spread)
+  const display = type === 'ask' ? [...rows].reverse() : rows;
+
+  el.innerHTML = display.map(r => {
+    const depthPct = ((r.total / maxTotal) * 100).toFixed(1);
+    return `<div class="book-row" onclick="fillPrice(${r.price})">
+      <div class="depth-bar" style="width:${depthPct}%"></div>
+      <div>${r.price.toFixed(2)}</div>
+      <div class="right">${Number(r.qty).toFixed(1)}</div>
+      <div class="right col-total">${Number(r.total).toFixed(1)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderSpread() {
+  const spreadEl = document.getElementById('spread-val');
+  const midEl = document.getElementById('mid-val');
+  if (bids.length > 0 && asks.length > 0) {
+    const s = +(asks[0].price - bids[0].price).toFixed(2);
+    const m = +((asks[0].price + bids[0].price) / 2).toFixed(2);
+    spreadEl.textContent = s.toFixed(2);
+    midEl.textContent = m.toFixed(2);
+  } else {
+    spreadEl.textContent = '—';
+    midEl.textContent = '—';
+  }
+}
+
+function renderTrades() {
+  const el = document.getElementById('trade-log-body');
+  if (trades.length === 0) {
+    el.innerHTML = '<div class="trade-log-empty">No trades yet — place an order that crosses the spread.</div>';
+    return;
+  }
+  el.innerHTML = trades.map(t =>
+    `<div class="trade-entry">
+      <span class="time">${t.ts}</span>
+      <span class="price-${t.direction}">${t.price.toFixed(2)}</span>
+      &times; ${Number(t.qty).toFixed(1)}
+    </div>`
+  ).join('');
+}
+
+// ── UI helpers ───────────────────────────────────────────────────────
+function setSide(s) {
+  side = s;
+  const buyBtn = document.getElementById('btn-buy');
+  const sellBtn = document.getElementById('btn-sell');
+  const submitBtn = document.getElementById('submit-btn');
+
+  buyBtn.className = s === 'buy' ? 'active-buy' : '';
+  sellBtn.className = s === 'sell' ? 'active-sell' : '';
+
+  submitBtn.className = 'submit-btn ' + s;
+  submitBtn.textContent = s === 'buy' ? 'Place Buy Order' : 'Place Sell Order';
+}
+
+function fillPrice(price) {
+  document.getElementById('input-price').value = price.toFixed(2);
+  document.getElementById('input-price').focus();
+}
+
+function placeOrder() {
+  const price = parseFloat(document.getElementById('input-price').value);
+  const qty = parseFloat(document.getElementById('input-qty').value);
+  if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
+  addOrder(side, +price.toFixed(2), +qty.toFixed(1));
+  document.getElementById('input-qty').value = '';
+}
+
+// Submit on Enter
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (document.activeElement.id === 'input-price' || document.activeElement.id === 'input-qty')) {
+    placeOrder();
+  }
+});
+
+// ── Init ─────────────────────────────────────────────────────────────
+seed();
+render();
+</script>
+</body>
+</html>
