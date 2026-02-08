@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Potato Market - Orderbook</title>
+  <title>El Mercado de Patatas</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -251,14 +251,14 @@
 </head>
 <body>
   <div class="container">
-    <h1>The Potato Market</h1>
-    <p class="subtitle">People want to buy and sell potatoes. Click a price to auto-fill the form.</p>
+    <h1>El Mercado de Patatas</h1>
+    <p class="subtitle">La gente quiere comprar y vender patatas. Haz clic en un precio para rellenar el formulario.</p>
 
     <!-- Asks (sellers) — best ask at the bottom, closest to bids -->
     <div class="asks-section">
-      <div class="book-section-label">Sellers (want EUR, have potatoes)</div>
+      <div class="book-section-label">Vendedores (tienen patatas, quieren EUR)</div>
       <div class="book-header">
-        <div>Price (EUR)</div>
+        <div>Precio (EUR)</div>
         <div class="right">Kg</div>
         <div class="right">Total Kg</div>
       </div>
@@ -267,9 +267,9 @@
 
     <!-- Bids (buyers) — best bid at top -->
     <div class="bids-section">
-      <div class="book-section-label">Buyers (want potatoes, have EUR)</div>
+      <div class="book-section-label">Compradores (tienen EUR, quieren patatas)</div>
       <div class="book-header">
-        <div>Price (EUR)</div>
+        <div>Precio (EUR)</div>
         <div class="right">Kg</div>
         <div class="right">Total Kg</div>
       </div>
@@ -278,22 +278,22 @@
 
     <!-- Order form -->
     <div class="order-form">
-      <div class="form-title">Place your order</div>
+      <div class="form-title">Coloca tu orden</div>
       <div class="side-toggle">
-        <button id="btn-buy" class="active-buy" onclick="setSide('buy')">Buy Potatoes</button>
-        <button id="btn-sell" onclick="setSide('sell')">Sell Potatoes</button>
+        <button id="btn-buy" class="active-buy" onclick="setSide('buy')">Comprar Patatas</button>
+        <button id="btn-sell" onclick="setSide('sell')">Vender Patatas</button>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Price (EUR per Kg)</label>
+          <label>Precio (EUR por Kg)</label>
           <input id="input-price" type="number" step="0.01" min="0" placeholder="0.00">
         </div>
         <div class="form-group">
-          <label>Quantity (Kg)</label>
-          <input id="input-qty" type="number" step="0.1" min="0.1" placeholder="0.0">
+          <label>Cantidad (Kg)</label>
+          <input id="input-qty" type="number" step="0.1" min="0.1" value="1">
         </div>
       </div>
-      <button class="submit-btn buy" id="submit-btn" onclick="placeOrder()">Buy Potatoes</button>
+      <button class="submit-btn buy" id="submit-btn" onclick="placeOrder()">Comprar Patatas</button>
     </div>
   </div>
 
@@ -304,7 +304,7 @@
       <div class="toast-title" id="toast-title"></div>
       <div class="toast-body" id="toast-body"></div>
       <div class="toast-resting" id="toast-resting"></div>
-      <button class="toast-dismiss" onclick="dismissToast()">Got it!</button>
+      <button class="toast-dismiss" onclick="dismissToast()">Entendido</button>
     </div>
   </div>
 
@@ -317,9 +317,9 @@ let side = 'buy';
 // ── Seed data ────────────────────────────────────────────────────────
 function seed() {
   const mid = 2; // EUR per Kg — a realistic-ish potato price
-  for (let i = 1; i <= 8; i++) {
-    bids.push({ price: +(mid - i * 0.05).toFixed(2), qty: +(Math.random() * 20 + 2).toFixed(1) });
-    asks.push({ price: +(mid + i * 0.05).toFixed(2), qty: +(Math.random() * 20 + 2).toFixed(1) });
+  for (let i = 1; i <= 4; i++) {
+    bids.push({ price: +(mid - i * 0.05).toFixed(2), qty: +(Math.random() * 5 + 1).toFixed(1) });
+    asks.push({ price: +(mid + i * 0.05).toFixed(2), qty: +(Math.random() * 5 + 1).toFixed(1) });
   }
   sortBook();
 }
@@ -380,25 +380,25 @@ function addOrder(orderSide, price, qty) {
 function showToast(orderSide, filledQty, cost, restingQty) {
   const icon = orderSide === 'buy' ? '🥔' : '💶';
   const title = orderSide === 'buy'
-    ? 'You got potatoes!'
-    : 'You got paid!';
+    ? 'Has recibido patatas!'
+    : 'Has recibido euros!';
 
   let body;
   if (orderSide === 'buy') {
-    body = `Your order matched with a seller!<br>
-      You received <strong>${filledQty.toFixed(1)} Kg of potatoes</strong>
-      and paid <strong>${cost.toFixed(2)} EUR</strong>.`;
+    body = `Tu orden ha encajado con la de un vendedor.<br>
+      Has recibido <strong>${filledQty.toFixed(1)} Kg de patatas</strong>
+      y has pagado <strong>${cost.toFixed(2)} EUR</strong>.`;
   } else {
-    body = `Your order matched with a buyer!<br>
-      You sold <strong>${filledQty.toFixed(1)} Kg of potatoes</strong>
-      and received <strong>${cost.toFixed(2)} EUR</strong>.`;
+    body = `Tu orden ha encajado con la de un comprador.<br>
+      Has vendido <strong>${filledQty.toFixed(1)} Kg de patatas</strong>
+      y has recibido <strong>${cost.toFixed(2)} EUR</strong>.`;
   }
 
   let resting = '';
   if (restingQty > 0) {
     resting = orderSide === 'buy'
-      ? `${restingQty} Kg still waiting on the book for a seller at your price.`
-      : `${restingQty} Kg still waiting on the book for a buyer at your price.`;
+      ? `${restingQty} Kg siguen esperando en el libro a que aparezca un vendedor a tu precio.`
+      : `${restingQty} Kg siguen esperando en el libro a que aparezca un comprador a tu precio.`;
   }
 
   document.getElementById('toast-icon').textContent = icon;
@@ -410,17 +410,17 @@ function showToast(orderSide, filledQty, cost, restingQty) {
 
 function showRestingToast(orderSide, qty, price) {
   const icon = '⏳';
-  const title = 'Order placed — waiting for a match';
+  const title = 'Orden colocada — esperando match';
 
   let body;
   if (orderSide === 'buy') {
-    body = `Nobody is selling at <strong>${price.toFixed(2)} EUR</strong> or lower right now.<br>
-      Your order for <strong>${qty.toFixed(1)} Kg</strong> is sitting on the book,
-      waiting for a seller to come along.`;
+    body = `Nadie vende a <strong>${price.toFixed(2)} EUR</strong> o menos ahora mismo.<br>
+      Tu orden de <strong>${qty.toFixed(1)} Kg</strong> queda en el libro,
+      esperando a que aparezca un vendedor.`;
   } else {
-    body = `Nobody is buying at <strong>${price.toFixed(2)} EUR</strong> or higher right now.<br>
-      Your offer of <strong>${qty.toFixed(1)} Kg</strong> is sitting on the book,
-      waiting for a buyer to come along.`;
+    body = `Nadie compra a <strong>${price.toFixed(2)} EUR</strong> o mas ahora mismo.<br>
+      Tu oferta de <strong>${qty.toFixed(1)} Kg</strong> queda en el libro,
+      esperando a que aparezca un comprador.`;
   }
 
   document.getElementById('toast-icon').textContent = icon;
@@ -443,7 +443,7 @@ function render() {
 function renderSide(containerId, orders, type) {
   const el = document.getElementById(containerId);
   if (orders.length === 0) {
-    el.innerHTML = '<div style="padding:6px 12px;font-size:12px;color:#484f58;">No orders</div>';
+    el.innerHTML = '<div style="padding:6px 12px;font-size:12px;color:#484f58;">Sin ordenes</div>';
     return;
   }
 
@@ -475,7 +475,7 @@ function setSide(s) {
 
   const submitBtn = document.getElementById('submit-btn');
   submitBtn.className = 'submit-btn ' + s;
-  submitBtn.textContent = s === 'buy' ? 'Buy Potatoes' : 'Sell Potatoes';
+  submitBtn.textContent = s === 'buy' ? 'Comprar Patatas' : 'Vender Patatas';
 }
 
 function fillPrice(price) {
