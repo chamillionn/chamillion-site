@@ -8,7 +8,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
       background: #0d1117;
       color: #c9d1d9;
       display: flex;
@@ -20,7 +20,26 @@
 
     .container {
       width: 100%;
-      max-width: 520px;
+      max-width: 1200px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .main-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .orderbook-container {
+      flex: 1;
+      min-width: 450px;
+    }
+
+    .form-container {
+      width: 350px;
+      flex-shrink: 0;
     }
 
     h1 {
@@ -40,35 +59,35 @@
 
     /* --- Orderbook table --- */
     .book-section-label {
-      font-size: 11px;
+      font-size: 16px;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 8px 12px 4px;
-      color: #7d8590;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      padding: 12px 16px 8px;
+      color: #c9d1d9;
     }
 
     .book-header {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      padding: 4px 12px;
-      font-size: 11px;
-      color: #484f58;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      padding: 8px 16px;
+      font-size: 14px;
+      color: #7d8590;
+      text-transform: none;
+      letter-spacing: 0.02em;
     }
     .book-header .right { text-align: right; }
 
     .book-row {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      padding: 3px 12px;
-      font-size: 13px;
+      padding: 10px 16px;
+      font-size: 16px;
       position: relative;
       cursor: pointer;
-      transition: background 0.1s;
+      transition: background 0.15s;
     }
-    .book-row:hover { background: #161b22; }
+    .book-row:hover { background: #21262d; }
     .book-row .right { text-align: right; }
 
     .book-row .depth-bar {
@@ -76,29 +95,64 @@
       top: 0;
       bottom: 0;
       right: 0;
-      opacity: 0.12;
+      opacity: 0.25;
       pointer-events: none;
       transition: width 0.3s ease;
     }
 
-    .asks-section .book-row { color: #f85149; }
-    .asks-section .depth-bar { background: #f85149; }
-    .bids-section .book-row { color: #3fb950; }
-    .bids-section .depth-bar { background: #3fb950; }
+    .asks-section .book-row { color: #fb923c; }
+    .asks-section .depth-bar { background: #fb923c; }
+    .bids-section .book-row { color: #4ade80; }
+    .bids-section .depth-bar { background: #4ade80; }
 
     .book-row .col-total { color: #484f58; }
 
+    /* --- User order highlight --- */
+    .book-row.user-order {
+      border: 2px solid;
+      border-radius: 8px;
+      animation: userOrderPulse 2s ease-in-out infinite;
+      padding-left: 14px;
+    }
+
+    .asks-section .book-row.user-order {
+      border-color: #fb923c;
+      box-shadow: 0 0 12px rgba(251, 146, 60, 0.4);
+    }
+
+    .bids-section .book-row.user-order {
+      border-color: #4ade80;
+      box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+    }
+
+    @keyframes userOrderPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .user-order-spinner {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+      margin-right: 6px;
+    }
+
     /* --- Order form --- */
     .order-form {
-      margin-top: 20px;
       background: #161b22;
       border: 1px solid #21262d;
-      border-radius: 8px;
-      padding: 16px;
+      border-radius: 12px;
+      padding: 20px;
+      position: sticky;
+      top: 32px;
     }
 
     .form-title {
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 600;
       margin-bottom: 12px;
       color: #e6edf3;
@@ -107,7 +161,7 @@
     .side-toggle {
       display: flex;
       margin-bottom: 12px;
-      border-radius: 6px;
+      border-radius: 10px;
       overflow: hidden;
       border: 1px solid #21262d;
     }
@@ -124,59 +178,62 @@
       transition: all 0.15s;
     }
     .side-toggle button.active-buy {
-      background: #123d2a;
-      color: #3fb950;
+      background: #1a3d2a;
+      color: #4ade80;
     }
     .side-toggle button.active-sell {
-      background: #3d1a1a;
-      color: #f85149;
+      background: #3d2315;
+      color: #fb923c;
     }
 
     .form-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-bottom: 12px;
     }
 
     .form-group {
-      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
     }
     .form-group label {
-      font-size: 11px;
-      color: #7d8590;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-size: 13px;
+      color: #9198a1;
+      text-transform: none;
+      letter-spacing: 0.02em;
     }
     .form-group input {
+      width: 100%;
       background: #0d1117;
       border: 1px solid #21262d;
-      border-radius: 6px;
-      padding: 8px 10px;
+      border-radius: 8px;
+      padding: 10px 12px;
       color: #e6edf3;
       font-family: inherit;
-      font-size: 14px;
+      font-size: 15px;
       outline: none;
       transition: border-color 0.15s;
+      box-sizing: border-box;
     }
     .form-group input:focus { border-color: #388bfd; }
 
     .submit-btn {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       font-family: inherit;
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.15s;
     }
     .submit-btn:hover { opacity: 0.85; }
-    .submit-btn.buy  { background: #238636; color: #fff; }
-    .submit-btn.sell { background: #da3633; color: #fff; }
+    .submit-btn.buy  { background: #22c55e; color: #fff; }
+    .submit-btn.sell { background: #f97316; color: #fff; }
 
     /* --- Toast notification --- */
     .toast-overlay {
@@ -254,46 +311,53 @@
     <h1>El Mercado de Patatas</h1>
     <p class="subtitle">La gente quiere comprar y vender patatas. Haz clic en un precio para rellenar el formulario.</p>
 
-    <!-- Asks (sellers) — best ask at the bottom, closest to bids -->
-    <div class="asks-section">
-      <div class="book-section-label">Vendedores (tienen patatas, quieren EUR)</div>
-      <div class="book-header">
-        <div>Precio (EUR)</div>
-        <div class="right">Kg</div>
-        <div class="right">Total Kg</div>
-      </div>
-      <div id="asks-body"></div>
-    </div>
-
-    <!-- Bids (buyers) — best bid at top -->
-    <div class="bids-section">
-      <div class="book-section-label">Compradores (tienen EUR, quieren patatas)</div>
-      <div class="book-header">
-        <div>Precio (EUR)</div>
-        <div class="right">Kg</div>
-        <div class="right">Total Kg</div>
-      </div>
-      <div id="bids-body"></div>
-    </div>
-
-    <!-- Order form -->
-    <div class="order-form">
-      <div class="form-title">Coloca tu orden</div>
-      <div class="side-toggle">
-        <button id="btn-buy" class="active-buy" onclick="setSide('buy')">Comprar Patatas</button>
-        <button id="btn-sell" onclick="setSide('sell')">Vender Patatas</button>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Precio (EUR por Kg)</label>
-          <input id="input-price" type="number" step="0.01" min="0" placeholder="0.00">
+    <div class="main-layout">
+      <!-- Orderbook -->
+      <div class="orderbook-container">
+        <!-- Asks (sellers) — best ask at the bottom, closest to bids -->
+        <div class="asks-section">
+          <div class="book-section-label">⬇️ Venden patatas</div>
+          <div class="book-header">
+            <div>💰 Precio</div>
+            <div class="right">🥔 Kilos</div>
+            <div class="right">📦 Total</div>
+          </div>
+          <div id="asks-body"></div>
         </div>
-        <div class="form-group">
-          <label>Cantidad (Kg)</label>
-          <input id="input-qty" type="number" step="0.1" min="0.1" value="1">
+
+        <!-- Bids (buyers) — best bid at top -->
+        <div class="bids-section">
+          <div class="book-section-label">⬆️ Compran patatas</div>
+          <div class="book-header">
+            <div>💰 Precio</div>
+            <div class="right">🥔 Kilos</div>
+            <div class="right">📦 Total</div>
+          </div>
+          <div id="bids-body"></div>
         </div>
       </div>
-      <button class="submit-btn buy" id="submit-btn" onclick="placeOrder()">Comprar Patatas</button>
+
+      <!-- Order form -->
+      <div class="form-container">
+        <div class="order-form">
+          <div class="form-title">¿Qué quieres hacer?</div>
+          <div class="side-toggle">
+            <button id="btn-buy" class="active-buy" onclick="setSide('buy')">⬆️ Comprar</button>
+            <button id="btn-sell" onclick="setSide('sell')">⬇️ Vender</button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>💰 Precio por kilo</label>
+              <input id="input-price" type="number" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>🥔 Kilos</label>
+              <input id="input-qty" type="number" step="0.1" min="0.1" value="1">
+            </div>
+          </div>
+          <button class="submit-btn buy" id="submit-btn" onclick="placeOrder()">⬆️ Comprar Patatas</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -318,8 +382,8 @@ let side = 'buy';
 function seed() {
   const mid = 2; // EUR per Kg — a realistic-ish potato price
   for (let i = 1; i <= 4; i++) {
-    bids.push({ price: +(mid - i * 0.05).toFixed(2), qty: +(Math.random() * 5 + 1).toFixed(1) });
-    asks.push({ price: +(mid + i * 0.05).toFixed(2), qty: +(Math.random() * 5 + 1).toFixed(1) });
+    bids.push({ price: +(mid - i * 0.05).toFixed(2), qty: +(Math.random() * 5 + 1).toFixed(1), isUser: false });
+    asks.push({ price: +(mid + i * 0.05).toFixed(2), qty: +(Math.random() * 5 + 1).toFixed(1), isUser: false });
   }
   sortBook();
 }
@@ -330,7 +394,7 @@ function sortBook() {
 }
 
 // ── Matching engine ──────────────────────────────────────────────────
-function addOrder(orderSide, price, qty) {
+function addOrder(orderSide, price, qty, isUser = false) {
   let remaining = qty;
   let totalFilled = 0;
   let totalCost = 0;
@@ -346,7 +410,7 @@ function addOrder(orderSide, price, qty) {
       if (ask.qty <= 0) asks.shift();
     }
     if (remaining > 0) {
-      bids.push({ price, qty: +remaining.toFixed(4) });
+      bids.push({ price, qty: +remaining.toFixed(4), isUser });
     }
   } else {
     while (remaining > 0 && bids.length > 0 && bids[0].price >= price) {
@@ -359,9 +423,13 @@ function addOrder(orderSide, price, qty) {
       if (bid.qty <= 0) bids.shift();
     }
     if (remaining > 0) {
-      asks.push({ price, qty: +remaining.toFixed(4) });
+      asks.push({ price, qty: +remaining.toFixed(4), isUser });
     }
   }
+
+  // Limpiar órdenes vacías (por si acaso)
+  bids = bids.filter(o => o.qty > 0);
+  asks = asks.filter(o => o.qty > 0);
 
   sortBook();
   render();
@@ -374,31 +442,54 @@ function addOrder(orderSide, price, qty) {
   } else {
     showRestingToast(orderSide, qty, price);
   }
+
+  // Return info about what happened
+  return { totalFilled, remaining: +remaining.toFixed(4), totalCost };
+}
+
+// ── Auto-fill system ─────────────────────────────────────────────────
+function scheduleAutoFill(orderSide, price, qty) {
+  const delay = 10000 + Math.random() * 5000; // 10-15 segundos aleatorio
+
+  setTimeout(() => {
+    // Cerrar el toast de espera si está abierto
+    dismissToast();
+
+    // Pequeño delay antes de ejecutar para que el usuario vea que se cerró la notificación
+    setTimeout(() => {
+      // Generar orden contraria que haga match
+      const oppositeSide = orderSide === 'buy' ? 'sell' : 'buy';
+      // Para asegurar el match: si compra a X, vendemos a X; si vende a X, compramos a X
+      const matchPrice = price;
+      // Cantidad suficiente para rellenar completamente
+      const matchQty = qty * 1.2; // 20% más para asegurar relleno completo
+
+      addOrder(oppositeSide, matchPrice, matchQty, false);
+    }, 300);
+  }, delay);
 }
 
 // ── Toast notifications ──────────────────────────────────────────────
 function showToast(orderSide, filledQty, cost, restingQty) {
-  const icon = orderSide === 'buy' ? '🥔' : '💶';
+  const icon = orderSide === 'buy' ? '🎉🥔' : '🎉💰';
   const title = orderSide === 'buy'
-    ? 'Has recibido patatas!'
-    : 'Has recibido euros!';
+    ? '¡Trato hecho!'
+    : '¡Vendido!';
 
   let body;
   if (orderSide === 'buy') {
-    body = `Tu orden ha encajado con la de un vendedor.<br>
-      Has recibido <strong>${filledQty.toFixed(1)} Kg de patatas</strong>
-      y has pagado <strong>${cost.toFixed(2)} EUR</strong>.`;
+    body = `Has comprado <strong>${filledQty.toFixed(1)} kilos de patatas</strong>
+      por <strong>${cost.toFixed(2)} EUR</strong>.`;
   } else {
-    body = `Tu orden ha encajado con la de un comprador.<br>
-      Has vendido <strong>${filledQty.toFixed(1)} Kg de patatas</strong>
-      y has recibido <strong>${cost.toFixed(2)} EUR</strong>.`;
+    body = `Has vendido <strong>${filledQty.toFixed(1)} kilos de patatas</strong>
+      y recibiste <strong>${cost.toFixed(2)} EUR</strong>.`;
   }
 
   let resting = '';
   if (restingQty > 0) {
     resting = orderSide === 'buy'
-      ? `${restingQty} Kg siguen esperando en el libro a que aparezca un vendedor a tu precio.`
-      : `${restingQty} Kg siguen esperando en el libro a que aparezca un comprador a tu precio.`;
+      ? `⏳ ${restingQty} kilos más siguen esperando un vendedor.`
+      : `⏳ ${restingQty} kilos más siguen esperando un comprador.`;
   }
 
   document.getElementById('toast-icon').textContent = icon;
@@ -410,17 +501,16 @@ function showToast(orderSide, filledQty, cost, restingQty) {
 
 function showRestingToast(orderSide, qty, price) {
   const icon = '⏳';
-  const title = 'Orden colocada — esperando match';
+  let title, body;
 
-  let body;
   if (orderSide === 'buy') {
-    body = `Nadie vende a <strong>${price.toFixed(2)} EUR</strong> o menos ahora mismo.<br>
-      Tu orden de <strong>${qty.toFixed(1)} Kg</strong> queda en el libro,
-      esperando a que aparezca un vendedor.`;
+    title = 'Buscando vendedor...';
+    body = `Tu orden de <strong>${qty.toFixed(1)} kilos a ${price.toFixed(2)} EUR</strong> está en el libro.<br><br>
+      Esperando a que aparezca alguien que venda patatas a ese precio.`;
   } else {
-    body = `Nadie compra a <strong>${price.toFixed(2)} EUR</strong> o mas ahora mismo.<br>
-      Tu oferta de <strong>${qty.toFixed(1)} Kg</strong> queda en el libro,
-      esperando a que aparezca un comprador.`;
+    title = 'Buscando comprador...';
+    body = `Tu oferta de <strong>${qty.toFixed(1)} kilos a ${price.toFixed(2)} EUR</strong> está en el libro.<br><br>
+      Esperando a que aparezca alguien que compre patatas a ese precio.`;
   }
 
   document.getElementById('toast-icon').textContent = icon;
@@ -458,9 +548,11 @@ function renderSide(containerId, orders, type) {
 
   el.innerHTML = display.map(r => {
     const depthPct = ((r.total / maxTotal) * 100).toFixed(1);
-    return `<div class="book-row" onclick="fillPrice(${r.price})">
+    const userClass = r.isUser ? ' user-order' : '';
+    const userIcon = r.isUser ? '<span class="user-order-spinner">⏳</span>' : '';
+    return `<div class="book-row${userClass}" onclick="fillPrice(${r.price})">
       <div class="depth-bar" style="width:${depthPct}%"></div>
-      <div>${r.price.toFixed(2)}</div>
+      <div>${userIcon}${r.price.toFixed(2)}</div>
       <div class="right">${Number(r.qty).toFixed(1)}</div>
       <div class="right col-total">${Number(r.total).toFixed(1)}</div>
     </div>`;
@@ -475,7 +567,7 @@ function setSide(s) {
 
   const submitBtn = document.getElementById('submit-btn');
   submitBtn.className = 'submit-btn ' + s;
-  submitBtn.textContent = s === 'buy' ? 'Comprar Patatas' : 'Vender Patatas';
+  submitBtn.textContent = s === 'buy' ? '⬆️ Comprar Patatas' : '⬇️ Vender Patatas';
 }
 
 function fillPrice(price) {
@@ -487,8 +579,15 @@ function placeOrder() {
   const price = parseFloat(document.getElementById('input-price').value);
   const qty = parseFloat(document.getElementById('input-qty').value);
   if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
-  addOrder(side, +price.toFixed(2), +qty.toFixed(1));
-  document.getElementById('input-qty').value = '';
+
+  const result = addOrder(side, +price.toFixed(2), +qty.toFixed(1), true);
+
+  // Si la orden quedó parcial o totalmente en el libro, programar auto-relleno
+  if (result.remaining > 0) {
+    scheduleAutoFill(side, +price.toFixed(2), result.remaining);
+  }
+
+  document.getElementById('input-qty').value = '1';
 }
 
 document.addEventListener('keydown', e => {
