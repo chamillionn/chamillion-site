@@ -200,10 +200,13 @@
       min-width: 0;
     }
     .form-group label {
-      font-size: 11px;
+      font-size: 10px;
       color: #9198a1;
       text-transform: none;
       letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .form-group input {
       width: 100%;
@@ -308,7 +311,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>El Mercado de Patatas</h1>
+    <h1>Libro de Órdenes - Mercado de Patatas</h1>
     <p class="subtitle">La gente quiere comprar y vender patatas. Haz clic en un precio para rellenar el formulario.</p>
 
     <div class="main-layout">
@@ -347,7 +350,7 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>💰 Precio por kilo</label>
+              <label>💰 Precio/kg</label>
               <input id="input-price" type="number" step="0.01" min="0" placeholder="0.00">
             </div>
             <div class="form-group">
