@@ -313,6 +313,30 @@
       from { transform: scale(0.9); opacity: 0; }
       to   { transform: scale(1);   opacity: 1; }
     }
+
+    /* ── Tooltip ── */
+    .tooltip-box {
+      position: fixed; z-index: 9999;
+      background: #1e1e22; border: 1px solid #2a2a2e; border-radius: 8px;
+      padding: 10px 14px; max-width: 240px;
+      font-family: system-ui, sans-serif; font-size: 0.72rem;
+      color: #c8c6c1; line-height: 1.5;
+      pointer-events: none; opacity: 0; transition: opacity 0.12s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .tooltip-box.visible { opacity: 1; }
+    .tooltip-box .th { color: #e8e6e1; font-weight: 600; }
+
+    /* ── Spread indicator ── */
+    .spread-indicator {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 5px 10px;
+      font-family: 'DM Mono', monospace; font-size: 12px; color: #8a8a8e;
+      border-top: 1px solid #2a2a2e; border-bottom: 1px solid #2a2a2e;
+      cursor: default;
+    }
+    .spread-indicator .spread-value { color: #e8e6e1; font-weight: 500; }
+    .spread-indicator .spread-pct { font-size: 11px; color: #555555; }
   </style>
 </head>
 <body>
@@ -325,22 +349,30 @@
       <div class="orderbook-container">
         <!-- Asks (sellers) — best ask at the bottom, closest to bids -->
         <div class="asks-section">
-          <div class="book-section-label">⬇️ Venden patatas</div>
+          <div class="book-section-label" data-tooltip="Estas personas han puesto una <strong class='th'>orden de venta</strong>: están dispuestas a vender patatas si alguien llega y paga su precio.">⬇️ Venden patatas</div>
           <div class="book-header">
-            <div>💰 Precio</div>
-            <div class="right">🥔 Kilos</div>
-            <div class="right">📦 Total</div>
+            <div data-tooltip="El <strong class='th'>precio límite</strong>: el mínimo al que este vendedor acepta vender. No venderá por menos.">💰 Precio</div>
+            <div class="right" data-tooltip="Los <strong class='th'>kilos disponibles</strong> a ese precio exacto. Si compras más, tendrás que pagar el siguiente precio.">🥔 Kilos</div>
+            <div class="right" data-tooltip="El <strong class='th'>total acumulado</strong>: suma de estos kilos más todos los de precios inferiores. Cuánto hay disponible hasta aquí.">📦 Total</div>
           </div>
           <div id="asks-body"></div>
         </div>
 
+        <!-- Spread indicator -->
+        <div class="spread-indicator" id="spread-indicator"
+          data-tooltip="El <strong class='th'>spread</strong> es la diferencia entre el precio más bajo al que alguien vende y el más alto al que alguien compra. Cuanto menor, más eficiente es el mercado.">
+          <span>↕ Spread</span>
+          <span class="spread-value" id="spread-value">—</span>
+          <span class="spread-pct" id="spread-pct"></span>
+        </div>
+
         <!-- Bids (buyers) — best bid at top -->
         <div class="bids-section">
-          <div class="book-section-label">⬆️ Compran patatas</div>
+          <div class="book-section-label" data-tooltip="Estas personas han puesto una <strong class='th'>orden de compra</strong>: esperan que alguien venda patatas al precio que ofrecen.">⬆️ Compran patatas</div>
           <div class="book-header">
-            <div>💰 Precio</div>
-            <div class="right">🥔 Kilos</div>
-            <div class="right">📦 Total</div>
+            <div data-tooltip="El <strong class='th'>precio límite</strong>: el máximo que este comprador pagará. No pagará más.">💰 Precio</div>
+            <div class="right" data-tooltip="Los <strong class='th'>kilos que quiere comprar</strong> a ese precio.">🥔 Kilos</div>
+            <div class="right" data-tooltip="El <strong class='th'>total acumulado</strong> desde el mejor precio de compra hasta aquí. Refleja la demanda total disponible.">📦 Total</div>
           </div>
           <div id="bids-body"></div>
         </div>
@@ -349,26 +381,29 @@
       <!-- Order form -->
       <div class="form-container">
         <div class="order-form">
-          <div class="form-title">¿Qué quieres hacer?</div>
+          <div class="form-title" data-tooltip="Aquí colocas tu propia <strong class='th'>orden límite</strong>: fijas precio y cantidad. Si hay contrapartida, se ejecuta al instante; si no, queda esperando en el libro.">¿Qué quieres hacer?</div>
           <div class="side-toggle">
-            <button id="btn-buy" class="active-buy" onclick="setSide('buy')">⬆️ Comprar</button>
-            <button id="btn-sell" onclick="setSide('sell')">⬇️ Vender</button>
+            <button id="btn-buy" class="active-buy" onclick="setSide('buy')" data-tooltip="Colocarás una <strong class='th'>orden de compra</strong>. Si tu precio iguala o supera el precio de venta más bajo, la operación se ejecuta de inmediato.">⬆️ Comprar</button>
+            <button id="btn-sell" onclick="setSide('sell')" data-tooltip="Colocarás una <strong class='th'>orden de venta</strong>. Si tu precio iguala o baja al precio de compra más alto, encontrarás comprador al instante.">⬇️ Vender</button>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>💰 Precio/kg</label>
+              <label data-tooltip="El precio al que quieres operar. Si cruza el libro, la orden se ejecuta sola. Si no, queda en el libro como <strong class='th'>orden límite</strong>.">💰 Precio/kg</label>
               <input id="input-price" type="number" step="0.01" min="0" placeholder="0.00">
             </div>
             <div class="form-group">
-              <label>🥔 Kilos</label>
+              <label data-tooltip="Los <strong class='th'>kilos</strong> que quieres comprar o vender. Una orden puede ejecutarse contra varias filas del libro si hay cantidad suficiente.">🥔 Kilos</label>
               <input id="input-qty" type="number" step="0.1" min="0.1" value="1">
             </div>
           </div>
-          <button class="submit-btn buy" id="submit-btn" onclick="placeOrder()">⬆️ Comprar Patatas</button>
+          <button class="submit-btn buy" id="submit-btn" onclick="placeOrder()" data-tooltip="Al pulsar, tu orden de <strong class='th'>compra</strong> entra al mercado. Si hay alguien vendiendo a tu precio o menos, se ejecuta al instante.">⬆️ Comprar Patatas</button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Tooltip educativo -->
+  <div class="tooltip-box" id="tooltip-box" role="tooltip" aria-live="polite"></div>
 
   <!-- Trade notification overlay -->
   <div class="toast-overlay" id="toast-overlay">
@@ -537,6 +572,19 @@ function dismissToast() {
 function render() {
   renderSide('asks-body', asks, 'ask');
   renderSide('bids-body', bids, 'bid');
+  updateSpread();
+}
+
+function updateSpread() {
+  const valEl = document.getElementById('spread-value');
+  const pctEl = document.getElementById('spread-pct');
+  if (!asks.length || !bids.length) { valEl.textContent = '—'; pctEl.textContent = ''; return; }
+  const bestAsk = asks[0].price;
+  const bestBid = bids[0].price;
+  const spread = +(bestAsk - bestBid).toFixed(2);
+  const pct = ((spread / ((bestAsk + bestBid) / 2)) * 100).toFixed(2);
+  valEl.textContent = spread.toFixed(2) + ' €/kg';
+  pctEl.textContent = '(' + pct + '%)';
 }
 
 function renderSide(containerId, orders, type) {
@@ -559,7 +607,10 @@ function renderSide(containerId, orders, type) {
     const depthPct = ((r.total / maxTotal) * 100).toFixed(1);
     const userClass = r.isUser ? ' user-order' : '';
     const userIcon = r.isUser ? '<span class="user-order-spinner">⏳</span>' : '';
-    return `<div class="book-row${userClass}" onclick="fillPrice(${r.price})">
+    const tip = type === 'ask'
+      ? `Alguien quiere vender <strong class='th'>${Number(r.qty).toFixed(1)} kg</strong> a <strong class='th'>${r.price.toFixed(2)} €/kg</strong>. Si compras a este precio o más, ejecutas esta orden. Total acumulado: <strong class='th'>${Number(r.total).toFixed(1)} kg</strong>.`
+      : `Alguien quiere comprar <strong class='th'>${Number(r.qty).toFixed(1)} kg</strong> a <strong class='th'>${r.price.toFixed(2)} €/kg</strong>. Si vendes a este precio o menos, ejecutas esta orden. Total acumulado: <strong class='th'>${Number(r.total).toFixed(1)} kg</strong>.`;
+    return `<div class="book-row${userClass}" onclick="fillPrice(${r.price})" data-tooltip="${tip}">
       <div class="depth-bar" style="width:${depthPct}%"></div>
       <div>${userIcon}${r.price.toFixed(2)}</div>
       <div class="right">${Number(r.qty).toFixed(1)}</div>
@@ -577,6 +628,9 @@ function setSide(s) {
   const submitBtn = document.getElementById('submit-btn');
   submitBtn.className = 'submit-btn ' + s;
   submitBtn.textContent = s === 'buy' ? '⬆️ Comprar Patatas' : '⬇️ Vender Patatas';
+  submitBtn.dataset.tooltip = s === 'buy'
+    ? "Al pulsar, tu orden de <strong class='th'>compra</strong> entra al mercado. Si hay alguien vendiendo a tu precio o menos, se ejecuta al instante."
+    : "Al pulsar, tu orden de <strong class='th'>venta</strong> entra al mercado. Si hay alguien comprando a tu precio o más, se ejecuta al instante.";
 }
 
 function fillPrice(price) {
@@ -604,6 +658,46 @@ document.addEventListener('keydown', e => {
     placeOrder();
   }
 });
+
+// ── Tooltip system ───────────────────────────────────────────────────
+(function() {
+  const box = document.getElementById('tooltip-box');
+  let timer = null;
+
+  function show(target) {
+    box.innerHTML = target.getAttribute('data-tooltip');
+    box.style.opacity = '0';
+    box.style.display = 'block';
+    const r = target.getBoundingClientRect();
+    const bW = box.offsetWidth, bH = box.offsetHeight;
+    let top = r.top - bH - 8 >= 0 ? r.top - bH - 8 : r.bottom + 8;
+    let left = Math.max(8, Math.min(r.left + r.width / 2 - bW / 2, window.innerWidth - bW - 8));
+    box.style.top  = top  + 'px';
+    box.style.left = left + 'px';
+    box.classList.add('visible');
+  }
+
+  function hide() { clearTimeout(timer); box.classList.remove('visible'); }
+
+  document.addEventListener('mouseover', function(e) {
+    const t = e.target.closest('[data-tooltip]');
+    if (!t) return;
+    clearTimeout(timer);
+    timer = setTimeout(function() { show(t); }, 120);
+  });
+
+  document.addEventListener('mouseout', function(e) {
+    const from = e.target.closest('[data-tooltip]');
+    if (!from) return;
+    const to = e.relatedTarget && e.relatedTarget.closest('[data-tooltip]');
+    if (to === from) return;
+    clearTimeout(timer);
+    hide();
+  });
+
+  document.addEventListener('scroll', hide, true);
+  document.addEventListener('mousedown', hide);
+})();
 
 // ── Init ─────────────────────────────────────────────────────────────
 seed();
