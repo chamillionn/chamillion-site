@@ -7,11 +7,70 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap');
 
+  /* ── Theme variables ── */
+  :root {
+    --bg: #171717;
+    --text: #e8e6e1;
+  }
+
+  [data-theme="light"] {
+    --bg: #f4e9da;
+    --text: #1e1410;
+  }
+
+  [data-theme="light"] body {
+    background: #f4e9da;
+    color: #1e1410;
+  }
+  [data-theme="light"] .headline        { color: #6b5a4e; }
+  [data-theme="light"] .headline em     { color: #3d2b22; }
+  [data-theme="light"] .label           { color: #8a7060; }
+  [data-theme="light"] .subtext         { color: #6b5a4e; }
+  [data-theme="light"] .nominal-tag     { color: #c0b0a0; }
+  [data-theme="light"] .erosion         { border-top-color: #d4c4b0; border-bottom-color: #d4c4b0; }
+  [data-theme="light"] .erosion-label   { color: #8a7060; }
+  [data-theme="light"] .erosion-value.gray { color: #8a7060; }
+  [data-theme="light"] .retail .amount  { color: #1e1410; }
+  [data-theme="light"] .divider-v       { background: #d4c4b0; }
+  [data-theme="light"] .context-bar     { border-top-color: #d4c4b0; }
+  [data-theme="light"] .punchline       { color: #6b5a4e; }
+  [data-theme="light"] .punchline strong { color: #b82a1e; }
+  [data-theme="light"] .source          { color: #a89080; }
+  [data-theme="light"] .source a        { color: #8a7060; border-bottom-color: #8a7060; }
+  [data-theme="light"] .source a:hover  { color: #5a8aaa; border-color: #5a8aaa; }
+  [data-theme="light"] .starting        { color: #a89080; }
+  [data-theme="light"] .starting-amount { color: #8a7060; }
+  [data-theme="light"] .period          { color: #a89080; }
+  [data-theme="light"] .retail .real-amount { color: #6b5a4e; }
+  [data-theme="light"] .retail .currency    { color: #a89080; }
+  [data-theme="light"] .currency            { color: #a89080; }
+
+  /* ── Theme toggle button ── */
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: 1px solid #2a2a2e;
+    border-radius: 20px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #555;
+    z-index: 100;
+    transition: border-color 0.2s, color 0.2s;
+    font-family: system-ui, sans-serif;
+    letter-spacing: 0.03em;
+  }
+  #theme-toggle:hover { border-color: #888; color: #e8e6e1; }
+  [data-theme="light"] #theme-toggle { border-color: #d4c4b0; color: #8a7060; }
+  [data-theme="light"] #theme-toggle:hover { border-color: #8a7060; color: #3d2b22; }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: #1a1a1e;
-    color: #e8e6e1;
+    background: var(--bg);
+    color: var(--text);
     font-family: 'DM Mono', monospace;
     display: flex;
     align-items: center;
@@ -302,6 +361,7 @@
 </style>
 </head>
 <body>
+  <button id="theme-toggle" aria-label="Cambiar tema">☀️ Claro</button>
   <div class="container">
 
     <p class="headline">
@@ -371,5 +431,23 @@
     </div>
 
   </div>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    var html = document.documentElement;
+    function setTheme(t) {
+      html.setAttribute('data-theme', t);
+      btn.textContent = t === 'dark' ? '☀️ Claro' : '🌙 Oscuro';
+      try { localStorage.setItem('esma-theme', t); } catch(e) {}
+    }
+    var saved = 'dark';
+    try { saved = localStorage.getItem('esma-theme') || 'dark'; } catch(e) {}
+    setTheme(saved);
+    btn.addEventListener('click', function() {
+      setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
 </body>
 </html>
