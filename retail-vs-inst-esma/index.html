@@ -45,26 +45,41 @@
   [data-theme="light"] .retail .currency    { color: #a89080; }
   [data-theme="light"] .currency            { color: #a89080; }
 
-  /* ── Theme toggle button ── */
-  #theme-toggle {
+  /* ── Toggle bar ── */
+  .toggle-bar {
     position: fixed;
     top: 1rem;
     right: 1rem;
+    display: flex;
+    gap: 0.4rem;
+    z-index: 100;
+  }
+  .toggle-bar button {
     background: none;
     border: 1px solid #2a2a2e;
-    border-radius: 20px;
-    padding: 5px 12px;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    font-size: 13px;
     color: #555;
-    z-index: 100;
     transition: border-color 0.2s, color 0.2s;
-    font-family: system-ui, sans-serif;
-    letter-spacing: 0.03em;
+    padding: 0;
   }
-  #theme-toggle:hover { border-color: #888; color: #e8e6e1; }
-  [data-theme="light"] #theme-toggle { border-color: #d4c4b0; color: #8a7060; }
-  [data-theme="light"] #theme-toggle:hover { border-color: #8a7060; color: #3d2b22; }
+  .toggle-bar button:hover { border-color: #888; color: #c9d1d9; }
+  #capture-toggle.active { border-color: #6b9ebb; color: #6b9ebb; }
+  [data-theme="light"] .toggle-bar button { border-color: #d4c4b0; color: #8a7060; }
+  [data-theme="light"] .toggle-bar button:hover { border-color: #8a7060; color: #3d2b22; }
+  [data-theme="light"] #capture-toggle.active { border-color: #4a7a9a; color: #4a7a9a; }
+
+  /* ── Capture mode ── */
+  html.capture .toggle-bar { display: none; }
+  html.capture .download-line { display: none; }
+  html.capture .headline { font-size: 1.9rem; }
+  html.capture .punchline { font-size: 1.45rem; line-height: 1.4; }
+  html.capture .punchline strong { font-weight: 600; }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -394,7 +409,10 @@
 </style>
 </head>
 <body>
-  <button id="theme-toggle" aria-label="Cambiar tema">☀️ Claro</button>
+  <div class="toggle-bar">
+    <button id="theme-toggle" aria-label="Cambiar tema"></button>
+    <button id="capture-toggle" aria-label="Modo captura"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+  </div>
   <div class="container">
 
     <p class="headline">
@@ -456,8 +474,8 @@
       <div class="context-left">
         <p class="punchline">El inversor particular paga <strong>el doble en comisiones</strong> que el institucional.<br>Por el mismo producto.</p>
         <p class="source">
-          Fuente: ESMA Market Report — Costs & Performance of EU Retail Investment Products, enero 2025<br>
-          <a href="https://www.esma.europa.eu/sites/default/files/2025-01/ESMA50-524821-3525_ESMA_Market_Report_-_Costs_and_Performance_of_EU_Retail_Investment_Products.pdf" target="_blank">Descargar informe completo (PDF)</a>
+          Fuente: ESMA Market Report — Costs & Performance of EU Retail Investment Products, enero 2025<span class="download-line"><br>
+          <a href="https://www.esma.europa.eu/sites/default/files/2025-01/ESMA50-524821-3525_ESMA_Market_Report_-_Costs_and_Performance_of_EU_Retail_Investment_Products.pdf" target="_blank">Descargar informe completo (PDF)</a></span>
         </p>
       </div>
       <div class="context-right">
@@ -471,18 +489,36 @@
 
 <script>
   (function() {
-    var btn = document.getElementById('theme-toggle');
+    var SUN  = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="5.64" y1="5.64" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="18.36" y2="18.36"/><line x1="5.64" y1="18.36" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="18.36" y2="5.64"/></svg>';
+    var MOON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
     var html = document.documentElement;
+    var themeBtn   = document.getElementById('theme-toggle');
+    var captureBtn = document.getElementById('capture-toggle');
+
     function setTheme(t) {
       html.setAttribute('data-theme', t);
-      btn.textContent = t === 'dark' ? '☀️ Claro' : '🌙 Oscuro';
+      themeBtn.innerHTML = t === 'dark' ? SUN : MOON;
       try { localStorage.setItem('esma-theme', t); } catch(e) {}
     }
-    var saved = 'dark';
-    try { saved = localStorage.getItem('esma-theme') || 'dark'; } catch(e) {}
-    setTheme(saved);
-    btn.addEventListener('click', function() {
+    function setCapture(on) {
+      html.classList.toggle('capture', on);
+      captureBtn.classList.toggle('active', on);
+      try { localStorage.setItem('esma-capture', on ? '1' : '0'); } catch(e) {}
+    }
+
+    var savedTheme = 'dark';
+    try { savedTheme = localStorage.getItem('esma-theme') || 'dark'; } catch(e) {}
+    setTheme(savedTheme);
+
+    var savedCapture = false;
+    try { savedCapture = localStorage.getItem('esma-capture') === '1'; } catch(e) {}
+    setCapture(savedCapture);
+
+    themeBtn.addEventListener('click', function() {
       setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+    captureBtn.addEventListener('click', function() {
+      setCapture(!html.classList.contains('capture'));
     });
   })();
 </script>
