@@ -25,11 +25,8 @@
   [data-theme="light"] .headline        { color: #6b5a4e; }
   [data-theme="light"] .headline em     { color: #3d2b22; }
   [data-theme="light"] .label           { color: #8a7060; }
-  [data-theme="light"] .subtext         { color: #6b5a4e; }
   [data-theme="light"] .nominal-tag     { color: #c0b0a0; }
   [data-theme="light"] .erosion         { border-top-color: #d4c4b0; border-bottom-color: #d4c4b0; }
-  [data-theme="light"] .erosion-label   { color: #8a7060; }
-  [data-theme="light"] .erosion-value.gray { color: #8a7060; }
   [data-theme="light"] .retail .amount  { color: #1e1410; }
   [data-theme="light"] .divider-v       { background: #d4c4b0; }
   [data-theme="light"] .context-bar     { border-top-color: #d4c4b0; }
@@ -38,9 +35,6 @@
   [data-theme="light"] .source          { color: #a89080; }
   [data-theme="light"] .source a        { color: #8a7060; border-bottom-color: #8a7060; }
   [data-theme="light"] .source a:hover  { color: #5a8aaa; border-color: #5a8aaa; }
-  [data-theme="light"] .starting        { color: #a89080; }
-  [data-theme="light"] .starting-amount { color: #8a7060; }
-  [data-theme="light"] .period          { color: #a89080; }
   [data-theme="light"] .retail .real-amount { color: #6b5a4e; }
   [data-theme="light"] .retail .currency    { color: #a89080; }
   [data-theme="light"] .currency            { color: #a89080; }
@@ -161,21 +155,6 @@
     margin-right: 0.1em;
   }
 
-  .subtext {
-    font-size: 0.75rem;
-    color: #444;
-    line-height: 1.5;
-  }
-
-  .subtext span {
-    color: #c0392b;
-    font-weight: 500;
-  }
-
-  .institutional .subtext span {
-    color: #6b9ebb;
-  }
-
   .nominal-tag {
     font-size: 0.65rem;
     text-transform: uppercase;
@@ -190,32 +169,6 @@
     border-top: 1px solid #2a2a2e;
     border-bottom: 1px solid #2a2a2e;
   }
-
-  .erosion-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.4rem;
-  }
-
-  .erosion-line:last-child {
-    margin-bottom: 0;
-  }
-
-  .erosion-label {
-    font-size: 0.7rem;
-    color: #555;
-  }
-
-  .erosion-value {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  .erosion-value.red { color: #c0392b; }
-  .erosion-value.blue { color: #6b9ebb; }
-  .erosion-value.gray { color: #555; }
 
   .real-result {
     margin-top: 0.25rem;
@@ -264,14 +217,6 @@
   .context-bar {
     border-top: 1px solid #2a2a2e;
     padding-top: 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 2rem;
-  }
-
-  .context-left {
-    flex: 1;
   }
 
   .punchline {
@@ -304,30 +249,7 @@
     border-color: #6b9ebb;
   }
 
-  .context-right {
-    text-align: right;
-  }
 
-  .starting {
-    font-size: 0.65rem;
-    color: #333;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 0.25rem;
-  }
-
-  .starting-amount {
-    font-family: 'DM Mono', monospace;
-    font-size: 1.5rem;
-    color: #444;
-    font-weight: 300;
-  }
-
-  .period {
-    font-size: 0.6rem;
-    color: #333;
-    margin-top: 0.25rem;
-  }
 
   .container > * {
     position: relative;
@@ -340,24 +262,11 @@
     .comparison {
       gap: 0.5rem;
     }
-  
-  .chameleon-img {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
-    margin-bottom: 0.75rem;
-    opacity: 0.85;
-    filter: brightness(1.1);
-  }
-
-  .divider-v {
+    .divider-v {
       margin: 0 0.75rem;
     }
     .context-bar {
       flex-direction: column;
-    }
-    .context-right {
-      text-align: left;
     }
     .chameleon-img {
       width: 80px;
@@ -408,6 +317,11 @@
   [data-theme="light"] .fee-context { color: #8a7060; }
   [data-theme="light"] .inflation-label { color: #8a7060; }
   [data-theme="light"] .inflation-value { color: #8a7060; }
+  [data-theme="light"] .retail .fee-big { color: #a52a1a; }
+  [data-theme="light"] .institutional .fee-big { color: #4a7a9a; }
+  [data-theme="light"] .fee-fill { opacity: 0.8; }
+  [data-theme="light"] .chameleon-img { filter: brightness(0.95) contrast(1.1); }
+  [data-theme="light"] .nominal-tag { color: #b8a898; }
 </style>
 </head>
 <body>
@@ -480,7 +394,6 @@
           <a href="https://www.esma.europa.eu/sites/default/files/2025-01/ESMA50-524821-3525_ESMA_Market_Report_-_Costs_and_Performance_of_EU_Retail_Investment_Products.pdf" target="_blank">Descargar informe completo (PDF)</a></span>
         </p>
       </div>
-
     </div>
 
   </div>
