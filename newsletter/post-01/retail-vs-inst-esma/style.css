@@ -1,4 +1,4 @@
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap');
 
   /* ── Theme variables ── */
   :root {
@@ -56,15 +56,32 @@
     padding: 0;
   }
   .toggle-bar button:hover { border-color: #888; color: #c9d1d9; }
-  #capture-toggle.active { border-color: #6b9ebb; color: #6b9ebb; }
   [data-theme="light"] .toggle-bar button { border-color: #d4c4b0; color: #8a7060; }
   [data-theme="light"] .toggle-bar button:hover { border-color: #8a7060; color: #3d2b22; }
-  [data-theme="light"] #capture-toggle.active { border-color: #4a7a9a; color: #4a7a9a; }
+
+  /* ── Context menu ── */
+  .ctx-menu {
+    position: fixed;
+    background: #1e1e22; border: 1px solid #2a2a2e; border-radius: 8px;
+    padding: 4px; z-index: 500; min-width: 140px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .ctx-menu[hidden] { display: none; }
+  .ctx-menu button {
+    display: block; width: 100%; padding: 7px 10px;
+    background: none; border: none; border-radius: 5px;
+    font-family: inherit; font-size: 0.72rem; color: #c8c6c1;
+    cursor: pointer; text-align: left;
+  }
+  .ctx-menu button:hover { background: #2a2a2e; color: #e8e6e1; }
+  .ctx-menu button.active { color: #6b9ebb; }
+  [data-theme="light"] .ctx-menu { background: #ede3d6; border-color: #d4c4b0; }
+  [data-theme="light"] .ctx-menu button { color: #3d2b22; }
+  [data-theme="light"] .ctx-menu button:hover { background: #d4c4b0; }
+  [data-theme="light"] .ctx-menu button.active { color: #4a7a9a; }
 
   /* ── Capture mode ── */
   html.capture #theme-toggle { display: none; }
-  html.capture #capture-toggle { opacity: 0.25; }
-  html.capture #capture-toggle:hover { opacity: 1; }
   html.capture .download-line { display: none; }
   html.capture .headline { font-size: 1.9rem; }
   html.capture .punchline { display: none; }
@@ -89,7 +106,7 @@
   }
 
   .headline {
-    font-family: 'Instrument Serif', serif;
+    font-family: 'DM Serif Display', serif;
     font-size: 1.35rem;
     font-weight: 400;
     color: #8a8a8e;
@@ -213,7 +230,7 @@
   }
 
   .punchline {
-    font-family: 'Instrument Serif', serif;
+    font-family: 'DM Serif Display', serif;
     font-size: 1.1rem;
     color: #8a8a8e;
     line-height: 1.5;

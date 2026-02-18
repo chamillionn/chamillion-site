@@ -1,93 +1,219 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notion Widgets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    :root {
+      --bg: #191919;
+      --text: #e8e6e1;
+      --subtext: #8a8a8e;
+      --border: #2a2a2e;
+      --card-bg: #1e1e22;
+      --card-hover: #242428;
+      --accent: #6b9ebb;
+    }
+    [data-theme="light"] {
+      --bg: #f4e9da;
+      --text: #1e1410;
+      --subtext: #8a7060;
+      --border: #d4c4b0;
+      --card-bg: #ede3d6;
+      --card-hover: #e4d8c8;
+      --accent: #4a7a9a;
+    }
+
     body {
-      font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
-      background: #0d1117;
-      color: #c9d1d9;
+      font-family: 'DM Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      padding: 40px 20px;
+      padding: 48px 24px 64px;
+      transition: background 0.2s, color 0.2s;
     }
 
+    .wrapper { max-width: 840px; }
+
+    /* ── Toggle bar ── */
+    .toggle-bar { position: fixed; top: 1rem; right: 1rem; z-index: 200; }
+    .toggle-bar button {
+      background: none; border: 1px solid #2a2a2e; border-radius: 8px;
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #555; transition: border-color 0.2s, color 0.2s; padding: 0;
+    }
+    .toggle-bar button:hover { border-color: #888; color: #c9d1d9; }
+    [data-theme="light"] .toggle-bar button { border-color: #d4c4b0; color: #8a7060; }
+    [data-theme="light"] .toggle-bar button:hover { border-color: #8a7060; color: #3d2b22; }
+
+    /* ── Header ── */
     h1 {
-      font-size: 18px;
-      font-weight: 600;
-      color: #e6edf3;
-      margin-bottom: 6px;
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      color: var(--text);
+      margin-bottom: 4px;
     }
-
     .subtitle {
-      font-size: 12px;
-      color: #7d8590;
+      font-size: 0.68rem;
+      color: var(--subtext);
       margin-bottom: 32px;
     }
 
+    /* ── Search ── */
+    .search-wrap { margin-bottom: 20px; }
+    #search {
+      width: 100%; max-width: 340px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    #search::placeholder { color: var(--subtext); }
+    #search:focus { border-color: var(--accent); }
+
+    /* ── Grid ── */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-      max-width: 900px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
     }
 
     .card {
-      background: #161b22;
-      border: 1px solid #21262d;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 20px;
+      padding: 18px 20px 20px;
       text-decoration: none;
       color: inherit;
       transition: border-color 0.15s, background 0.15s;
       display: block;
     }
-    .card:hover {
-      border-color: #388bfd;
-      background: #1c2128;
-    }
+    .card:hover { border-color: var(--accent); background: var(--card-hover); }
+    .card[hidden] { display: none; }
 
     .card-tag {
-      font-size: 10px;
+      font-size: 0.6rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #7d8590;
-      margin-bottom: 10px;
+      letter-spacing: 0.12em;
+      color: var(--subtext);
+      margin-bottom: 8px;
     }
-
     .card-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #e6edf3;
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.05rem;
+      font-weight: 400;
+      color: var(--text);
       margin-bottom: 6px;
     }
-
     .card-desc {
-      font-size: 12px;
-      color: #7d8590;
-      line-height: 1.5;
+      font-size: 0.66rem;
+      color: var(--subtext);
+      line-height: 1.65;
     }
+
+    .no-results {
+      font-size: 0.72rem;
+      color: var(--subtext);
+      padding: 8px 0;
+    }
+    .no-results[hidden] { display: none; }
   </style>
 </head>
 <body>
-  <h1>Notion Widgets</h1>
-  <p class="subtitle">Componentes interactivos para la newsletter.</p>
-
-  <div class="grid">
-    <a class="card" href="orderbook-patatas/index.html">
-      <div class="card-tag">Mercados</div>
-      <div class="card-title">🥔 Libro de Órdenes</div>
-      <div class="card-desc">Simula cómo funciona un libro de órdenes con el mercado de patatas. Compra, vende y ve cómo se ejecutan las órdenes.</div>
-    </a>
-
-    <a class="card" href="retail-vs-inst-esma/index.html">
-      <div class="card-tag">Regulación · ESMA</div>
-      <div class="card-title">📊 Retail vs Institucional</div>
-      <div class="card-desc">Visualización de datos ESMA sobre el rendimiento comparado de inversores minoristas e institucionales.</div>
-    </a>
+  <div class="toggle-bar">
+    <button id="theme-toggle" aria-label="Cambiar tema"></button>
   </div>
+
+  <div class="wrapper">
+    <h1>Widgets</h1>
+    <p class="subtitle">Componentes interactivos para la newsletter.</p>
+
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="Buscar componente..." autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="grid" id="grid">
+      <a class="card" href="newsletter/post-01/orderbook-patatas/index.html"
+         data-title="libro de ordenes mercado patatas comprar vender ordenes limite spread">
+        <div class="card-tag">Mercados</div>
+        <div class="card-title">Libro de Órdenes</div>
+        <div class="card-desc">Simula cómo funciona un libro de órdenes con el mercado de patatas. Compra, vende y ve cómo se ejecutan las órdenes.</div>
+      </a>
+
+      <a class="card" href="newsletter/post-01/retail-vs-inst-esma/index.html"
+         data-title="retail institucional esma comisiones fondos inversion regulacion europa">
+        <div class="card-tag">Regulación · ESMA</div>
+        <div class="card-title">Retail vs Institucional</div>
+        <div class="card-desc">Visualización de datos ESMA sobre el coste comparado de inversores minoristas e institucionales en fondos europeos.</div>
+      </a>
+
+      <a class="card" href="newsletter/post-01/stablecoins-mcap/index.html"
+         data-title="stablecoins market cap capitalización cripto grafico area usdt usdc tether">
+        <div class="card-tag">Cripto · Stablecoins</div>
+        <div class="card-title">Stablecoins Market Cap</div>
+        <div class="card-desc">Gráfico de área con la evolución del market cap total de stablecoins desde 2017 hasta hoy.</div>
+      </a>
+    </div>
+
+    <p class="no-results" id="no-results" hidden>Sin resultados para esa búsqueda.</p>
+  </div>
+
+  <script>
+    // ── Theme ────────────────────────────────────────────────────────
+    var SUN  = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="5.64" y1="5.64" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="18.36" y2="18.36"/><line x1="5.64" y1="18.36" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="18.36" y2="5.64"/></svg>';
+    var MOON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    var html = document.documentElement;
+    var themeBtn = document.getElementById('theme-toggle');
+
+    function setTheme(t) {
+      html.setAttribute('data-theme', t);
+      themeBtn.innerHTML = t === 'dark' ? SUN : MOON;
+      try { localStorage.setItem('hub-theme', t); } catch(e) {}
+    }
+
+    var saved;
+    try { saved = localStorage.getItem('hub-theme'); } catch(e) {}
+    if (!saved) saved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    setTheme(saved);
+
+    themeBtn.addEventListener('click', function() {
+      setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+
+    // ── Search ───────────────────────────────────────────────────────
+    var searchEl  = document.getElementById('search');
+    var cards     = document.querySelectorAll('.card');
+    var noResults = document.getElementById('no-results');
+
+    searchEl.addEventListener('input', function() {
+      var q = this.value.trim().toLowerCase();
+      var visible = 0;
+      cards.forEach(function(card) {
+        var haystack = [
+          card.dataset.title,
+          card.querySelector('.card-title').textContent,
+          card.querySelector('.card-desc').textContent,
+          card.querySelector('.card-tag').textContent
+        ].join(' ').toLowerCase();
+        var match = !q || haystack.includes(q);
+        card.toggleAttribute('hidden', !match);
+        if (match) visible++;
+      });
+      noResults.toggleAttribute('hidden', visible > 0);
+    });
+  </script>
 </body>
 </html>

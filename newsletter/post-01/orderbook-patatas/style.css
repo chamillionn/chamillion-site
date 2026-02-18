@@ -56,6 +56,11 @@ h1 {
 }
 
 /* --- Orderbook table --- */
+.asks-section .book-section-label { color: #fb923c; }
+.bids-section .book-section-label { color: #4ade80; }
+[data-theme="light"] .asks-section .book-section-label { color: #c4580a; }
+[data-theme="light"] .bids-section .book-section-label { color: #16863a; }
+
 .book-section-label {
   font-family: 'Instrument Serif', serif;
   font-size: 1.05rem;
@@ -239,6 +244,43 @@ h1 {
 .submit-btn.sell { background: #2d1a0e; border: 1px solid #5e3320; color: #fb923c; }
 .submit-btn.sell:hover { background: #3d2415; border-color: #fb923c; }
 
+/* --- Book highlights --- */
+.book-row.will-fill { background: rgba(107,158,187,0.14); }
+[data-theme="light"] .book-row.will-fill { background: rgba(74,122,154,0.1); }
+
+.order-marker {
+  height: 2px; margin: 0 10px;
+  border-radius: 1px;
+  animation: markerPulse 1.5s ease-in-out infinite;
+}
+.order-marker.buy  { background: #4ade80; opacity: 0.6; }
+.order-marker.sell { background: #fb923c; opacity: 0.6; }
+[data-theme="light"] .order-marker.buy  { background: #16863a; }
+[data-theme="light"] .order-marker.sell { background: #c4580a; }
+
+@keyframes markerPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.2; }
+}
+
+/* --- Order preview --- */
+.order-preview {
+  font-size: 0.7rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  min-height: 0;
+  line-height: 1.4;
+  transition: background 0.15s;
+}
+.order-preview:empty { display: none; }
+.order-preview.instant { background: rgba(74,222,128,0.08); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+.order-preview.waiting { background: rgba(251,146,60,0.08); color: #fb923c; border: 1px solid rgba(251,146,60,0.15); }
+.order-preview.partial { background: rgba(107,158,187,0.08); color: #6b9ebb; border: 1px solid rgba(107,158,187,0.2); }
+[data-theme="light"] .order-preview.instant { background: #d4edd6; color: #16863a; border-color: #8acd8a; }
+[data-theme="light"] .order-preview.waiting { background: #f0ddd0; color: #c4580a; border-color: #d4a080; }
+[data-theme="light"] .order-preview.partial { background: #dce8f0; color: #3a6a8a; border-color: #8ab0c8; }
+
 /* --- Toast notification --- */
 .toast-overlay {
   display: none;
@@ -321,18 +363,37 @@ h1 {
   cursor: pointer; color: #555; transition: border-color 0.2s, color 0.2s; padding: 0;
 }
 .toggle-bar button:hover { border-color: #888; color: #c9d1d9; }
-#capture-toggle.active { border-color: #6b9ebb; color: #6b9ebb; }
 [data-theme="light"] .toggle-bar button { border-color: #d4c4b0; color: #8a7060; }
 [data-theme="light"] .toggle-bar button:hover { border-color: #8a7060; color: #3d2b22; }
-[data-theme="light"] #capture-toggle.active { border-color: #4a7a9a; color: #4a7a9a; }
+
+/* ── Context menu ── */
+.ctx-menu {
+  position: fixed;
+  background: #1e1e22; border: 1px solid #2a2a2e; border-radius: 8px;
+  padding: 4px; z-index: 500; min-width: 140px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.ctx-menu[hidden] { display: none; }
+.ctx-menu button {
+  display: block; width: 100%; padding: 7px 10px;
+  background: none; border: none; border-radius: 5px;
+  font-family: inherit; font-size: 0.72rem; color: #c8c6c1;
+  cursor: pointer; text-align: left;
+}
+.ctx-menu button:hover { background: #2a2a2e; color: #e8e6e1; }
+.ctx-menu button.active { color: #6b9ebb; }
+[data-theme="light"] .ctx-menu { background: #ede3d6; border-color: #d4c4b0; }
+[data-theme="light"] .ctx-menu button { color: #3d2b22; }
+[data-theme="light"] .ctx-menu button:hover { background: #d4c4b0; }
+[data-theme="light"] .ctx-menu button.active { color: #4a7a9a; }
 
 /* ── Capture mode ── */
 html.capture .form-container { display: none; }
 html.capture #theme-toggle { display: none; }
-html.capture #capture-toggle { opacity: 0.25; }
-html.capture #capture-toggle:hover { opacity: 1; }
 
 /* ── Light mode overrides ── */
+[data-theme="light"] h1 { color: #1e1410; }
+[data-theme="light"] .subtitle { color: #6b5a4e; }
 [data-theme="light"] .book-section-label { color: #3d2b22; }
 [data-theme="light"] .book-header { color: #8a7060; }
 [data-theme="light"] .book-row:hover { background: #ead4ba; }

@@ -77,19 +77,20 @@ function scheduleAutoFill(orderSide, price, qty) {
   const delay = 10000 + Math.random() * 5000; // 10-15 segundos aleatorio
 
   setTimeout(() => {
-    // Cerrar el toast de espera si está abierto
     dismissToast();
 
-    // Pequeño delay antes de ejecutar para que el usuario vea que se cerró la notificación
     setTimeout(() => {
-      // Generar orden contraria que haga match
-      const oppositeSide = orderSide === 'buy' ? 'sell' : 'buy';
-      // Para asegurar el match: si compra a X, vendemos a X; si vende a X, compramos a X
-      const matchPrice = price;
-      // Cantidad suficiente para rellenar completamente
-      const matchQty = qty * 1.2; // 20% más para asegurar relleno completo
-
-      addOrder(oppositeSide, matchPrice, matchQty, false);
+      // Simular un participante de mercado que barre el libro hasta el precio del usuario.
+      // Eliminamos todas las órdenes del lado contrario hasta ese nivel (inclusive),
+      // lo que produce el efecto visual de "vaciarse hasta el nivel".
+      if (orderSide === 'sell') {
+        asks = asks.filter(a => a.price > price);
+      } else {
+        bids = bids.filter(b => b.price < price);
+      }
+      sortBook();
+      render();
+      showToast(orderSide, qty, qty * price, 0);
     }, 300);
   }, delay);
 }
@@ -154,6 +155,7 @@ function render() {
   renderSide('asks-body', asks, 'ask');
   renderSide('bids-body', bids, 'bid');
   updateSpread();
+  updatePreview();
 }
 
 function updateSpread() {
@@ -187,11 +189,11 @@ function renderSide(containerId, orders, type) {
   el.innerHTML = display.map(r => {
     const depthPct = ((r.total / maxTotal) * 100).toFixed(1);
     const userClass = r.isUser ? ' user-order' : '';
-    const userIcon = r.isUser ? '<span class="user-order-spinner">⏳</span>' : '';
+    const userIcon = r.isUser ? '<span class="user-order-spinner">·</span>' : '';
     const tip = type === 'ask'
       ? `Alguien quiere vender <strong class='th'>${Number(r.qty).toFixed(1)} kg</strong> a <strong class='th'>${r.price.toFixed(2)} €/kg</strong>. Si compras a este precio o más, ejecutas esta orden. Total acumulado: <strong class='th'>${Number(r.total).toFixed(1)} kg</strong>.`
       : `Alguien quiere comprar <strong class='th'>${Number(r.qty).toFixed(1)} kg</strong> a <strong class='th'>${r.price.toFixed(2)} €/kg</strong>. Si vendes a este precio o menos, ejecutas esta orden. Total acumulado: <strong class='th'>${Number(r.total).toFixed(1)} kg</strong>.`;
-    return `<div class="book-row${userClass}" onclick="fillPrice(${r.price})" data-tooltip="${tip}">
+    return `<div class="book-row${userClass}" onclick="fillPrice(${r.price})" data-price="${r.price}" data-tooltip="${tip}">
       <div class="depth-bar" style="width:${depthPct}%"></div>
       <div>${userIcon}${r.price.toFixed(2)}</div>
       <div class="right">${Number(r.qty).toFixed(1)}</div>
@@ -212,11 +214,94 @@ function setSide(s) {
   submitBtn.dataset.tooltip = s === 'buy'
     ? "Al pulsar, tu orden de <strong class='th'>compra</strong> entra al mercado. Si hay alguien vendiendo a tu precio o menos, se ejecuta al instante."
     : "Al pulsar, tu orden de <strong class='th'>venta</strong> entra al mercado. Si hay alguien comprando a tu precio o más, se ejecuta al instante.";
+  updatePreview();
+}
+
+function updatePreview() {
+  const preview = document.getElementById('order-preview');
+  if (!preview) return;
+  const price = parseFloat(document.getElementById('input-price').value);
+  const qty   = parseFloat(document.getElementById('input-qty').value);
+
+  if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) {
+    preview.className = 'order-preview'; preview.textContent = '';
+    highlightBook(NaN, false);
+    return;
+  }
+
+  const book = side === 'buy' ? asks : bids;
+  const crosses = side === 'buy' ? r => r.price <= price : r => r.price >= price;
+
+  let fillable = 0;
+  for (const r of book) {
+    if (!crosses(r)) break;
+    fillable += r.qty;
+    if (fillable >= qty) break;
+  }
+  fillable = Math.min(+fillable.toFixed(1), qty);
+
+  const wouldCross = book.length > 0 && crosses(book[0]);
+  const bestPrice  = book.length > 0 ? book[0].price.toFixed(2) : null;
+
+  if (!wouldCross) {
+    const ref = bestPrice
+      ? (side === 'buy' ? `mejor venta: ${bestPrice} €/kg` : `mejor compra: ${bestPrice} €/kg`)
+      : (side === 'buy' ? 'sin vendedores en el libro' : 'sin compradores en el libro');
+    preview.className = 'order-preview waiting';
+    preview.textContent = `Esperará en el libro · ${ref}`;
+  } else if (fillable >= qty - 0.001) {
+    preview.className = 'order-preview instant';
+    preview.textContent = `Ejecuta al instante · ${qty.toFixed(1)} kg`;
+  } else {
+    const rest = +(qty - fillable).toFixed(1);
+    preview.className = 'order-preview partial';
+    preview.textContent = `Parcial · ${fillable} kg ahora, ${rest} kg esperarán`;
+  }
+
+  highlightBook(price, wouldCross);
+}
+
+function highlightBook(price, wouldCross) {
+  // Limpiar estado anterior
+  document.querySelectorAll('.book-row.will-fill').forEach(e => e.classList.remove('will-fill'));
+  document.querySelectorAll('.order-marker').forEach(e => e.remove());
+
+  if (isNaN(price) || price <= 0) return;
+
+  if (wouldCross) {
+    // Resaltar las filas que se ejecutarían
+    const container = side === 'buy' ? 'asks-body' : 'bids-body';
+    document.querySelectorAll(`#${container} .book-row`).forEach(el => {
+      const rp = parseFloat(el.dataset.price);
+      if (side === 'buy' && rp <= price) el.classList.add('will-fill');
+      if (side === 'sell' && rp >= price) el.classList.add('will-fill');
+    });
+  } else {
+    // Orden pasiva: insertar un marcador de línea donde descansaría
+    const container = side === 'buy' ? 'bids-body' : 'asks-body';
+    const book = side === 'buy' ? bids : asks;
+    if (!book.length) return;
+
+    const rows = document.querySelectorAll(`#${container} .book-row`);
+    let insertBefore = null;
+    for (const el of rows) {
+      const rp = parseFloat(el.dataset.price);
+      if (side === 'buy' && rp < price) { insertBefore = el; break; }
+      if (side === 'sell' && rp > price) { insertBefore = el; break; }
+    }
+
+    const marker = document.createElement('div');
+    marker.className = 'order-marker ' + side;
+    const parent = document.getElementById(container);
+    if (insertBefore) parent.insertBefore(marker, insertBefore);
+    else parent.appendChild(marker);
+  }
 }
 
 function fillPrice(price) {
   document.getElementById('input-price').value = price.toFixed(2);
   document.getElementById('input-price').focus();
+  updatePreview();
 }
 
 function placeOrder() {
@@ -283,9 +368,10 @@ document.addEventListener('keydown', e => {
 (function() {
   var SUN  = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="5.64" y1="5.64" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="18.36" y2="18.36"/><line x1="5.64" y1="18.36" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="18.36" y2="5.64"/></svg>';
   var MOON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
-  var html = document.documentElement;
+  var html       = document.documentElement;
   var themeBtn   = document.getElementById('theme-toggle');
-  var captureBtn = document.getElementById('capture-toggle');
+  var ctxMenu    = document.getElementById('ctx-menu');
+  var ctxCapture = document.getElementById('ctx-capture');
 
   function setTheme(t) {
     html.setAttribute('data-theme', t);
@@ -294,12 +380,13 @@ document.addEventListener('keydown', e => {
   }
   function setCapture(on) {
     html.classList.toggle('capture', on);
-    captureBtn.classList.toggle('active', on);
+    ctxCapture.classList.toggle('active', on);
     try { localStorage.setItem('orderbook-capture', on ? '1' : '0'); } catch(e) {}
   }
 
-  var savedTheme = 'dark';
-  try { savedTheme = localStorage.getItem('orderbook-theme') || 'dark'; } catch(e) {}
+  var savedTheme;
+  try { savedTheme = localStorage.getItem('orderbook-theme'); } catch(e) {}
+  if (!savedTheme) savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   setTheme(savedTheme);
 
   var savedCapture = false;
@@ -309,11 +396,34 @@ document.addEventListener('keydown', e => {
   themeBtn.addEventListener('click', function() {
     setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
-  captureBtn.addEventListener('click', function() {
+
+  themeBtn.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    var r = themeBtn.getBoundingClientRect();
+    ctxMenu.style.top   = (r.bottom + 4) + 'px';
+    ctxMenu.style.right = (window.innerWidth - r.right) + 'px';
+    ctxMenu.removeAttribute('hidden');
+  });
+
+  ctxCapture.addEventListener('click', function() {
     setCapture(!html.classList.contains('capture'));
+    ctxMenu.setAttribute('hidden', '');
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!ctxMenu.contains(e.target) && e.target !== themeBtn) {
+      ctxMenu.setAttribute('hidden', '');
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') ctxMenu.setAttribute('hidden', '');
   });
 })();
 
 // ── Init ─────────────────────────────────────────────────────────────
+document.getElementById('input-price').addEventListener('input', updatePreview);
+document.getElementById('input-qty').addEventListener('input', updatePreview);
+
 seed();
 render();
