@@ -75,7 +75,9 @@
   [data-theme="light"] #capture-toggle.active { border-color: #4a7a9a; color: #4a7a9a; }
 
   /* ── Capture mode ── */
-  html.capture .toggle-bar { display: none; }
+  html.capture #theme-toggle { display: none; }
+  html.capture #capture-toggle { opacity: 0.25; }
+  html.capture #capture-toggle:hover { opacity: 1; }
   html.capture .download-line { display: none; }
   html.capture .headline { font-size: 1.9rem; }
   html.capture .punchline { font-size: 1.45rem; line-height: 1.4; }
