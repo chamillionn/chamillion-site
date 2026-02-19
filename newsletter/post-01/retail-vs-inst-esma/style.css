@@ -131,6 +131,7 @@
   .investor-col {
     flex: 1;
     position: relative;
+    transition: transform 0.3s ease, opacity 0.3s ease;
   }
 
   .label {
@@ -215,6 +216,7 @@
     margin-bottom: 0.75rem;
     opacity: 0.85;
     filter: brightness(1.1);
+    transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
   .divider-v {
@@ -240,6 +242,7 @@
   .punchline strong {
     color: #c0392b;
     font-weight: 400;
+    transition: text-shadow 0.3s ease;
   }
 
   .source {
@@ -282,6 +285,9 @@
       width: 80px;
       height: 80px;
     }
+    .investor-col:hover {
+      transform: translateY(-1px);
+    }
   }
 
   /* ── Fee emphasis ── */
@@ -303,6 +309,7 @@
     font-weight: 500;
     line-height: 1;
     margin-bottom: 0.4rem;
+    transition: transform 0.25s ease;
   }
   .retail .fee-big { color: #c0392b; }
   .institutional .fee-big { color: #6b9ebb; }
@@ -313,9 +320,15 @@
     margin-bottom: 0.3rem;
     overflow: hidden;
   }
-  .fee-fill { height: 100%; border-radius: 2px; }
+  .fee-fill {
+    height: 100%;
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: feeFillIn 0.8s ease-out 0.3s forwards;
+  }
   .retail .fee-fill { background: #c0392b; }
-  .institutional .fee-fill { background: #6b9ebb; }
+  .institutional .fee-fill { background: #6b9ebb; animation-delay: 0.6s; }
   .fee-context { font-size: 0.6rem; letter-spacing: 0.04em; color: #444; }
   .inflation-line { display: flex; justify-content: space-between; align-items: center; }
   .inflation-label { font-size: 0.7rem; color: #555; }
@@ -332,3 +345,16 @@
   [data-theme="light"] .fee-fill { opacity: 0.8; }
   [data-theme="light"] .chameleon-img { filter: brightness(0.95) contrast(1.1); }
   [data-theme="light"] .nominal-tag { color: #b8a898; }
+
+  /* ── Micro-interactions ── */
+  @keyframes feeFillIn {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+
+  .investor-col:hover { transform: translateY(-2px); }
+  .comparison:hover .investor-col:not(:hover) { opacity: 0.45; }
+  .chameleon-img:hover { opacity: 1; transform: scale(1.04); }
+  .fee-big:hover { transform: scale(1.03); }
+  .punchline strong:hover { text-shadow: 0 0 8px rgba(192,57,43,0.35); }
+  [data-theme="light"] .punchline strong:hover { text-shadow: 0 0 8px rgba(165,42,26,0.25); }
