@@ -21,31 +21,17 @@
     <h1>Stablecoins</h1>
     <p class="subtitle">Capitalización de mercado total · Nov 2017 — Feb 2026</p>
 
-    <div class="stats-row">
-      <div class="stat">
-        <span class="stat-label">Actual</span>
-        <span class="stat-value" id="stat-current"></span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">Máximo</span>
-        <span class="stat-value" id="stat-max"></span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">Crecimiento</span>
-        <span class="stat-value" id="stat-growth"></span>
-      </div>
-    </div>
-
     <div class="chart-wrap">
       <canvas id="chart"></canvas>
       <canvas id="chart-overlay"></canvas>
+      <button class="zoom-reset" id="zoom-reset" hidden>↩ Resetear zoom</button>
       <div class="chart-tooltip" id="chart-tooltip" hidden>
         <div class="tip-date" id="tip-date"></div>
         <div class="tip-value" id="tip-value"></div>
       </div>
     </div>
 
-    <p class="source">Fuente: DefiLlama — Stablecoins Dashboard</p>
+    <p class="source">Fuente: <a href="https://defillama.com/stablecoins" target="_blank">DefiLlama — Stablecoins Dashboard</a></p>
   </div>
 
   <script src="data.js"></script>

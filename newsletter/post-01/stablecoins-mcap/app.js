@@ -1,15 +1,3 @@
-// ── Stats ─────────────────────────────────────────────────────────────
-(function() {
-  var last  = DATA[DATA.length - 1].value;
-  var max   = Math.max.apply(null, DATA.map(function(d) { return d.value; }));
-  var first = DATA.find(function(d) { return d.value > 0; }).value;
-  var growth = ((last - first) / first * 100).toFixed(0);
-
-  document.getElementById('stat-current').textContent = '$' + last.toFixed(1) + 'B';
-  document.getElementById('stat-max').textContent     = '$' + max.toFixed(1) + 'B';
-  document.getElementById('stat-growth').textContent  = '+' + growth + '%';
-})();
-
 // ── Chart ─────────────────────────────────────────────────────────────
 var chartCanvas  = document.getElementById('chart');
 var overlayCanvas = document.getElementById('chart-overlay');
@@ -18,6 +6,14 @@ var tipDate      = document.getElementById('tip-date');
 var tipValue     = document.getElementById('tip-value');
 
 var PAD = { top: 18, right: 16, bottom: 32, left: 52 };
+
+// ── Zoom state ──
+var viewStart = 0;
+var viewEnd   = DATA.length - 1;
+
+function viewData() {
+  return DATA.slice(viewStart, viewEnd + 1);
+}
 
 function getTheme() {
   return document.documentElement.getAttribute('data-theme') || 'dark';
@@ -68,6 +64,15 @@ function monotoneCubic(points) {
   return { m: m, d: d };
 }
 
+function niceScale(maxRaw) {
+  var order = Math.pow(10, Math.floor(Math.log10(maxRaw)));
+  var step = order;
+  if (maxRaw / step <= 2) step = order / 4;
+  else if (maxRaw / step <= 5) step = order / 2;
+  var ceil = Math.ceil(maxRaw / step) * step;
+  return { max: ceil, step: step };
+}
+
 function drawChart() {
   var dpr = window.devicePixelRatio || 1;
   var wrap = chartCanvas.parentElement;
@@ -89,11 +94,14 @@ function drawChart() {
   var pW = W - PAD.left - PAD.right;
   var pH = H - PAD.top  - PAD.bottom;
 
-  var maxVal = 400; // round ceiling above max data (~350B)
-  var step   = 100; // grid step
+  var vd = viewData();
+  var dataMax = Math.max.apply(null, vd.map(function(d) { return d.value; }));
+  var scale = niceScale(Math.max(dataMax * 1.1, 1));
+  var maxVal = scale.max;
+  var step   = scale.step;
 
   // Scales
-  function xPos(i)   { return PAD.left + (i / (DATA.length - 1)) * pW; }
+  function xPos(i)   { return PAD.left + (i / (vd.length - 1)) * pW; }
   function yPos(val) { return PAD.top  + pH - (val / maxVal) * pH; }
 
   // Clear
@@ -118,25 +126,24 @@ function drawChart() {
   }
   ctx.restore();
 
-  // ── X axis labels (years) ──
+  // ── X axis labels ──
   ctx.save();
   ctx.font = '10px "DM Mono", monospace';
   ctx.textAlign = 'center';
   ctx.fillStyle = c.axis;
-  var years = {};
-  DATA.forEach(function(d, i) {
-    var yr = d.date.slice(0, 4);
-    if (!years[yr]) {
-      years[yr] = i;
-      var x = xPos(i);
-      var y = H - PAD.bottom + 16;
-      ctx.fillText(yr, x, y);
-    }
-  });
+  var labelCount = Math.min(vd.length, 8);
+  var labelStep = Math.max(1, Math.floor(vd.length / labelCount));
+  for (var i = 0; i < vd.length; i += labelStep) {
+    var x = xPos(i);
+    var y = H - PAD.bottom + 16;
+    var d = vd[i];
+    var lbl = vd.length <= 24 ? formatDate(d.date) : d.date.slice(0, 4);
+    ctx.fillText(lbl, x, y);
+  }
   ctx.restore();
 
   // ── Build screen-space points ──
-  var pts = DATA.map(function(d, i) {
+  var pts = vd.map(function(d, i) {
     return { x: xPos(i), y: yPos(d.value) };
   });
 
@@ -200,26 +207,40 @@ function drawChart() {
   chartCanvas._pts = pts;
 }
 
-// ── Overlay: crosshair ────────────────────────────────────────────────
-function drawOverlay(idx) {
+// ── Overlay: crosshair + selection ────────────────────────────────────
+function drawOverlay(idx, selX0, selX1) {
   var dpr = window.devicePixelRatio || 1;
   var ctx = overlayCanvas.getContext('2d');
   var W = overlayCanvas.clientWidth;
   var H = overlayCanvas.clientHeight;
   ctx.clearRect(0, 0, W * dpr, H * dpr);
 
+  var c = themeColors();
+
+  // Draw selection rectangle if dragging
+  if (selX0 != null && selX1 != null) {
+    var left = Math.min(selX0, selX1);
+    var right = Math.max(selX0, selX1);
+    ctx.save();
+    ctx.fillStyle = getTheme() === 'dark' ? 'rgba(107,158,187,0.12)' : 'rgba(74,122,154,0.10)';
+    ctx.fillRect(left, PAD.top, right - left, H - PAD.top - PAD.bottom);
+    ctx.strokeStyle = c.crosshair;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(left, PAD.top); ctx.lineTo(left, H - PAD.bottom);
+    ctx.moveTo(right, PAD.top); ctx.lineTo(right, H - PAD.bottom);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   if (idx == null || !chartCanvas._pts) return;
 
-  var c   = themeColors();
   var pts = chartCanvas._pts;
   var p   = pts[idx];
   if (!p) return;
 
-  var pH = H - PAD.top - PAD.bottom;
-  var maxVal = 400;
-  function yPos(val) { return PAD.top + pH - (val / maxVal) * pH; }
-
-  // Vertical line
+  // Vertical crosshair
   ctx.save();
   ctx.strokeStyle = c.crosshair;
   ctx.lineWidth = 1;
@@ -244,32 +265,58 @@ function drawOverlay(idx) {
 }
 
 // ── Mouse interaction ─────────────────────────────────────────────────
+var chartWrap = chartCanvas.parentElement;
 overlayCanvas.style.pointerEvents = 'auto';
 
-chartCanvas.parentElement.addEventListener('mousemove', function(e) {
-  if (!chartCanvas._pts) return;
-  var rect = chartCanvas.getBoundingClientRect();
-  var mx   = e.clientX - rect.left;
-  var pts  = chartCanvas._pts;
+var dragStartX = null;
+var isDragging = false;
 
-  // Find nearest point by X
+function nearestIdx(mx) {
+  var pts = chartCanvas._pts;
+  if (!pts) return 0;
   var best = 0, bestDist = Infinity;
   pts.forEach(function(p, i) {
     var d = Math.abs(p.x - mx);
     if (d < bestDist) { bestDist = d; best = i; }
   });
+  return best;
+}
 
+chartWrap.addEventListener('mousedown', function(e) {
+  if (e.button !== 0) return;
+  var rect = chartCanvas.getBoundingClientRect();
+  dragStartX = e.clientX - rect.left;
+  isDragging = false;
+});
+
+chartWrap.addEventListener('mousemove', function(e) {
+  if (!chartCanvas._pts) return;
+  var rect = chartCanvas.getBoundingClientRect();
+  var mx   = e.clientX - rect.left;
+
+  if (dragStartX != null && Math.abs(mx - dragStartX) > 5) {
+    isDragging = true;
+  }
+
+  if (isDragging) {
+    drawOverlay(null, dragStartX, mx);
+    tooltip.setAttribute('hidden', '');
+    return;
+  }
+
+  var best = nearestIdx(mx);
   drawOverlay(best);
 
   // Position tooltip
-  var d = DATA[best];
-  var dateStr = formatDate(d.date);
-  tipDate.textContent  = dateStr;
+  var vd = viewData();
+  var d = vd[best];
+  if (!d) return;
+  tipDate.textContent  = formatDate(d.date);
   tipValue.textContent = '$' + d.value.toFixed(1) + 'B';
   tooltip.removeAttribute('hidden');
 
   var W   = chartCanvas.clientWidth;
-  var p   = pts[best];
+  var p   = chartCanvas._pts[best];
   var tW  = tooltip.offsetWidth;
   var tH  = tooltip.offsetHeight;
   var tx  = p.x + 12;
@@ -280,9 +327,37 @@ chartCanvas.parentElement.addEventListener('mousemove', function(e) {
   tooltip.style.top  = ty + 'px';
 });
 
-chartCanvas.parentElement.addEventListener('mouseleave', function() {
+chartWrap.addEventListener('mouseup', function(e) {
+  if (isDragging && dragStartX != null) {
+    var rect = chartCanvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var i0 = nearestIdx(Math.min(dragStartX, mx));
+    var i1 = nearestIdx(Math.max(dragStartX, mx));
+    if (i1 - i0 >= 2) {
+      viewStart = viewStart + i0;
+      viewEnd   = viewStart + (i1 - i0);
+      if (viewEnd > DATA.length - 1) viewEnd = DATA.length - 1;
+      updateSubtitle();
+      drawChart();
+    }
+  }
+  dragStartX = null;
+  isDragging = false;
+});
+
+chartWrap.addEventListener('mouseleave', function() {
   drawOverlay(null);
   tooltip.setAttribute('hidden', '');
+  dragStartX = null;
+  isDragging = false;
+});
+
+// Double-click to reset zoom
+chartWrap.addEventListener('dblclick', function() {
+  viewStart = 0;
+  viewEnd   = DATA.length - 1;
+  updateSubtitle();
+  drawChart();
 });
 
 function formatDate(str) {
@@ -290,6 +365,29 @@ function formatDate(str) {
   var parts = str.split('-');
   return months[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
 }
+
+var zoomResetBtn = document.getElementById('zoom-reset');
+
+function updateSubtitle() {
+  var sub = document.querySelector('.subtitle');
+  var from = formatDate(DATA[viewStart].date);
+  var to   = formatDate(DATA[viewEnd].date);
+  var isZoomed = viewStart !== 0 || viewEnd !== DATA.length - 1;
+  sub.textContent = 'Capitalización de mercado total · ' + from + ' — ' + to;
+  if (isZoomed) {
+    zoomResetBtn.removeAttribute('hidden');
+  } else {
+    zoomResetBtn.setAttribute('hidden', '');
+  }
+}
+
+zoomResetBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  viewStart = 0;
+  viewEnd   = DATA.length - 1;
+  updateSubtitle();
+  drawChart();
+});
 
 // ── Responsive ────────────────────────────────────────────────────────
 var resizeTimer;
