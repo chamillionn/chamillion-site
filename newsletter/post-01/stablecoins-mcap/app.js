@@ -373,7 +373,7 @@ function updateSubtitle() {
   var from = formatDate(DATA[viewStart].date);
   var to   = formatDate(DATA[viewEnd].date);
   var isZoomed = viewStart !== 0 || viewEnd !== DATA.length - 1;
-  sub.textContent = 'Capitalización de mercado total · ' + from + ' — ' + to;
+  sub.textContent = 'Stablecoins — Capitalización de mercado total · ' + from + ' — ' + to;
   if (isZoomed) {
     zoomResetBtn.removeAttribute('hidden');
   } else {
