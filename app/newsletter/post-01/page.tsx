@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import styles from "./page.module.css";
+import styles from "../post.module.css";
 
 export const metadata: Metadata = {
   title: "Navegar las finanzas modernas: El augurio de una odisea — Chamillion",
@@ -13,14 +13,16 @@ export default function Post01() {
     <>
       {/* BANNER */}
       <div className={styles.bannerSection}>
-        <Image
-          className={styles.bannerImg}
-          src="/assets/newsletter/banner-post-01.jpg"
-          alt="Chamillion — The Daily"
-          width={1568}
-          height={700}
-          priority
-        />
+        <div className={styles.bannerWrapper}>
+          <Image
+            className={styles.bannerImg}
+            src="/assets/newsletter/banner-post-01.jpeg"
+            alt="Chamillion — The Daily"
+            width={1568}
+            height={700}
+            priority
+          />
+        </div>
       </div>
 
       {/* ARTICLE */}
@@ -62,6 +64,7 @@ export default function Post01() {
             href="https://financialcrimeacademy.org/fines-for-market-manipulation/"
             target="_blank"
             rel="noopener noreferrer"
+            data-domain="financialcrimeacademy.org"
           >
             tiene y usa información privilegiada constantemente
           </a>
@@ -80,6 +83,7 @@ export default function Post01() {
               href="https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=celex%3A32014L0065"
               target="_blank"
               rel="noopener noreferrer"
+              data-domain="eur-lex.europa.eu"
             >
               MiFID II
             </a>{" "}
@@ -117,7 +121,7 @@ export default function Post01() {
         {/* Embed: Stablecoins chart */}
         <iframe
           src="/widgets/post-01/stablecoins-mcap/index.html"
-          height={500}
+          height={420}
           loading="lazy"
           className={styles.iframe}
           title="Capitalización de mercado de Stablecoins — DefiLlama API"
@@ -146,7 +150,6 @@ export default function Post01() {
             <span className={styles.planLabel}>El seguimiento:</span>
             <span className={styles.planDesc}>
               Cada semana, una actualización con el estado de cada posición,
-              <br />
               las decisiones tomadas y los números al detalle.
             </span>
           </div>
@@ -154,7 +157,6 @@ export default function Post01() {
             <span className={styles.planLabel}>El contexto:</span>
             <span className={styles.planDesc}>
               Artículos complementarios extensos explicando las plataformas,
-              <br />
               los mercados y las estrategias desde los fundamentos.
             </span>
           </div>
@@ -203,15 +205,17 @@ export default function Post01() {
         <hr className={styles.divider} />
 
         {/* DÓNDE SEGUIR EL TRAYECTO */}
-        <h1>Dónde seguir el trayecto</h1>
+        <h2>Dónde seguir el trayecto</h2>
         <p>Esta Newsletter constará de dos secciones:</p>
 
         <div className={styles.sectionsGrid}>
           <div className={styles.sectionItem}>
-            <img
+            <Image
               className={styles.sectionIcon}
               src="/assets/newsletter/icon-cartera.jpg"
               alt="Posiciones"
+              width={40}
+              height={40}
             />
             <div className={styles.sectionContent}>
               <h3>Reporte de la Cartera</h3>
@@ -222,10 +226,12 @@ export default function Post01() {
             </div>
           </div>
           <div className={styles.sectionItem}>
-            <img
+            <Image
               className={styles.sectionIcon}
               src="/assets/newsletter/icon-punto-de-mira.jpg"
               alt="Estrategias"
+              width={40}
+              height={40}
             />
             <div className={styles.sectionContent}>
               <h3>Punto de Mira</h3>
@@ -248,6 +254,7 @@ export default function Post01() {
               href="https://chamillion.site"
               target="_blank"
               rel="noopener noreferrer"
+              data-domain="chamillion.site"
             >
               chamillion.site
             </a>
@@ -276,34 +283,31 @@ export default function Post01() {
           </ul>
         </div>
 
-        <div className={styles.socialLink}>
-          <p>
-            Por último, el día a día y mi lado más personal en{" "}
-            <a
-              href="https://x.com/chamillionnnnn"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              @chamillionnnnn en X
-            </a>
-          </p>
-        </div>
+        <a
+          className={styles.socialLink}
+          href="https://x.com/chamillionnnnn"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg className={styles.socialLinkIcon} viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
+          <span className={styles.socialLinkText}>
+            El día a día y mi lado más personal en <strong>@chamillionnnnn</strong>
+          </span>
+          <span className={styles.socialLinkArrow}>→</span>
+        </a>
 
         <hr className={styles.dividerHeavy} />
 
-        {/* HERO IMAGE PLACEHOLDER */}
-        <div className={styles.heroImageSection}>
-          <div className={styles.heroPlaceholder}>
-            <div className={styles.heroGradientOverlay} />
-            <div className={styles.heroContent}>
-              <div className={styles.heroEmoji}>&#x1f98e;</div>
-              <p className={styles.heroLabel}>Wanderer above the Sea of Fog</p>
-              <p className={styles.heroCaption}>
-                Imagen generada con IA — Freepik Flux 1.1
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* HERO IMAGE */}
+        <Image
+          className={styles.heroImg}
+          src="/assets/newsletter/wanderer-post-01.png"
+          alt="Wanderer above the Sea of Fog — Camaleón"
+          width={1920}
+          height={1080}
+        />
 
         <div className={styles.closingText}>
           <p>

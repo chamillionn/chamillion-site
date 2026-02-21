@@ -34,7 +34,7 @@ Los widgets en `public/widgets/` cargan sus propias fuentes via Google Fonts `<l
 
 | Rol | Color | Uso |
 |---|---|---|
-| **Fondo** | `#171717` | Body background |
+| **Fondo** | `#0d0d0d` | Body background |
 | **Texto principal** | `#e8e6e1` | Cifras grandes, cuerpo |
 | **Texto soft** | `#c8c6c1` | Énfasis suave (em, destacados) |
 | **Texto muted** | `#8a8a8e` | Titulares, subtítulos |
@@ -100,7 +100,7 @@ Los widgets mantienen su propio CSS independiente con variables de tema:
 
 ```css
 :root {
-  --bg: #171717;
+  --bg: #0d0d0d;
   --text: #e8e6e1;
 }
 

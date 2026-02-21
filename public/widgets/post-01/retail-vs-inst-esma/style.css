@@ -33,6 +33,7 @@
   [data-theme="light"] .currency            { color: #a89080; }
 
   /* ── Toggle bar ── */
+  html.embedded .toggle-bar { display: none; }
   .toggle-bar {
     position: fixed;
     top: 1rem;

@@ -6,7 +6,7 @@ import styles from "./page.module.css";
 export const metadata: Metadata = {
   title: "Newsletter — Chamillion",
   description:
-    "Un viaje con dinero real por los mercados DeFi. Todas las publicaciones.",
+    "Un viaje con dinero real por la vanguardia de los mercados financieros. Documentado, y verificable.",
 };
 
 const posts = [
@@ -16,7 +16,7 @@ const posts = [
     subtitle:
       "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
     date: "2026-02-21",
-    banner: "/assets/newsletter/banner-post-01.jpg",
+    banner: "/assets/newsletter/wanderer-post-01.png",
   },
 ];
 
@@ -33,8 +33,8 @@ export default function NewsletterIndex() {
     <div className={styles.page}>
       <h1 className={styles.heading}>Newsletter</h1>
       <p className={styles.intro}>
-        Un viaje con dinero real por los mercados DeFi. Todo documentado, todo
-        verificable.
+        Un viaje con dinero real por la vanguardia de los mercados financieros.
+        Documentado, y verificable.
       </p>
 
       <div className={styles.grid}>

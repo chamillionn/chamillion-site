@@ -29,6 +29,11 @@ export default function ChameleonEye() {
         const highlight = svg.querySelector("#path5055") as SVGEllipseElement;
         if (!pupil || !highlight) return;
 
+        // Scale up pupil and highlight
+        pupil.setAttribute("r", "150");
+        highlight.setAttribute("rx", "50");
+        highlight.setAttribute("ry", "36");
+
         const SVG_W = 3546.9966;
         const SVG_H = 4096;
         // Eye center in g#g58 local coords
@@ -40,7 +45,7 @@ export default function ChameleonEye() {
         // g#g58 translate offset (viewBox → g58 local)
         const g58tx = 569.32549;
         const g58ty = 28.033902;
-        const maxR = 70;
+        const maxR = 160;
 
         let targetX = eyeCx;
         let targetY = eyeCy;
@@ -62,19 +67,19 @@ export default function ChameleonEye() {
         let jitterGoalX = 0;
         let jitterGoalY = 0;
         let nextJitter = performance.now() + 500 + Math.random() * 1500;
-        const jitterR = 20; // subtle offset range
+        const jitterR = 28; // micro-tremor range
 
-        // Idle saccades — only when no mouse input
+        // Idle saccades — chameleons scan constantly
         let idleGoalX = eyeCx;
         let idleGoalY = eyeCy;
-        let nextSaccade = performance.now() + 800 + Math.random() * 2000;
+        let nextSaccade = performance.now() + 300 + Math.random() * 800;
 
         function pickNewGaze() {
           const angle = Math.random() * Math.PI * 2;
-          const dist = (Math.random() * 0.6 + 0.2) * maxR;
+          const dist = (Math.random() * 0.3 + 0.65) * maxR;
           idleGoalX = eyeCx + Math.cos(angle) * dist;
           idleGoalY = eyeCy + Math.sin(angle) * dist;
-          nextSaccade = performance.now() + 1000 + Math.random() * 3000;
+          nextSaccade = performance.now() + 250 + Math.random() * 1000;
         }
 
         function updateJitter() {
@@ -84,10 +89,10 @@ export default function ChameleonEye() {
             const d = Math.random() * jitterR;
             jitterGoalX = Math.cos(a) * d;
             jitterGoalY = Math.sin(a) * d;
-            nextJitter = now + 300 + Math.random() * 1200;
+            nextJitter = now + 150 + Math.random() * 600;
           }
-          jitterX += (jitterGoalX - jitterX) * 0.08;
-          jitterY += (jitterGoalY - jitterY) * 0.08;
+          jitterX += (jitterGoalX - jitterX) * 0.06;
+          jitterY += (jitterGoalY - jitterY) * 0.06;
         }
 
         function animate() {
@@ -106,9 +111,9 @@ export default function ChameleonEye() {
           if (hasInput) {
             lerp = 0.15;
           } else if (distToTarget > 5) {
-            lerp = 0.18;
+            lerp = 0.12;
           } else {
-            lerp = 0.03;
+            lerp = 0.04;
           }
           currentX += (targetX - currentX) * lerp;
           currentY += (targetY - currentY) * lerp;

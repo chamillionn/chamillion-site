@@ -246,7 +246,7 @@ body {
 }
 
 .nav-card:hover .nav-card-links {
-  max-height: 120px;
+  max-height: 160px;
   opacity: 1;
   margin-top: 12px;
 }
@@ -281,6 +281,16 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.nav-card-link-hint {
+  font-size: 0.72rem;
+  color: #555;
+  margin-left: 4px;
+}
+
+.nav-card-link:hover .nav-card-link-hint {
+  color: #888;
 }
 
 .nav-card-link-arrow {
@@ -349,9 +359,19 @@ body {
   }
 
   .nav-card-links {
-    max-height: 120px;
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+  }
+
+  .nav-card--active .nav-card-links {
+    max-height: 160px;
     opacity: 1;
     margin-top: 12px;
+  }
+
+  .nav-card--active {
+    border-color: var(--accent);
   }
 
   .nav-contact {

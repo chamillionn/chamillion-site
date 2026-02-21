@@ -8,7 +8,7 @@ export default function NewsletterLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${styles.wrapper} page-transition`}>
+    <div className={styles.wrapper}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link className={styles.headerLogo} href="/">

@@ -157,6 +157,7 @@ h1 {
 }
 
 /* ── Toggle bar ── */
+html.embedded .toggle-bar { display: none; }
 .toggle-bar {
   position: fixed; top: 1rem; right: 1rem;
   display: flex; gap: 0.4rem; z-index: 200;
