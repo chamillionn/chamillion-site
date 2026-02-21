@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Mercado de Patatas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="toggle-bar">
+    <button id="theme-toggle" aria-label="Cambiar tema"></button>
+  </div>
+  <div id="ctx-menu" class="ctx-menu" hidden>
+    <button id="ctx-capture">Modo captura</button>
+  </div>
+
+  <div class="container">
+    <p class="subtitle">La gente quiere comprar y vender patatas. Haz clic en un precio para rellenar el formulario.</p>
+
+    <div class="main-layout">
+      <!-- Orderbook -->
+      <div class="orderbook-container">
+        <!-- Asks (sellers) — best ask at the bottom, closest to bids -->
+        <div class="asks-section">
+          <div class="book-section-label" data-tooltip="Estas personas han puesto una <strong class='th'>orden de venta</strong>: están dispuestas a vender patatas si alguien llega y paga su precio.">Venden patatas</div>
+          <div class="book-header">
+            <div data-tooltip="El <strong class='th'>precio límite</strong>: el mínimo al que este vendedor acepta vender. No venderá por menos.">Precio</div>
+            <div class="right" data-tooltip="Los <strong class='th'>kilos disponibles</strong> a ese precio exacto. Si compras más, tendrás que pagar el siguiente precio.">Kilos</div>
+            <div class="right" data-tooltip="El <strong class='th'>total acumulado</strong>: suma de estos kilos más todos los de precios inferiores. Cuánto hay disponible hasta aquí.">Total</div>
+          </div>
+          <div id="asks-body"></div>
+        </div>
+
+        <!-- Spread indicator -->
+        <div class="spread-indicator" id="spread-indicator"
+          data-tooltip="El <strong class='th'>spread</strong> es la diferencia entre el precio más bajo al que alguien vende y el más alto al que alguien compra. Cuanto menor, más eficiente es el mercado.">
+          <span>↕ Spread</span>
+          <span class="spread-value" id="spread-value">—</span>
+          <span class="spread-pct" id="spread-pct"></span>
+        </div>
+
+        <!-- Bids (buyers) — best bid at top -->
+        <div class="bids-section">
+          <div class="book-section-label" data-tooltip="Estas personas han puesto una <strong class='th'>orden de compra</strong>: esperan que alguien venda patatas al precio que ofrecen.">Compran patatas</div>
+          <div class="book-header">
+            <div data-tooltip="El <strong class='th'>precio límite</strong>: el máximo que este comprador pagará. No pagará más.">Precio</div>
+            <div class="right" data-tooltip="Los <strong class='th'>kilos que quiere comprar</strong> a ese precio.">Kilos</div>
+            <div class="right" data-tooltip="El <strong class='th'>total acumulado</strong> desde el mejor precio de compra hasta aquí. Refleja la demanda total disponible.">Total</div>
+          </div>
+          <div id="bids-body"></div>
+        </div>
+      </div>
+
+      <!-- Order form -->
+      <div class="form-container">
+        <div class="order-form">
+          <div class="form-title" data-tooltip="Aquí colocas tu propia <strong class='th'>orden límite</strong>: fijas precio y cantidad. Si hay contrapartida, se ejecuta al instante; si no, queda esperando en el libro.">¿Qué quieres hacer?</div>
+          <div class="side-toggle">
+            <button id="btn-buy" class="active-buy" onclick="setSide('buy')" data-tooltip="Colocarás una <strong class='th'>orden de compra</strong>. Si tu precio iguala o supera el precio de venta más bajo, la operación se ejecuta de inmediato.">Comprar</button>
+            <button id="btn-sell" onclick="setSide('sell')" data-tooltip="Colocarás una <strong class='th'>orden de venta</strong>. Si tu precio iguala o baja al precio de compra más alto, encontrarás comprador al instante.">Vender</button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label data-tooltip="El precio al que quieres operar. Si cruza el libro, la orden se ejecuta sola. Si no, queda en el libro como <strong class='th'>orden límite</strong>.">Precio/kg</label>
+              <input id="input-price" type="number" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label data-tooltip="Los <strong class='th'>kilos</strong> que quieres comprar o vender. Una orden puede ejecutarse contra varias filas del libro si hay cantidad suficiente.">Kilos</label>
+              <input id="input-qty" type="number" step="0.1" min="0.1" value="1">
+            </div>
+          </div>
+          <div id="order-preview" class="order-preview"></div>
+          <button class="submit-btn buy" id="submit-btn" onclick="placeOrder()" data-tooltip="Al pulsar, tu orden de <strong class='th'>compra</strong> entra al mercado. Si hay alguien vendiendo a tu precio o menos, se ejecuta al instante.">Comprar Patatas</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tooltip educativo -->
+  <div class="tooltip-box" id="tooltip-box" role="tooltip" aria-live="polite"></div>
+
+  <!-- Trade notification overlay -->
+  <div class="toast-overlay" id="toast-overlay">
+    <div class="toast-box">
+      <div class="toast-icon" id="toast-icon"></div>
+      <div class="toast-title" id="toast-title"></div>
+      <div class="toast-body" id="toast-body"></div>
+      <div class="toast-resting" id="toast-resting"></div>
+      <button class="toast-dismiss" onclick="dismissToast()">Entendido</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

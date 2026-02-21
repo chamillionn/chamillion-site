@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESMA Data Visual</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="toggle-bar">
+    <button id="theme-toggle" aria-label="Cambiar tema"></button>
+  </div>
+  <div id="ctx-menu" class="ctx-menu" hidden>
+    <button id="ctx-capture">Modo captura</button>
+  </div>
+  <div class="container">
+
+    <p class="headline">
+      <em>€10.000</em> invertidos durante 10 años en fondos europeos.<br>
+      Mismos mercados. Misma estrategia. Distinto resultado.
+    </p>
+
+    <div class="comparison">
+      <div class="investor-col retail">
+        <img class="chameleon-img" src="retail.png" alt="">
+        <div class="label">Tú</div>
+        <div class="amount"><span class="currency">€</span>15.146</div>
+        <div class="nominal-tag">valor nominal neto</div>
+        <div class="erosion">
+          <div class="fee-block">
+            <div class="fee-heading">Comisiones totales</div>
+            <div class="fee-big">−€1.871</div>
+            <div class="fee-track"><div class="fee-fill" style="width:26.7%"></div></div>
+            <div class="fee-context">26,7% de la ganancia bruta</div>
+          </div>
+          <div class="inflation-line">
+            <span class="inflation-label">Inflación</span>
+            <span class="inflation-value">−€3.224</span>
+          </div>
+        </div>
+        <div class="real-result">
+          <div class="real-label">Valor real</div>
+          <div class="real-amount"><span class="currency">€</span>11.923</div>
+        </div>
+      </div>
+
+      <div class="divider-v"></div>
+
+      <div class="investor-col institutional">
+        <img class="chameleon-img" src="institutional.png" alt="">
+        <div class="label">Inversor institucional</div>
+        <div class="amount"><span class="currency">€</span>16.200</div>
+        <div class="nominal-tag">valor nominal neto</div>
+        <div class="erosion">
+          <div class="fee-block">
+            <div class="fee-heading">Comisiones totales</div>
+            <div class="fee-big">−€950</div>
+            <div class="fee-track"><div class="fee-fill" style="width:13.3%"></div></div>
+            <div class="fee-context">13,3% de la ganancia bruta</div>
+          </div>
+          <div class="inflation-line">
+            <span class="inflation-label">Inflación</span>
+            <span class="inflation-value">−€3.224</span>
+          </div>
+        </div>
+        <div class="real-result">
+          <div class="real-label">Valor real</div>
+          <div class="real-amount"><span class="currency">€</span>12.976</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="context-bar">
+      <div class="context-left">
+        <p class="punchline">El inversor particular paga <strong>el doble en comisiones</strong> que el institucional. Por el mismo producto.</p>
+        <p class="source">
+          Fuente: ESMA Market Report — Costs & Performance of EU Retail Investment Products, enero 2025<span class="download-line"><br>
+          <a href="https://www.esma.europa.eu/sites/default/files/2025-01/ESMA50-524821-3525_ESMA_Market_Report_-_Costs_and_Performance_of_EU_Retail_Investment_Products.pdf" target="_blank">Descargar informe completo (PDF)</a></span>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
