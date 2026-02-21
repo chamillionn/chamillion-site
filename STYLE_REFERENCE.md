@@ -1,26 +1,36 @@
 # Style Reference
 
-Guía de estilo para los componentes interactivos de la newsletter.
+Guía de estilo para chamillion.site — proyecto Next.js (App Router).
 
 ---
 
 ## Fuentes
 
-| Uso | Familia | Import |
+Las fuentes se cargan via `next/font/google` en `app/layout.tsx` y se exponen como CSS variables.
+
+| Uso | Familia | CSS Variable |
 |---|---|---|
-| Datos, cifras, monospace | `'DM Mono', monospace` | [Google Fonts](https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500) |
-| Titulares editoriales | `'Instrument Serif', serif` | [Google Fonts](https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1) |
+| Datos, cifras, monospace | `'DM Mono', monospace` | `--font-dm-mono` |
+| Titulares editoriales (landing) | `'DM Serif Display', serif` | `--font-dm-serif` |
 | UI (botones, labels) | `system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif` | Nativa |
 
-```css
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap');
-```
+Los widgets en `public/widgets/` cargan sus propias fuentes via Google Fonts `<link>` (son HTML estático independiente).
 
 ---
 
 ## Paleta de colores
 
-### Dark mode (por defecto)
+### Landing (`app/page.tsx`)
+
+| Rol | Color |
+|---|---|
+| **Fondo** | `#0f0f0f` |
+| **Texto** | `#e8e6e1` |
+| **Acento azul** | `#6b8cae` |
+| **Texto soft** | `#999` / `#666` |
+| **Status** | `#333` |
+
+### Widgets — Dark mode (por defecto)
 
 | Rol | Color | Uso |
 |---|---|---|
@@ -36,7 +46,7 @@ Guía de estilo para los componentes interactivos de la newsletter.
 | **Acento azul** | `#6b9ebb` | Datos institucionales, links hover |
 | **Azul oscuro** | `#4a8aaa` | Variante secundaria de azul |
 
-### Light mode
+### Widgets — Light mode
 
 | Rol | Color | Uso |
 |---|---|---|
@@ -59,6 +69,7 @@ Guía de estilo para los componentes interactivos de la newsletter.
 | Tamaño | Uso |
 |---|---|
 | `4.5rem` | Cifras hero (cantidades principales) |
+| `2.8rem` | Logo landing |
 | `2.2rem` | Cifras secundarias (comisiones) |
 | `1.9rem` | Headline modo captura |
 | `1.35rem` | Headline normal |
@@ -73,24 +84,19 @@ Guía de estilo para los componentes interactivos de la newsletter.
 
 ## Convenciones CSS
 
-### Estructura base
+### App (Next.js)
+
+Los estilos globales están en `app/globals.css`. Las páginas internas usan CSS Modules (`.module.css`).
 
 ```css
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 2rem;
-}
+/* Font variables from next/font */
+font-family: var(--font-dm-mono), monospace;
+font-family: var(--font-dm-serif), serif;
 ```
 
-### Variables de tema
+### Widgets (public/widgets/)
+
+Los widgets mantienen su propio CSS independiente con variables de tema:
 
 ```css
 :root {
@@ -115,17 +121,10 @@ body {
 }
 ```
 
-### Bordes y separadores
-
-```css
-border: 1px solid #2a2a2e;                    /* dark */
-border: 1px solid #d4c4b0;                    /* light */
-```
-
-### Toggle dark/light
+### Toggle dark/light (widgets)
 
 Toggle fijo en esquina superior derecha, icono SVG (sol/luna), 30×30px, `border-radius: 8px`.
 
-### Modo captura
+### Modo captura (widgets)
 
 Clase `html.capture` para screenshots — oculta UI no esencial, ajusta tamaños para exportación a imagen (Substack, 728px de ancho).

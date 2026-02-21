@@ -1,0 +1,59 @@
+.page {
+  min-height: 100vh;
+  padding: 3rem 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.backLink {
+  display: inline-block;
+  font-size: 0.72rem;
+  color: #6b8cae;
+  text-decoration: none;
+  margin-bottom: 2rem;
+  transition: color 0.2s;
+}
+.backLink:hover {
+  color: #7d9dbe;
+}
+
+.title {
+  font-family: var(--font-dm-serif), serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #e8e6e1;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: 0.72rem;
+  color: #8a8a8e;
+  line-height: 1.7;
+  margin-bottom: 3rem;
+}
+
+.widget {
+  margin-bottom: 3rem;
+}
+
+.widgetTitle {
+  font-family: var(--font-dm-serif), serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #e8e6e1;
+  margin-bottom: 0.4rem;
+}
+
+.widgetDesc {
+  font-size: 0.68rem;
+  color: #8a8a8e;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.iframe {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  background: #191919;
+}
