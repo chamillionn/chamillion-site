@@ -2,7 +2,7 @@
 
   /* ── Theme variables ── */
   :root {
-    --bg: #191919;
+    --bg: #0d0d0d;
     --text: #e8e6e1;
   }
 
@@ -89,15 +89,17 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html, body {
+    overflow: hidden;
+  }
+
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Mono', monospace;
     display: flex;
-    align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    padding: 2rem;
+    padding: 1rem;
   }
 
   .container {
@@ -111,7 +113,7 @@
     font-weight: 400;
     color: #8a8a8e;
     letter-spacing: -0.01em;
-    margin-bottom: 3.5rem;
+    margin-bottom: 2rem;
     line-height: 1.4;
     max-width: 600px;
   }
@@ -124,7 +126,7 @@
   .comparison {
     display: flex;
     gap: 1rem;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
     align-items: flex-end;
   }
 
@@ -150,12 +152,12 @@
   }
 
   .retail .amount {
-    font-size: 4.5rem;
+    font-size: 3rem;
     color: #e8e6e1;
   }
 
   .institutional .amount {
-    font-size: 4.5rem;
+    font-size: 3rem;
     color: #6b9ebb;
   }
 
@@ -210,8 +212,8 @@
 
 
   .chameleon-img {
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
     margin-bottom: 0.75rem;
     opacity: 0.85;
@@ -223,12 +225,12 @@
     width: 1px;
     background: #2a2a2e;
     align-self: stretch;
-    margin: 0 1.5rem;
+    margin: 0 0.75rem;
   }
 
   .context-bar {
     border-top: 1px solid #2a2a2e;
-    padding-top: 2rem;
+    padding-top: 1rem;
   }
 
   .punchline {
@@ -270,7 +272,7 @@
 
   @media (max-width: 600px) {
     body {
-      padding: 1rem;
+      padding: 0.75rem;
     }
     .retail .amount, .institutional .amount {
       font-size: 2.2rem;
@@ -282,14 +284,14 @@
       gap: 0.5rem;
     }
     .divider-v {
-      margin: 0 0.75rem;
+      margin: 0 0.5rem;
     }
     .context-bar {
       flex-direction: column;
     }
     .chameleon-img {
-      width: 80px;
-      height: 80px;
+      width: 60px;
+      height: 60px;
     }
     .investor-col:hover {
       transform: translateY(-1px);

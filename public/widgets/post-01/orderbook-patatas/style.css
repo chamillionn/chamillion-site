@@ -1,6 +1,6 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-:root { --bg: #191919; --text: #c8c6c1; }
+:root { --bg: #0d0d0d; --text: #c8c6c1; }
 [data-theme="light"] { --bg: #f4e9da; --text: #3d2b22; }
 
 body {

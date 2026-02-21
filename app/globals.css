@@ -49,10 +49,7 @@ body {
 
 .face-bg {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   z-index: -1;
   opacity: 0.2;
   pointer-events: none;
@@ -83,7 +80,7 @@ body {
 }
 
 .tagline {
-  font-size: 1rem;
+  font-size: 1.6rem;
   color: var(--accent);
   line-height: 1.7;
   transition: color 0.6s;
@@ -101,8 +98,13 @@ body {
 }
 
 .typewriter-cursor--done {
-  animation: blink 0.7s step-end infinite 1s;
-  animation-fill-mode: forwards;
+  animation: cursorFade 1s ease-out forwards;
+}
+
+@keyframes cursorFade {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 0; }
 }
 
 @keyframes blink {
@@ -130,15 +132,15 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 24px 28px;
+  gap: 10px;
+  padding: 28px 32px;
   border: 1px solid #2a2a2a;
-  border-radius: 10px;
+  border-radius: 12px;
   text-decoration: none;
   background: rgba(15, 15, 15, 0.85);
   backdrop-filter: blur(12px);
   transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
-  min-width: 340px;
+  min-width: 380px;
   overflow: hidden;
 }
 
@@ -182,6 +184,25 @@ body {
   display: none;
 }
 
+.nav-card-icon {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 32px;
+  height: 32px;
+  color: var(--accent);
+  opacity: 0.25;
+  transition: opacity 0.3s, color 0.6s;
+}
+
+.nav-card:hover .nav-card-icon {
+  opacity: 0.5;
+}
+
+.nav-card--disabled .nav-card-icon {
+  color: #555;
+}
+
 .nav-card-header {
   display: flex;
   align-items: center;
@@ -189,7 +210,7 @@ body {
 }
 
 .nav-card-title {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 500;
   color: #e8e6e1;
   letter-spacing: 0.02em;
@@ -206,7 +227,7 @@ body {
 }
 
 .nav-card-desc {
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   color: #888;
   line-height: 1.6;
 }

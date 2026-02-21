@@ -11,39 +11,36 @@ export default function ChameleonEye() {
 
     let cleanup: (() => void) | undefined;
 
-    fetch("/assets/face-vectorizable.svg")
+    fetch("/assets/face-vector.svg")
       .then((r) => r.text())
       .then((svgText) => {
         container.innerHTML = svgText;
         const svg = container.querySelector("svg");
         if (!svg) return;
 
-        svg.setAttribute("viewBox", "0 0 2048 2048");
-        svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
+        svg.setAttribute("preserveAspectRatio", "xMaxYMax meet");
         svg.removeAttribute("width");
         svg.removeAttribute("height");
         svg.style.width = "100%";
         svg.style.height = "100%";
 
-        const ns = "http://www.w3.org/2000/svg";
+        // Find existing eye elements in the SVG
+        const pupil = svg.querySelector("#path4481") as SVGCircleElement;
+        const highlight = svg.querySelector("#path5055") as SVGEllipseElement;
+        if (!pupil || !highlight) return;
 
-        const pupil = document.createElementNS(ns, "circle");
-        pupil.setAttribute("cx", "1092");
-        pupil.setAttribute("cy", "798");
-        pupil.setAttribute("r", "60");
-        pupil.setAttribute("fill", "#111");
-        svg.appendChild(pupil);
-
-        const highlight = document.createElementNS(ns, "circle");
-        highlight.setAttribute("cx", "1052");
-        highlight.setAttribute("cy", "758");
-        highlight.setAttribute("r", "20");
-        highlight.setAttribute("fill", "rgba(255,255,255,0.25)");
-        svg.appendChild(highlight);
-
-        const eyeCx = 1092;
-        const eyeCy = 798;
-        const maxR = 60;
+        const SVG_W = 3546.9966;
+        const SVG_H = 4096;
+        // Eye center in g#g58 local coords
+        const eyeCx = 1987.8372;
+        const eyeCy = 1730.8035;
+        // Highlight offset from pupil center
+        const hlDx = 1986.0936 - 1987.8372; // -1.74
+        const hlDy = 1668.2083 - 1730.8035; // -62.60
+        // g#g58 translate offset (viewBox → g58 local)
+        const g58tx = 569.32549;
+        const g58ty = 28.033902;
+        const maxR = 70;
 
         let targetX = eyeCx;
         let targetY = eyeCy;
@@ -55,46 +52,81 @@ export default function ChameleonEye() {
         function updateEye(px: number, py: number) {
           pupil.setAttribute("cx", String(px));
           pupil.setAttribute("cy", String(py));
-          highlight.setAttribute("cx", String(px - 40));
-          highlight.setAttribute("cy", String(py - 40));
+          highlight.setAttribute("cx", String(px + hlDx));
+          highlight.setAttribute("cy", String(py + hlDy));
         }
 
-        // Idle drift — layered sine waves for varied, organic motion
-        let t = Math.random() * 100;
+        // Organic jitter — always active, adds life even while tracking mouse
+        let jitterX = 0;
+        let jitterY = 0;
+        let jitterGoalX = 0;
+        let jitterGoalY = 0;
+        let nextJitter = performance.now() + 500 + Math.random() * 1500;
+        const jitterR = 20; // subtle offset range
 
-        function idleDrift() {
-          t += 0.012;
-          targetX =
-            eyeCx +
-            Math.sin(t) * 28 +
-            Math.sin(t * 2.3 + 1.2) * 15 +
-            Math.sin(t * 5.1 + 3.7) * 5;
-          targetY =
-            eyeCy +
-            Math.sin(t * 0.8 + 2.0) * 22 +
-            Math.sin(t * 1.9 + 0.5) * 12 +
-            Math.cos(t * 4.3 + 1.1) * 4;
+        // Idle saccades — only when no mouse input
+        let idleGoalX = eyeCx;
+        let idleGoalY = eyeCy;
+        let nextSaccade = performance.now() + 800 + Math.random() * 2000;
+
+        function pickNewGaze() {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = (Math.random() * 0.6 + 0.2) * maxR;
+          idleGoalX = eyeCx + Math.cos(angle) * dist;
+          idleGoalY = eyeCy + Math.sin(angle) * dist;
+          nextSaccade = performance.now() + 1000 + Math.random() * 3000;
+        }
+
+        function updateJitter() {
+          const now = performance.now();
+          if (now >= nextJitter) {
+            const a = Math.random() * Math.PI * 2;
+            const d = Math.random() * jitterR;
+            jitterGoalX = Math.cos(a) * d;
+            jitterGoalY = Math.sin(a) * d;
+            nextJitter = now + 300 + Math.random() * 1200;
+          }
+          jitterX += (jitterGoalX - jitterX) * 0.08;
+          jitterY += (jitterGoalY - jitterY) * 0.08;
         }
 
         function animate() {
+          updateJitter();
+
           if (!hasInput) {
-            idleDrift();
+            if (performance.now() >= nextSaccade) pickNewGaze();
+            targetX = idleGoalX;
+            targetY = idleGoalY;
           }
 
-          const lerp = hasInput ? 0.15 : 0.07;
+          const distToTarget = Math.sqrt(
+            (targetX - currentX) ** 2 + (targetY - currentY) ** 2
+          );
+          let lerp: number;
+          if (hasInput) {
+            lerp = 0.15;
+          } else if (distToTarget > 5) {
+            lerp = 0.18;
+          } else {
+            lerp = 0.03;
+          }
           currentX += (targetX - currentX) * lerp;
           currentY += (targetY - currentY) * lerp;
 
-          const dx = currentX - eyeCx;
-          const dy = currentY - eyeCy;
+          // Apply jitter on top
+          let finalX = currentX + jitterX;
+          let finalY = currentY + jitterY;
+
+          const dx = finalX - eyeCx;
+          const dy = finalY - eyeCy;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist > maxR) {
             const c = maxR / dist;
-            currentX = eyeCx + dx * c;
-            currentY = eyeCy + dy * c;
+            finalX = eyeCx + dx * c;
+            finalY = eyeCy + dy * c;
           }
 
-          updateEye(currentX, currentY);
+          updateEye(finalX, finalY);
           animFrameId = requestAnimationFrame(animate);
         }
 
@@ -102,11 +134,13 @@ export default function ChameleonEye() {
 
         function screenToSvg(clientX: number, clientY: number) {
           const rect = svg!.getBoundingClientRect();
-          const scale = Math.min(2048 / rect.width, 2048 / rect.height);
-          const ox = (2048 - rect.width * scale) / 2;
-          const oy = (2048 - rect.height * scale) / 2;
-          const mx = (clientX - rect.left) * scale + ox;
-          const my = (clientY - rect.top) * scale + oy;
+          const scale = Math.min(SVG_W / rect.width, SVG_H / rect.height);
+          // xMax: SVG aligned right; yMax: SVG aligned bottom
+          const ox = SVG_W - rect.width * scale;
+          const oy = SVG_H - rect.height * scale;
+          // Convert to viewBox coords, then to g#g58 local coords
+          const mx = (clientX - rect.left) * scale + ox + g58tx;
+          const my = (clientY - rect.top) * scale + oy + g58ty;
           const dx = mx - eyeCx;
           const dy = my - eyeCy;
           const d = Math.sqrt(dx * dx + dy * dy);

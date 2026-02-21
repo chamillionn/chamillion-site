@@ -4,7 +4,7 @@
 
 /* ── Theme variables ── */
 :root {
-  --bg: #191919;
+  --bg: #0d0d0d;
   --text: #e8e6e1;
   --subtext: #8a8a8e;
   --border: #2a2a2e;
@@ -40,8 +40,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: 100vh;
-  padding: 28px 16px 40px;
+  padding: 20px 16px 12px;
   transition: background 0.2s, color 0.2s;
 }
 

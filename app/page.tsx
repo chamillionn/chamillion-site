@@ -20,7 +20,7 @@ function Typewriter({ text }: { text: string }) {
 
   useEffect(() => {
     if (done) return;
-    const delay = Math.random() * 40 + 30; // 30-70ms per char
+    const delay = Math.random() * 25 + 15; // 15-40ms per char
     const id = setTimeout(() => setCount((c) => c + 1), delay);
     return () => clearTimeout(id);
   }, [count, done, text.length]);
@@ -130,6 +130,10 @@ export default function Home() {
               onMouseMove={handleCardMouse}
               onMouseLeave={() => setAccent("default")}
             >
+              <svg className="nav-card-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <rect x="4" y="3" width="16" height="18" rx="2" />
+                <path d="M8 7h8M8 11h5M8 15h6" />
+              </svg>
               <span className="nav-card-title">Newsletter</span>
               <span className="nav-card-desc">
                 Artículos, análisis y estrategias DeFi
@@ -170,6 +174,9 @@ export default function Home() {
               onMouseEnter={() => setAccent("hub")}
               onMouseLeave={() => setAccent("default")}
             >
+              <svg className="nav-card-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M4 20V10M9 20V6M14 20v-8M19 20V4" />
+              </svg>
               <div className="nav-card-header">
                 <span className="nav-card-title">Hub</span>
                 <span className="nav-card-badge">próximamente</span>
