@@ -1,0 +1,77 @@
+/* ===== NEWSLETTER LAYOUT ===== */
+.wrapper {
+  font-family: var(--font-source-sans), Georgia, serif;
+  background: #0d0d0d;
+  color: #e8e8e8;
+  line-height: 1.75;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* ===== HEADER ===== */
+.header {
+  padding: 20px 0;
+  border-bottom: 1px solid #2a2a2a;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  background: rgba(13, 13, 13, 0.92);
+}
+
+.headerInner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.headerLogo img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.headerLogo span {
+  font-family: var(--font-playfair), serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #e8e8e8;
+  letter-spacing: 0.5px;
+}
+
+.headerNav {
+  display: flex;
+  gap: 24px;
+}
+
+.headerNav a {
+  color: #a0a0a0;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  transition: color 0.2s;
+}
+
+.headerNav a:hover {
+  color: #e8e8e8;
+}
+
+@media (max-width: 600px) {
+  .headerNav {
+    display: none;
+  }
+}
