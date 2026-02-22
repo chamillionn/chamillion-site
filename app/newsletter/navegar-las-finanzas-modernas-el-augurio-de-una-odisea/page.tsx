@@ -130,7 +130,7 @@ export default function Post01() {
         <div className={styles.highlightBox}>
           <p>
             Voy a explorarlos con 500 € de mi bolsillo, a la vista de todos. Y
-            te voy a contar todo lo que aprenda por el camino.
+            contaré todo lo que aprenda por el camino.
           </p>
         </div>
 
@@ -205,57 +205,88 @@ export default function Post01() {
         <hr className={styles.divider} />
 
         {/* DÓNDE SEGUIR EL TRAYECTO */}
-        <h2>Dónde seguir el trayecto</h2>
-        <p>Esta Newsletter constará de dos secciones:</p>
+        <h1>Dónde seguir el trayecto</h1>
 
-        <div className={styles.sectionsGrid}>
-          <div className={styles.sectionItem}>
-            <Image
-              className={styles.sectionIcon}
-              src="/assets/newsletter/icon-cartera.jpg"
-              alt="Posiciones"
-              width={40}
-              height={40}
-            />
-            <div className={styles.sectionContent}>
-              <h3>Reporte de la Cartera</h3>
-              <p>
-                Actualizaciones con los números al detalle, y el por qué de cada
-                cosa.
-              </p>
-            </div>
-          </div>
-          <div className={styles.sectionItem}>
-            <Image
-              className={styles.sectionIcon}
-              src="/assets/newsletter/icon-punto-de-mira.jpg"
-              alt="Estrategias"
-              width={40}
-              height={40}
-            />
-            <div className={styles.sectionContent}>
-              <h3>Punto de Mira</h3>
-              <p>
-                <em>Deep dives</em> en estrategias, mercados y agujeros donde
-                exprimir ganancias.
-              </p>
-            </div>
+        {/* NEWSLETTER */}
+        <div className={styles.highlightBox}>
+          <a
+            className={styles.headingLink}
+            href="https://chamillion.substack.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <h3>
+              <svg className={styles.headingIcon} viewBox="0 0 448 511.471" fill="currentColor">
+                <path d="M0 0h448v62.804H0V0zm0 229.083h448v282.388L223.954 385.808 0 511.471V229.083zm0-114.542h448v62.804H0v-62.804z"/>
+              </svg>
+              Newsletter
+              <span className={styles.headingArrow}>&rarr;</span>
+            </h3>
+          </a>
+          <p className={styles.highlightIntro}>Constará de dos secciones:</p>
+
+          <div className={styles.sectionsGrid}>
+            <a
+              className={styles.sectionCard}
+              href="https://chamillion.substack.com/s/reporte-de-la-cartera"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Image
+                className={styles.sectionIcon}
+                src="/assets/newsletter/icon-cartera.svg"
+                alt="Reporte de la Cartera"
+                width={80}
+                height={80}
+              />
+              <div className={styles.sectionContent}>
+                <h3>Reporte de la Cartera</h3>
+                <p>
+                  Actualizaciones con los números al detalle, y el por qué de
+                  cada cosa.
+                </p>
+              </div>
+              <span className={styles.sectionArrow}>&rarr;</span>
+            </a>
+            <a
+              className={styles.sectionCard}
+              href="https://chamillion.substack.com/s/punto-de-mira"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Image
+                className={styles.sectionIcon}
+                src="/assets/newsletter/icon-punto-de-mira.svg"
+                alt="Punto de Mira"
+                width={80}
+                height={80}
+              />
+              <div className={styles.sectionContent}>
+                <h3>Punto de Mira</h3>
+                <p>
+                  <em>Deep dives</em> en estrategias, mercados y agujeros
+                  donde exprimir ganancias.
+                </p>
+              </div>
+              <span className={styles.sectionArrow}>&rarr;</span>
+            </a>
           </div>
         </div>
 
         {/* HUB */}
         <div className={styles.hubBox}>
           <h3>
-            <span className={styles.lockIcon}>&#x1f512;</span> Hub
+            <svg className={styles.headingIcon} viewBox="2 2 20 20" fill="currentColor">
+              <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+              <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+              <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+              <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+            </svg>
+            Hub
           </h3>
           <p className={styles.hubIntro}>
-            Si eres suscriptor aquí en Substack tendrás acceso a{" "}
-            <a
-              href="https://chamillion.site"
-              target="_blank"
-              rel="noopener noreferrer"
-              data-domain="chamillion.site"
-            >
+            Si decides indagar más y suscribirte tendrás acceso a{" "}
+            <a href="/hub">
               chamillion.site
             </a>
             , que reúne:
@@ -270,7 +301,7 @@ export default function Post01() {
             </li>
             <li>
               Estado de la <strong>Cartera a tiempo real:</strong> posiciones,
-              estrategias en curso, plataformas y métodos
+              estrategias en curso, plataformas y métodos empleados
             </li>
             <li>
               <strong>Mapa de Conocimientos:</strong> artículos de cada

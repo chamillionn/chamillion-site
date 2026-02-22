@@ -1,0 +1,602 @@
+/* ===== FINANCIAL BACKGROUND — HUB ===== */
+
+.root {
+  --fin-green: #50c878;
+  --fin-red: #c0392b;
+  --fin-line: rgba(80, 200, 120, 0.12);
+  --fin-text: rgba(80, 200, 120, 0.09);
+  --fin-dot: rgba(80, 200, 120, 0.06);
+  --fin-arrow: rgba(80, 200, 120, 0.08);
+  --fin-candle-g: rgba(80, 200, 120, 0.10);
+  --fin-candle-r: rgba(192, 57, 43, 0.09);
+  --fin-area: rgba(80, 200, 120, 0.02);
+  --fin-area-red: rgba(192, 57, 43, 0.015);
+  --fin-gauge-track: rgba(80, 200, 120, 0.04);
+  --fin-gauge-value: rgba(80, 200, 120, 0.14);
+  --fin-spark-bg: rgba(80, 200, 120, 0.025);
+  --fin-spark-line: rgba(80, 200, 120, 0.14);
+  --fin-spark-red: rgba(192, 57, 43, 0.12);
+  --fin-volume: rgba(80, 200, 120, 0.06);
+  --fin-hbar-track: rgba(80, 200, 120, 0.03);
+  --fin-hbar-value: rgba(80, 200, 120, 0.10);
+  --fin-hbar-label: rgba(80, 200, 120, 0.07);
+  --fin-pie-green: rgba(80, 200, 120, 0.12);
+  --fin-pie-green2: rgba(80, 200, 120, 0.08);
+  --fin-pie-green3: rgba(80, 200, 120, 0.05);
+  --fin-pie-red: rgba(192, 57, 43, 0.09);
+  --fin-db-header: rgba(80, 200, 120, 0.06);
+  --fin-db-row: rgba(80, 200, 120, 0.03);
+  --fin-db-text: rgba(80, 200, 120, 0.10);
+  --fin-db-header-text: rgba(80, 200, 120, 0.14);
+  --fin-db-divider: rgba(80, 200, 120, 0.06);
+  --fin-line-red: rgba(192, 57, 43, 0.10);
+}
+
+:global([data-theme="light"]) .root {
+  --fin-green: #3a9a5a;
+  --fin-red: #a52a1a;
+  --fin-line: rgba(58, 154, 90, 0.14);
+  --fin-text: rgba(58, 154, 90, 0.11);
+  --fin-dot: rgba(58, 154, 90, 0.07);
+  --fin-arrow: rgba(58, 154, 90, 0.10);
+  --fin-candle-g: rgba(58, 154, 90, 0.12);
+  --fin-candle-r: rgba(165, 42, 26, 0.10);
+  --fin-area: rgba(58, 154, 90, 0.03);
+  --fin-area-red: rgba(165, 42, 26, 0.02);
+  --fin-gauge-track: rgba(58, 154, 90, 0.05);
+  --fin-gauge-value: rgba(58, 154, 90, 0.17);
+  --fin-spark-bg: rgba(58, 154, 90, 0.035);
+  --fin-spark-line: rgba(58, 154, 90, 0.16);
+  --fin-spark-red: rgba(165, 42, 26, 0.12);
+  --fin-volume: rgba(58, 154, 90, 0.07);
+  --fin-hbar-track: rgba(58, 154, 90, 0.04);
+  --fin-hbar-value: rgba(58, 154, 90, 0.12);
+  --fin-hbar-label: rgba(58, 154, 90, 0.09);
+  --fin-pie-green: rgba(58, 154, 90, 0.14);
+  --fin-pie-green2: rgba(58, 154, 90, 0.09);
+  --fin-pie-green3: rgba(58, 154, 90, 0.06);
+  --fin-pie-red: rgba(165, 42, 26, 0.10);
+  --fin-db-header: rgba(58, 154, 90, 0.07);
+  --fin-db-row: rgba(58, 154, 90, 0.04);
+  --fin-db-text: rgba(58, 154, 90, 0.12);
+  --fin-db-header-text: rgba(58, 154, 90, 0.16);
+  --fin-db-divider: rgba(58, 154, 90, 0.07);
+  --fin-line-red: rgba(165, 42, 26, 0.12);
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== MAIN LINE CHART (kept) ===== */
+
+.lineChart {
+  fill: none;
+  stroke: var(--fin-line);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lineChart1 {
+  composes: lineChart;
+  stroke-width: 2;
+  stroke-dasharray: 2800;
+  stroke-dashoffset: 2800;
+  animation: draw2800 14s ease-out forwards, breathe 10s 14s ease-in-out infinite;
+}
+
+.areaFill {
+  fill: var(--fin-area);
+  opacity: 0;
+  animation: fadeIn 14s ease-out forwards;
+}
+
+/* ===== NEW LINE + AREA CHARTS ===== */
+
+.lineChartA {
+  composes: lineChart;
+  stroke-width: 1.5;
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: draw1200 10s 2s ease-out forwards, breathe 12s 12s ease-in-out infinite;
+}
+
+.areaFillA {
+  fill: var(--fin-area);
+  opacity: 0;
+  animation: fadeIn 10s 2s ease-out forwards, areaBreath 14s 12s ease-in-out infinite;
+}
+
+.lineChartB {
+  composes: lineChart;
+  stroke-width: 1.2;
+  stroke-dasharray: 1100;
+  stroke-dashoffset: 1100;
+  animation: draw1100 9s 4s ease-out forwards, breathe 11s 13s ease-in-out infinite;
+}
+
+.areaFillB {
+  fill: var(--fin-area);
+  opacity: 0;
+  animation: fadeIn 9s 4s ease-out forwards, areaBreath 16s 13s ease-in-out infinite;
+}
+
+.lineChartC {
+  fill: none;
+  stroke: var(--fin-line-red);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw1000 8s 6s ease-out forwards, breathe 13s 14s ease-in-out infinite;
+}
+
+.areaFillC {
+  fill: var(--fin-area-red);
+  opacity: 0;
+  animation: fadeIn 8s 6s ease-out forwards, areaBreath 18s 14s ease-in-out infinite;
+}
+
+/* ===== PIE CHARTS ===== */
+
+.pieSector {
+  opacity: 0;
+  transform-origin: center;
+  animation: pieReveal 22s ease-in-out infinite;
+}
+
+.pieGreen  { stroke: var(--fin-pie-green); }
+.pieGreen2 { stroke: var(--fin-pie-green2); }
+.pieGreen3 { stroke: var(--fin-pie-green3); }
+.pieRed    { stroke: var(--fin-pie-red); }
+
+.pieGroupA {
+  animation: piePulse 22s ease-in-out infinite;
+}
+
+.pieGroupB {
+  animation: piePulse 22s 7s ease-in-out infinite;
+}
+
+.pieGroupC {
+  animation: piePulse 22s 14s ease-in-out infinite;
+}
+
+.pieGroupA .pieSector { animation: pieReveal 22s ease-in-out infinite; }
+.pieGroupB .pieSector { animation: pieReveal 22s 7s ease-in-out infinite; }
+.pieGroupC .pieSector { animation: pieReveal 22s 14s ease-in-out infinite; }
+
+/* ===== DATABASE TABLES ===== */
+
+.dbHeaderBg {
+  fill: var(--fin-db-header);
+}
+
+.dbHeaderText {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  fill: var(--fin-db-header-text);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dbDivider {
+  stroke: var(--fin-db-divider);
+  stroke-width: 0.5;
+}
+
+.dbRow {
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: dbRowInsert 18s ease-in-out infinite;
+}
+
+.dbRowBg {
+  fill: var(--fin-db-row);
+}
+
+.dbCellText {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 8px;
+  fill: var(--fin-db-text);
+  letter-spacing: 0.3px;
+}
+
+.dbGroupA {
+  opacity: 0;
+  animation: fadeInSlow 5s 3s ease-out forwards;
+}
+
+.dbGroupB {
+  opacity: 0;
+  animation: fadeInSlow 5s 5s ease-out forwards;
+}
+
+.dbGroupB .dbRow {
+  animation-duration: 15s;
+}
+
+/* ===== CANDLESTICKS ===== */
+
+.candleGroup {
+  will-change: transform, opacity;
+}
+
+.candleGroupA {
+  animation: groupDrift 18s ease-in-out infinite;
+}
+
+.candleGroupB {
+  animation: groupDrift 22s 4s ease-in-out infinite;
+}
+
+.candleGroupC {
+  animation: groupDrift 16s 8s ease-in-out infinite;
+}
+
+.candle {
+  opacity: 0;
+  animation: candleReveal 12s ease-in-out infinite;
+}
+
+.candleGroupA .candle:nth-child(1)  { animation-delay: 0s; }
+.candleGroupA .candle:nth-child(2)  { animation-delay: 0.6s; }
+.candleGroupA .candle:nth-child(3)  { animation-delay: 1.2s; }
+.candleGroupA .candle:nth-child(4)  { animation-delay: 1.8s; }
+.candleGroupA .candle:nth-child(5)  { animation-delay: 2.4s; }
+.candleGroupA .candle:nth-child(6)  { animation-delay: 3s; }
+.candleGroupA .candle:nth-child(7)  { animation-delay: 3.6s; }
+.candleGroupA .candle:nth-child(8)  { animation-delay: 4.2s; }
+.candleGroupA .candle:nth-child(9)  { animation-delay: 4.8s; }
+.candleGroupA .candle:nth-child(10) { animation-delay: 5.4s; }
+
+.candleGroupB .candle:nth-child(1) { animation-delay: 1.5s; }
+.candleGroupB .candle:nth-child(2) { animation-delay: 2.1s; }
+.candleGroupB .candle:nth-child(3) { animation-delay: 2.7s; }
+.candleGroupB .candle:nth-child(4) { animation-delay: 3.3s; }
+.candleGroupB .candle:nth-child(5) { animation-delay: 3.9s; }
+.candleGroupB .candle:nth-child(6) { animation-delay: 4.5s; }
+.candleGroupB .candle:nth-child(7) { animation-delay: 5.1s; }
+.candleGroupB .candle:nth-child(8) { animation-delay: 5.7s; }
+
+.candleGroupC .candle:nth-child(1) { animation-delay: 3s; }
+.candleGroupC .candle:nth-child(2) { animation-delay: 3.5s; }
+.candleGroupC .candle:nth-child(3) { animation-delay: 4s; }
+.candleGroupC .candle:nth-child(4) { animation-delay: 4.5s; }
+.candleGroupC .candle:nth-child(5) { animation-delay: 5s; }
+
+.candleWick {
+  stroke-width: 1.5;
+}
+
+.candleBody {
+  rx: 1;
+}
+
+.candleGreen .candleWick { stroke: var(--fin-candle-g); }
+.candleGreen .candleBody { fill: var(--fin-candle-g); }
+.candleRed .candleWick { stroke: var(--fin-candle-r); }
+.candleRed .candleBody { fill: var(--fin-candle-r); }
+
+/* ===== VOLUME BARS ===== */
+
+.volumeGroup {
+  opacity: 0;
+  animation: fadeInSlow 6s 2s ease-out forwards;
+}
+
+.volumeGroupA .volumeBar { transform-origin: bottom; }
+.volumeGroupB .volumeBar { transform-origin: bottom; }
+
+.volumeBar {
+  fill: var(--fin-volume);
+  animation: volumePulse 8s ease-in-out infinite;
+}
+
+.volumeBar:nth-child(odd)  { animation-delay: 0s; }
+.volumeBar:nth-child(even) { animation-delay: 1s; }
+
+/* ===== HORIZONTAL BAR CHART ===== */
+
+.hbarGroup {
+  opacity: 0;
+  animation: fadeInSlow 6s 5s ease-out forwards;
+}
+
+.hbar {
+  opacity: 0;
+  animation: hbarSlide 14s ease-in-out infinite;
+}
+
+.hbar:nth-child(1) { animation-delay: 5s; }
+.hbar:nth-child(2) { animation-delay: 5.5s; }
+.hbar:nth-child(3) { animation-delay: 6s; }
+.hbar:nth-child(4) { animation-delay: 6.5s; }
+
+.hbarLabel {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  fill: var(--fin-hbar-label);
+  letter-spacing: 0.5px;
+}
+
+.hbarTrack {
+  fill: var(--fin-hbar-track);
+}
+
+.hbarValue {
+  fill: var(--fin-hbar-value);
+  animation: hbarGrow 3s 5s ease-out forwards;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* ===== GAUGE ===== */
+
+.gauge {
+  opacity: 0;
+  animation: fadeInSlow 5s 4s ease-out forwards;
+}
+
+.gaugeSm {
+  opacity: 0;
+  animation: fadeInSlow 5s 7s ease-out forwards;
+}
+
+.gaugeTrack {
+  stroke: var(--fin-gauge-track);
+  stroke-linecap: round;
+}
+
+.gaugeValue {
+  stroke: var(--fin-gauge-value);
+  stroke-linecap: round;
+  stroke-dasharray: 132;
+  stroke-dashoffset: 132;
+  animation: gaugeReveal 2.5s 5s ease-out forwards, gaugePulse 7s 7.5s ease-in-out infinite;
+}
+
+.gaugeValueSm {
+  stroke-dasharray: 85;
+  stroke-dashoffset: 85;
+  animation: gaugeRevealSm 2s 8s ease-out forwards, gaugePulseSm 9s 10s ease-in-out infinite;
+}
+
+.gaugeLabel {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 13px;
+  fill: var(--fin-text);
+}
+
+/* ===== SPARKLINES ===== */
+
+.sparkGroup {
+  opacity: 0;
+  animation: fadeInSlow 5s 3s ease-out forwards;
+}
+
+.sparkBg {
+  fill: var(--fin-spark-bg);
+}
+
+.sparkLine {
+  fill: none;
+  stroke: var(--fin-spark-line);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sparkLineRed {
+  composes: sparkLine;
+  stroke: var(--fin-spark-red);
+}
+
+.spark1 { animation: sparkPulse 7s ease-in-out infinite; }
+.spark2 { animation: sparkPulse 9s 3s ease-in-out infinite; }
+.spark3 { animation: sparkPulse 8s 6s ease-in-out infinite; }
+
+/* ===== ARROWS ===== */
+
+.arrowGroup g {
+  will-change: transform, opacity;
+}
+
+.arrowGroup polygon,
+.arrowGroup rect {
+  fill: var(--fin-arrow);
+}
+
+.arrowUp1   { opacity: 0; animation: arrowDriftUp 10s 0.5s ease-in-out infinite; }
+.arrowUp2   { opacity: 0; animation: arrowDriftUp 13s 5s ease-in-out infinite; }
+.arrowUp3   { opacity: 0; animation: arrowDriftUp 11s 9s ease-in-out infinite; }
+.arrowDown1 { opacity: 0; animation: arrowDriftDown 12s 3s ease-in-out infinite; }
+.arrowDown2 { opacity: 0; animation: arrowDriftDown 11s 7s ease-in-out infinite; }
+
+/* ===== DOTS ===== */
+
+.dot {
+  fill: var(--fin-dot);
+  will-change: opacity;
+}
+
+.dot:nth-child(1)  { animation: dotPulse 5s 0s ease-in-out infinite; }
+.dot:nth-child(2)  { animation: dotPulse 6s 0.4s ease-in-out infinite; }
+.dot:nth-child(3)  { animation: dotPulse 4s 1.2s ease-in-out infinite; }
+.dot:nth-child(4)  { animation: dotPulse 7s 0.8s ease-in-out infinite; }
+.dot:nth-child(5)  { animation: dotPulse 5s 2s ease-in-out infinite; }
+.dot:nth-child(6)  { animation: dotPulse 4s 0.3s ease-in-out infinite; }
+.dot:nth-child(7)  { animation: dotPulse 6s 1.6s ease-in-out infinite; }
+.dot:nth-child(8)  { animation: dotPulse 5s 2.5s ease-in-out infinite; }
+.dot:nth-child(9)  { animation: dotPulse 7s 1s ease-in-out infinite; }
+.dot:nth-child(10) { animation: dotPulse 4s 2.8s ease-in-out infinite; }
+.dot:nth-child(11) { animation: dotPulse 6s 0.6s ease-in-out infinite; }
+.dot:nth-child(12) { animation: dotPulse 5s 3.2s ease-in-out infinite; }
+.dot:nth-child(13) { animation: dotPulse 7s 0.5s ease-in-out infinite; }
+.dot:nth-child(14) { animation: dotPulse 4s 1.5s ease-in-out infinite; }
+.dot:nth-child(15) { animation: dotPulse 6s 2.4s ease-in-out infinite; }
+.dot:nth-child(16) { animation: dotPulse 5s 0.9s ease-in-out infinite; }
+.dot:nth-child(17) { animation: dotPulse 7s 1.8s ease-in-out infinite; }
+.dot:nth-child(18) { animation: dotPulse 4s 3s ease-in-out infinite; }
+.dot:nth-child(19) { animation: dotPulse 6s 0.7s ease-in-out infinite; }
+.dot:nth-child(20) { animation: dotPulse 5s 2.2s ease-in-out infinite; }
+
+/* ===== FLOATING NUMBERS ===== */
+
+.number {
+  font-family: var(--font-dm-mono), monospace;
+  fill: var(--fin-text);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.number:nth-child(1)  { animation: floatUp 12s 0s ease-in-out infinite; }
+.number:nth-child(2)  { animation: floatUp 14s 2.5s ease-in-out infinite; }
+.number:nth-child(3)  { animation: floatUp 11s 5s ease-in-out infinite; }
+.number:nth-child(4)  { animation: floatUp 15s 1s ease-in-out infinite; }
+.number:nth-child(5)  { animation: floatUp 13s 7s ease-in-out infinite; }
+.number:nth-child(6)  { animation: floatUp 11s 3.5s ease-in-out infinite; }
+.number:nth-child(7)  { animation: floatUp 14s 9s ease-in-out infinite; }
+.number:nth-child(8)  { animation: floatUp 12s 4s ease-in-out infinite; }
+.number:nth-child(9)  { animation: floatUp 13s 6s ease-in-out infinite; }
+.number:nth-child(10) { animation: floatUp 11s 8s ease-in-out infinite; }
+
+/* ===== KEYFRAMES ===== */
+
+@keyframes draw2800 { from { stroke-dashoffset: 2800; } to { stroke-dashoffset: 0; } }
+@keyframes draw1200 { from { stroke-dashoffset: 1200; } to { stroke-dashoffset: 0; } }
+@keyframes draw1100 { from { stroke-dashoffset: 1100; } to { stroke-dashoffset: 0; } }
+@keyframes draw1000 { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+
+@keyframes breathe {
+  0%, 100% { opacity: 1; transform: translateY(0); }
+  50%      { opacity: 0.55; transform: translateY(4px); }
+}
+
+@keyframes areaBreath {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes fadeInSlow {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes candleReveal {
+  0%   { opacity: 0; transform: translateY(10px) scaleY(0.6); }
+  8%   { opacity: 1; transform: translateY(0) scaleY(1); }
+  70%  { opacity: 1; transform: translateY(0) scaleY(1); }
+  100% { opacity: 0; transform: translateY(-8px) scaleY(0.85); }
+}
+
+@keyframes groupDrift {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(5px, -4px); }
+  50%      { transform: translate(-2px, 3px); }
+  75%      { transform: translate(-4px, -2px); }
+}
+
+@keyframes volumePulse {
+  0%, 100% { opacity: 1; transform: scaleY(1); }
+  40%      { opacity: 0.4; transform: scaleY(0.8); }
+  60%      { opacity: 0.6; transform: scaleY(0.9); }
+}
+
+@keyframes floatUp {
+  0%   { opacity: 0; transform: translateY(24px); }
+  8%   { opacity: 1; transform: translateY(0); }
+  75%  { opacity: 1; transform: translateY(-12px); }
+  100% { opacity: 0; transform: translateY(-40px); }
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.4); }
+}
+
+@keyframes arrowDriftUp {
+  0%   { opacity: 0; transform: translate(0, 8px) scale(0.8); }
+  10%  { opacity: 1; transform: translate(0, 0) scale(1); }
+  70%  { opacity: 1; transform: translate(5px, -12px) scale(1); }
+  100% { opacity: 0; transform: translate(10px, -24px) scale(0.9); }
+}
+
+@keyframes arrowDriftDown {
+  0%   { opacity: 0; transform: translate(0, -8px) scale(0.8); }
+  10%  { opacity: 1; transform: translate(0, 0) scale(1); }
+  70%  { opacity: 1; transform: translate(-4px, 10px) scale(1); }
+  100% { opacity: 0; transform: translate(-8px, 22px) scale(0.9); }
+}
+
+@keyframes gaugeReveal {
+  from { stroke-dashoffset: 132; }
+  to   { stroke-dashoffset: 37; }
+}
+
+@keyframes gaugePulse {
+  0%, 100% { stroke-dashoffset: 37; }
+  50%      { stroke-dashoffset: 52; }
+}
+
+@keyframes gaugeRevealSm {
+  from { stroke-dashoffset: 85; }
+  to   { stroke-dashoffset: 42; }
+}
+
+@keyframes gaugePulseSm {
+  0%, 100% { stroke-dashoffset: 42; }
+  50%      { stroke-dashoffset: 55; }
+}
+
+@keyframes sparkPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(1.04); }
+}
+
+@keyframes hbarSlide {
+  0%   { opacity: 0; transform: translateX(-10px); }
+  8%   { opacity: 1; transform: translateX(0); }
+  75%  { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(8px); }
+}
+
+@keyframes hbarGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* — Pie charts — */
+
+@keyframes pieReveal {
+  0%   { opacity: 0; stroke-dashoffset: var(--circumference, 283); }
+  6%   { opacity: 1; stroke-dashoffset: 0; }
+  70%  { opacity: 1; stroke-dashoffset: 0; }
+  85%  { opacity: 0.3; }
+  100% { opacity: 0; stroke-dashoffset: 0; transform: scale(0.9); }
+}
+
+@keyframes piePulse {
+  0%   { opacity: 0; transform: scale(0.85); }
+  6%   { opacity: 1; transform: scale(1); }
+  70%  { opacity: 1; transform: scale(1); }
+  85%  { opacity: 0.4; transform: scale(0.97); }
+  100% { opacity: 0; transform: scale(0.85); }
+}
+
+/* — Database rows — */
+
+@keyframes dbRowInsert {
+  0%   { opacity: 0; transform: translateY(-16px); }
+  5%   { opacity: 1; transform: translateY(0); }
+  65%  { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 0.3; transform: translateY(8px); }
+  100% { opacity: 0; transform: translateY(16px); }
+}

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const posts = [
   {
-    slug: "post-01",
+    slug: "navegar-las-finanzas-modernas-el-augurio-de-una-odisea",
     title: "Navegar las finanzas modernas: El augurio de una odisea",
     subtitle:
       "Un viaje con dinero real por los mercados que están reemplazando al sistema.",

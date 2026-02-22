@@ -1,8 +1,28 @@
 /* ===== NEWSLETTER LAYOUT ===== */
 .wrapper {
+  /* ── Dark theme (default) ── */
+  --bg-page: #0d0d0d;
+  --bg-surface: #141414;
+  --bg-surface-alt: #0f0f0f;
+  --bg-elevated: #1a1a1a;
+  --text-primary: #e8e8e8;
+  --text-secondary: #a0a0a0;
+  --text-tertiary: #666666;
+  --text-muted: #555;
+  --accent: #7a9bb5;
+  --accent-strong: #5a7a94;
+  --accent-light: #c8d8e4;
+  --border: #2a2a2a;
+  --border-hover: #5a7a94;
+  --divider: #333333;
+  --header-bg: rgba(13, 13, 13, 0.92);
+  --tooltip-bg: #1a1a1a;
+  --tooltip-color: #8a8a8e;
+  --shadow-glow: rgba(90, 122, 148, 0.12);
+
   font-family: var(--font-source-sans), Georgia, serif;
-  background: #0d0d0d;
-  color: #e8e8e8;
+  background: var(--bg-page);
+  color: var(--text-primary);
   line-height: 1.75;
   font-size: 17px;
   -webkit-font-smoothing: antialiased;
@@ -10,15 +30,37 @@
   min-height: 100vh;
 }
 
+/* ── Light theme ── */
+:global([data-theme="light"]) .wrapper {
+  --bg-page: #f4e9da;
+  --bg-surface: #ede3d6;
+  --bg-surface-alt: #e8dace;
+  --bg-elevated: #f0e6d8;
+  --text-primary: #1e1410;
+  --text-secondary: #6b5a4e;
+  --text-tertiary: #8a7060;
+  --text-muted: #a89080;
+  --accent: #4a7a9a;
+  --accent-strong: #3b6784;
+  --accent-light: #2a4a5e;
+  --border: #d4c4b0;
+  --border-hover: #4a7a9a;
+  --divider: #c8b8a4;
+  --header-bg: rgba(244, 233, 218, 0.92);
+  --tooltip-bg: #ede3d6;
+  --tooltip-color: #6b5a4e;
+  --shadow-glow: rgba(59, 103, 132, 0.08);
+}
+
 /* ===== HEADER ===== */
 .header {
   padding: 20px 0;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(12px);
-  background: rgba(13, 13, 13, 0.92);
+  background: var(--header-bg);
 }
 
 .headerInner {
@@ -48,8 +90,14 @@
   font-family: var(--font-playfair), serif;
   font-size: 20px;
   font-weight: 700;
-  color: #e8e8e8;
+  color: var(--text-primary);
   letter-spacing: 0.5px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .headerNav {
@@ -58,7 +106,7 @@
 }
 
 .headerNav a {
-  color: #a0a0a0;
+  color: var(--text-secondary);
   text-decoration: none;
   font-size: 14px;
   font-weight: 400;
@@ -67,7 +115,7 @@
 }
 
 .headerNav a:hover {
-  color: #e8e8e8;
+  color: var(--text-primary);
 }
 
 @media (max-width: 600px) {

@@ -4,17 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stablecoins Market Cap</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../widget-common.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="toggle-bar">
-    <button id="theme-toggle" aria-label="Cambiar tema"></button>
+    <a id="btn-widgets" class="bar-btn" href="/widgets" aria-label="Widgets">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </a>
+    <button id="theme-toggle" aria-label="Cambiar tema"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
   </div>
   <div id="ctx-menu" class="ctx-menu" hidden>
     <button id="ctx-capture">Modo captura</button>
+    <div id="ctx-bg" class="ctx-bg" hidden>
+      <div class="ctx-bg-row">
+        <input id="ctx-bg-input" type="text" placeholder="#ffffff" spellcheck="false" autocomplete="off">
+        <button id="ctx-bg-clear" class="ctx-bg-clear" title="Reset">&times;</button>
+      </div>
+    </div>
   </div>
 
   <div class="container">
@@ -34,6 +41,7 @@
   </div>
 
   <script src="data.js"></script>
+  <script src="../../widget-common.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

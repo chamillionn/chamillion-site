@@ -64,7 +64,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${dmMono.variable} ${dmSerif.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable}`}>
+    <html lang="es" suppressHydrationWarning className={`${dmMono.variable} ${dmSerif.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable}`}>
       <body>{children}</body>
     </html>
   );
