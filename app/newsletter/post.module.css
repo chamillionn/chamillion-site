@@ -458,6 +458,21 @@
   font-weight: 600;
 }
 
+.hubSublist {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+}
+
+.hubSublist li {
+  padding-left: 16px;
+  font-size: 14px;
+}
+
+.hubSublist li::before {
+  content: "·";
+}
+
 /* ===== HERO IMAGE ===== */
 .heroImg {
   width: 100%;

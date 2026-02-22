@@ -28,6 +28,7 @@ function initWidgetCommon(prefix, options) {
     ctxCapture.classList.toggle('active', on);
     if (on) { ctxBg.removeAttribute('hidden'); } else { ctxBg.setAttribute('hidden', ''); clearCaptureBg(); }
     try { localStorage.setItem(prefix + '-capture', on ? '1' : '0'); } catch(e) {}
+    if (opts.onCaptureChange) opts.onCaptureChange(on);
   }
 
   function applyCaptureBg(val) {

@@ -276,11 +276,8 @@ export default function Post01() {
         {/* HUB */}
         <div className={styles.hubBox}>
           <h3>
-            <svg className={styles.headingIcon} viewBox="2 2 20 20" fill="currentColor">
-              <rect x="3" y="3" width="8" height="8" rx="1.5"/>
-              <rect x="13" y="3" width="8" height="8" rx="1.5"/>
-              <rect x="3" y="13" width="8" height="8" rx="1.5"/>
-              <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+            <svg className={styles.headingIcon} viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C9.24 2 7 4.24 7 7v3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-2V7c0-2.76-2.24-5-5-5zm0 2c1.65 0 3 1.35 3 3v3H9V7c0-1.65 1.35-3 3-3z"/>
             </svg>
             Hub
           </h3>
@@ -293,7 +290,7 @@ export default function Post01() {
           </p>
           <ul className={styles.hubList}>
             <li>
-              <strong>Versiones extendidas</strong> de la Newsletter con
+              <strong>Versiones extendidas de la Newsletter</strong> con
               elementos interactivos
             </li>
             <li>
@@ -304,12 +301,28 @@ export default function Post01() {
               estrategias en curso, plataformas y métodos empleados
             </li>
             <li>
-              <strong>Mapa de Conocimientos:</strong> artículos de cada
-              estrategia, plataforma e idea
+              <strong>Mapa de Conocimientos:</strong>
+              <ul className={styles.hubSublist}>
+                <li>
+                  <strong>Artículos</strong> de cada estrategia, plataforma e
+                  idea
+                </li>
+                <li>
+                  Un <strong>glosario</strong> extendido, para que puedas
+                  diseccionar lo que te pique, hasta los fundamentos
+                </li>
+              </ul>
             </li>
             <li>
-              Un <strong>glosario</strong> extendido para diseccionar lo que te
-              pique, hasta los fundamentos
+              <strong>Comunidad</strong>
+              <ul className={styles.hubSublist}>
+                <li>
+                  Espacios de miembros para discusiones e ideas
+                </li>
+                <li>
+                  Canales de comunicación directos conmigo para lo que necesites
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
