@@ -97,9 +97,8 @@ export default function Post01() {
         {/* Embed: Retail vs Institucional */}
         <iframe
           src="/widgets/post-01/retail-vs-inst-esma/index.html"
-          height={700}
           loading="lazy"
-          className={styles.iframe}
+          className={`${styles.iframe} ${styles.iframeRetail}`}
           title="Comparativa Inversor Retail vs Institucional — Datos ESMA"
         />
 
@@ -121,9 +120,8 @@ export default function Post01() {
         {/* Embed: Stablecoins chart */}
         <iframe
           src="/widgets/post-01/stablecoins-mcap/index.html"
-          height={420}
           loading="lazy"
-          className={styles.iframe}
+          className={`${styles.iframe} ${styles.iframeStablecoins}`}
           title="Capitalización de mercado de Stablecoins — DefiLlama API"
         />
 

@@ -159,6 +159,14 @@
   margin: 28px 0;
 }
 
+.iframeRetail {
+  height: 700px;
+}
+
+.iframeStablecoins {
+  height: 420px;
+}
+
 /* ===== HIGHLIGHT BOX ===== */
 .highlightBox {
   text-align: center;
@@ -618,5 +626,9 @@
 
   .bannerSection {
     padding: 24px 16px 0;
+  }
+
+  .iframeRetail {
+    height: 860px;
   }
 }
