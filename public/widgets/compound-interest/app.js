@@ -505,6 +505,7 @@
     }
 
     // Draw lines (one per portfolio)
+    var pendingLabels = [];
     for (var pi = 0; pi < portfolios.length; pi++) {
       var data = portfolios[pi].data;
       var color = lineColor(pi);
@@ -565,23 +566,32 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Label at end of line
-      if (portfolios.length > 1 && pts.length > 0) {
-        var lastPt = pts[pts.length - 1];
-        ctx.font = '10px DM Mono, monospace';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = color;
-        var labelX = lastPt.x + 6;
-        var labelY = lastPt.y;
-        // Avoid going off-canvas
-        var textW = ctx.measureText(portfolios[pi].name).width;
-        if (labelX + textW > W - 4) {
-          ctx.textAlign = 'right';
-          labelX = lastPt.x - 6;
-        }
-        ctx.fillText(portfolios[pi].name, labelX, labelY);
+      // Collect label info for later (draw after all lines)
+      if (portfolios.length > 1 && pts.length > 1) {
+        var labelIdx = Math.min(Math.round(pts.length * 0.18), pts.length - 1);
+        if (labelIdx < 1) labelIdx = 1;
+        pendingLabels.push({ name: portfolios[pi].name, color: color, x: pts[labelIdx].x, y: pts[labelIdx].y });
       }
+    }
+
+    // Draw labels with anti-overlap
+    if (pendingLabels.length > 1) {
+      pendingLabels.sort(function(a, b) { return a.y - b.y; });
+      var minGap = 13;
+      for (var li = 1; li < pendingLabels.length; li++) {
+        var diff = pendingLabels[li].y - pendingLabels[li - 1].y;
+        if (diff < minGap) {
+          pendingLabels[li].y = pendingLabels[li - 1].y + minGap;
+        }
+      }
+    }
+    for (var li = 0; li < pendingLabels.length; li++) {
+      var lb = pendingLabels[li];
+      ctx.font = '10px DM Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = lb.color;
+      ctx.fillText(lb.name, lb.x + 6, lb.y);
     }
   }
 
@@ -833,6 +843,6 @@
   positionMarkers();
 
   // ── Widget common ──
-  initWidgetCommon('compound', { onThemeChange: renderAll, onCaptureChange: renderSummary });
+  initWidgetCommon('compound', { onThemeChange: renderAll, onCaptureChange: renderSummary, shareUrl: '/w/compound' });
 
 })();

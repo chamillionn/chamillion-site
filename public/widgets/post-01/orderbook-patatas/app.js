@@ -365,7 +365,7 @@ document.addEventListener('keydown', e => {
 })();
 
 // ── Theme & capture ──────────────────────────────────────────────────
-initWidgetCommon('orderbook');
+initWidgetCommon('orderbook', { shareUrl: '/w/orderbook' });
 
 // ── Init ─────────────────────────────────────────────────────────────
 document.getElementById('input-price').addEventListener('input', updatePreview);

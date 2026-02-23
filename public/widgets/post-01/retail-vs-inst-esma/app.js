@@ -1,1 +1,1 @@
-initWidgetCommon('esma');
+initWidgetCommon('esma', { shareUrl: '/w/esma' });

@@ -397,4 +397,4 @@ new ResizeObserver(function() {
 }).observe(chartCanvas.parentElement);
 
 // ── Theme & capture ───────────────────────────────────────────────────
-initWidgetCommon('stablecoins', { onThemeChange: drawChart });
+initWidgetCommon('stablecoins', { onThemeChange: drawChart, shareUrl: '/w/stablecoins' });

@@ -61,5 +61,25 @@ html.embedded .toggle-bar { display: none; }
 [data-theme="light"] .ctx-menu button:hover { background: #d4c4b0; }
 [data-theme="light"] .ctx-menu button.active { color: #4a7a9a; }
 
+/* ── Share button feedback ── */
+#btn-share { position: relative; }
+#btn-share.share-copied { border-color: #4ade80; color: #4ade80; }
+#btn-share.share-copied::after {
+  content: 'Copiado';
+  position: absolute; top: calc(100% + 6px); right: 0;
+  background: #1e1e22; border: 1px solid #2a2a2e; border-radius: 5px;
+  padding: 3px 8px; font-family: 'DM Mono', monospace; font-size: 10px;
+  color: #4ade80; white-space: nowrap; pointer-events: none;
+  animation: share-fade 1.5s ease-out forwards;
+}
+[data-theme="light"] #btn-share.share-copied { border-color: #3a9a5a; color: #3a9a5a; }
+[data-theme="light"] #btn-share.share-copied::after {
+  background: #ede3d6; border-color: #d4c4b0; color: #3a9a5a;
+}
+@keyframes share-fade {
+  0%, 60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* ── Capture mode ── */
-html.capture #theme-toggle { display: none; }
+html.capture .toggle-bar { display: none; }

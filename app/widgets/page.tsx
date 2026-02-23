@@ -12,6 +12,7 @@ const MOON =
 const widgets = [
   {
     slug: "orderbook-patatas",
+    path: "post-01/orderbook-patatas",
     tag: "Mercados",
     title: "Libro de Órdenes",
     desc: "Simula cómo funciona un libro de órdenes con el mercado de patatas. Compra, vende y ve cómo se ejecutan las órdenes.",
@@ -21,6 +22,7 @@ const widgets = [
   },
   {
     slug: "retail-vs-inst-esma",
+    path: "post-01/retail-vs-inst-esma",
     tag: "Regulación · ESMA",
     title: "Retail vs Institucional",
     desc: "Visualización de datos ESMA sobre el coste comparado de inversores minoristas e institucionales en fondos europeos.",
@@ -30,6 +32,7 @@ const widgets = [
   },
   {
     slug: "stablecoins-mcap",
+    path: "post-01/stablecoins-mcap",
     tag: "Cripto · Stablecoins",
     title: "Stablecoins Market Cap",
     desc: "Gráfico de área con la evolución del market cap total de stablecoins desde 2017 hasta hoy.",
@@ -39,6 +42,7 @@ const widgets = [
   },
   {
     slug: "compound-interest",
+    path: "compound-interest",
     tag: "Finanzas · Educación",
     title: "Interés Compuesto",
     desc: "Calculadora interactiva para entender el interés compuesto. Compara carteras y simula volatilidad real.",
@@ -112,7 +116,7 @@ export default function WidgetsPage() {
             <a
               key={w.slug}
               className={styles.card}
-              href={`/widgets/post-01/${w.slug}/index.html`}
+              href={`/widgets/${w.path}/index.html`}
               target="_blank"
               rel="noopener noreferrer"
             >
