@@ -1,25 +1,20 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import {
   DM_Mono,
-  DM_Serif_Display,
   Playfair_Display,
   Source_Sans_3,
   JetBrains_Mono,
   Instrument_Serif,
   Outfit,
 } from "next/font/google";
+import ThemeToggle from "@/components/theme-toggle";
 import "./globals.css";
 
 const dmMono = DM_Mono({
   weight: ["300", "400", "500"],
   subsets: ["latin"],
   variable: "--font-dm-mono",
-});
-
-const dmSerif = DM_Serif_Display({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-dm-serif",
 });
 
 const playfair = Playfair_Display({
@@ -79,8 +74,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning className={`${dmMono.variable} ${dmSerif.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${outfit.variable}`}>
-      <body>{children}</body>
+    <html lang="es" suppressHydrationWarning className={`${dmMono.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${outfit.variable}`}>
+      <Script id="theme-init" strategy="beforeInteractive">{`
+        (function(){
+          var t = localStorage.getItem("chamillion-theme");
+          if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", t);
+        })();
+      `}</Script>
+      <body>
+        <div className="theme-toggle-fixed">
+          <ThemeToggle />
+        </div>
+        {children}
+      </body>
     </html>
   );
 }

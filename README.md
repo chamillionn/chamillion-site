@@ -2,30 +2,48 @@
 
 Web de la newsletter [Chamillion](https://chamillion.substack.com) — DeFi, mercados crypto y transparencia on-chain.
 
-Proyecto Next.js (App Router) con widgets interactivos vanilla JS servidos como archivos estáticos.
+Proyecto Next.js (App Router) con widgets interactivos vanilla JS servidos como archivos estaticos.
 
 ## Estructura
 
 ```
 chamillion.site/
 ├── app/
-│   ├── layout.tsx                      ← Root layout (fuentes, metadata)
-│   ├── globals.css                     ← Estilos globales
-│   ├── page.tsx                        ← Landing (/)
-│   └── newsletter/
-│       └── post-01/
-│           ├── page.tsx                ← Post 01 (/newsletter/post-01)
-│           └── page.module.css
-├── components/
-│   └── chameleon-eye.tsx               ← SVG camaleón con eye-tracking
-├── public/
-│   ├── assets/                         ← SVGs y PNGs
+│   ├── layout.tsx                      ← Root layout (fuentes, metadata, theme toggle)
+│   ├── globals.css                     ← Estilos globales + paleta dark/light
+│   ├── (home)/
+│   │   ├── page.tsx                    ← Landing (/)
+│   │   └── hub/                        ← Hub — en construccion (/hub)
+│   ├── newsletter/
+│   │   ├── layout.tsx                  ← Layout compartido newsletter (header)
+│   │   ├── layout.module.css
+│   │   ├── page.tsx                    ← Indice newsletter (/newsletter)
+│   │   ├── post.module.css             ← Estilos compartidos de posts
+│   │   └── navegar-las-.../page.tsx    ← Post 01 (slug completo)
 │   └── widgets/
+│       └── page.tsx                    ← Catalogo de widgets (/widgets)
+├── components/
+│   ├── chameleon-eye.tsx               ← SVG camaleon con eye-tracking (newsletter bg)
+│   ├── theme-toggle.tsx                ← Toggle dark/light global
+│   ├── financial-bg.tsx                ← Fondo financiero animado (hub)
+│   └── financial-bg.module.css
+├── lib/
+│   └── theme.ts                        ← Constantes de color V, helpers steelA/bgCardA
+├── public/
+│   ├── assets/
+│   │   ├── face-vector.svg             ← Camaleon vectorial
+│   │   ├── newsletter/                 ← Assets del newsletter (banners, iconos)
+│   │   └── og-image.png                ← Open Graph
+│   └── widgets/
+│       ├── widget-common.css           ← Estilos compartidos widgets
+│       ├── widget-common.js            ← JS compartido widgets
+│       ├── compound-interest/          ← Calculadora interes compuesto
 │       └── post-01/
-│           ├── orderbook-patatas/      ← Libro de órdenes interactivo
-│           ├── retail-vs-inst-esma/    ← Visualización ESMA
-│           └── stablecoins-mcap/       ← Gráfico stablecoins market cap
+│           ├── orderbook-patatas/      ← Libro de ordenes interactivo
+│           ├── retail-vs-inst-esma/    ← Visualizacion ESMA
+│           └── stablecoins-mcap/       ← Grafico stablecoins market cap
 ├── STYLE_REFERENCE.md
+├── POST_TEMPLATE.md
 └── README.md
 ```
 
@@ -38,18 +56,21 @@ npm run dev
 
 ## Rutas
 
-| Ruta | Descripción |
+| Ruta | Descripcion |
 |---|---|
-| `/` | Landing page con camaleón SVG interactivo |
-| `/newsletter/post-01` | Primer post: widgets embebidos via iframe |
+| `/` | Landing page con portfolio, donut chart, post preview |
+| `/newsletter` | Indice de posts |
+| `/newsletter/navegar-las-finanzas-modernas-...` | Post 01 con widgets embebidos |
+| `/hub` | Hub — en construccion |
+| `/widgets` | Catalogo de widgets interactivos |
+| `/w/orderbook` | Shortcut → orderbook widget |
+| `/w/esma` | Shortcut → ESMA widget |
+| `/w/stablecoins` | Shortcut → stablecoins widget |
+| `/w/compound` | Shortcut → compound interest widget |
 
 ## Widgets
 
-Los widgets son HTML/CSS/JS vanilla autocontenidos en `public/widgets/`. Se embeben en las páginas Next.js via `<iframe>` y también funcionan como páginas independientes:
-
-- `/widgets/post-01/orderbook-patatas/index.html`
-- `/widgets/post-01/retail-vs-inst-esma/index.html`
-- `/widgets/post-01/stablecoins-mcap/index.html`
+Los widgets son HTML/CSS/JS vanilla autocontenidos en `public/widgets/`. Se embeben en las paginas Next.js via `<iframe>` y tambien funcionan como paginas independientes.
 
 Cada widget tiene su propia carpeta con:
 
@@ -57,16 +78,16 @@ Cada widget tiene su propia carpeta con:
 widget-nombre/
 ├── index.html   ← estructura
 ├── style.css    ← estilos
-└── app.js       ← lógica
+└── app.js       ← logica
 ```
 
 ## Convenciones
 
 - **Carpetas**: kebab-case
-- **Fuentes**: DM Mono (datos/UI), DM Serif Display (titulares landing)
-- **Landing**: fondo `#0f0f0f`, acento azul `#6b8cae`
-- **Widgets**: fondo dark `#191919`, light `#f4e9da` (paleta cálida)
-- **Toggle dark/light**: esquina superior derecha en cada widget
-- **Modo captura**: clic derecho en toggle → submenú contextual
-- **Idioma**: español (es)
+- **Fuentes app**: Instrument Serif (titulo hero), Playfair Display (headings), JetBrains Mono (datos), Outfit (body)
+- **Fuentes widgets**: DM Mono (datos), DM Serif Display (titulares)
+- **Paleta**: dark/light via CSS custom properties en globals.css
+- **Constantes de color**: `lib/theme.ts` exporta `V`, `steelA()`, `bgCardA()`
+- **Toggle dark/light**: global en esquina superior derecha, sincroniza con iframes
+- **Idioma**: espanol (es)
 - **Prefijo `STYLING:`**: mensajes con este prefijo aplican cambios de estilo a todos los widgets
