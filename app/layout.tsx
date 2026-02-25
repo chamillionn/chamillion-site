@@ -5,6 +5,8 @@ import {
   Playfair_Display,
   Source_Sans_3,
   JetBrains_Mono,
+  Instrument_Serif,
+  Outfit,
 } from "next/font/google";
 import "./globals.css";
 
@@ -31,9 +33,22 @@ const sourceSans = Source_Sans_3({
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   variable: "--font-jetbrains",
+});
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
+});
+
+const outfit = Outfit({
+  weight: ["300", "400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-outfit",
 });
 
 export const metadata: Metadata = {
@@ -64,7 +79,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning className={`${dmMono.variable} ${dmSerif.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable}`}>
+    <html lang="es" suppressHydrationWarning className={`${dmMono.variable} ${dmSerif.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${outfit.variable}`}>
       <body>{children}</body>
     </html>
   );
