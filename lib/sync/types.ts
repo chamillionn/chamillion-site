@@ -3,8 +3,28 @@ import { createClient } from "@/lib/supabase/server";
 export interface SyncResult {
   platform: string;
   updated: number;
+  deactivated: number;
   errors: string[];
   timestamp: string;
+}
+
+/** Common position format produced by platform adapters */
+export interface PositionRow {
+  asset: string;
+  size: number;
+  cost_basis: number;
+  current_value: number;
+  notes: string;
+}
+
+/** Each platform implements fetch + transform only */
+export interface PlatformAdapter {
+  /** Must match the `name` column in the `platforms` DB table */
+  platformName: string;
+  fetchPositions(wallet: string): Promise<{
+    positions: PositionRow[];
+    warnings: string[];
+  }>;
 }
 
 /**

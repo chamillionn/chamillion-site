@@ -1,33 +1,21 @@
 import { NextResponse } from "next/server";
-import { authCheck, type SyncResult } from "@/lib/sync/types";
+import { authCheck } from "@/lib/sync/types";
+import { syncPlatform } from "@/lib/sync/engine";
 import { captureSnapshot } from "@/lib/sync/snapshot";
+import { HyperliquidAdapter } from "@/lib/sync/adapters/hyperliquid";
+import { PolymarketAdapter } from "@/lib/sync/adapters/polymarket";
 
-const SYNC_ROUTES = ["hyperliquid", "polymarket"];
+const ADAPTERS = [HyperliquidAdapter, PolymarketAdapter];
 
 export async function GET(request: Request) {
   if (!(await authCheck(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const results: SyncResult[] = [];
-  const baseUrl = new URL(request.url).origin;
-  const auth = request.headers.get("authorization") ?? "";
-
-  for (const route of SYNC_ROUTES) {
-    try {
-      const res = await fetch(`${baseUrl}/api/sync/${route}`, {
-        headers: { Authorization: auth },
-      });
-      const data = await res.json();
-      results.push(data as SyncResult);
-    } catch (e) {
-      results.push({
-        platform: route,
-        updated: 0,
-        errors: [e instanceof Error ? e.message : String(e)],
-        timestamp: new Date().toISOString(),
-      });
-    }
+  const results = [];
+  for (const adapter of ADAPTERS) {
+    const result = await syncPlatform(adapter);
+    results.push(result);
   }
 
   // Capture portfolio snapshot after all positions are fresh

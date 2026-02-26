@@ -67,15 +67,16 @@ export async function captureSnapshot(): Promise<SnapshotResult> {
     .order("allocation_pct", { ascending: false });
 
   const positionsData = ((positions as PositionEnriched[]) ?? []).map((p) => ({
+    id: p.id,
     asset: p.asset,
     platform: p.platform_name,
     strategy: p.strategy_name,
     size: p.size,
     cost_basis: p.cost_basis,
     current_value: p.current_value,
-    pnl: p.pnl,
-    roi_pct: p.roi_pct,
-    allocation_pct: p.allocation_pct,
+    pnl: p.pnl ?? 0,
+    roi_pct: p.roi_pct ?? 0,
+    allocation_pct: p.allocation_pct ?? 0,
   }));
 
   // 3. Insert snapshot for this 15-min slot (skip if already exists)
@@ -84,10 +85,10 @@ export async function captureSnapshot(): Promise<SnapshotResult> {
   ).upsert(
     {
       snapshot_date: slotISO,
-      total_value: s.total_value,
-      total_cost: s.total_cost,
+      total_value: s.total_value ?? 0,
+      total_cost: s.total_cost ?? 0,
       positions_data: positionsData,
-      notes: `Auto: ${s.total_positions} pos, $${s.total_value.toFixed(2)}`,
+      notes: `Auto: ${s.total_positions ?? 0} pos, $${(s.total_value ?? 0).toFixed(2)}`,
     },
     { onConflict: "snapshot_date", ignoreDuplicates: true },
   );

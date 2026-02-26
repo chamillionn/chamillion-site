@@ -39,6 +39,7 @@ export interface Position {
 }
 
 export interface SnapshotPosition {
+  id?: string; // position id for traceability (added v2, absent in older snapshots)
   asset: string;
   platform: string | null;
   strategy: string | null;
