@@ -1,0 +1,335 @@
+.heading {
+  font-family: var(--font-playfair), serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.envBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.envDev {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #e5a00d;
+  background: rgba(229, 160, 13, 0.1);
+  border: 1px solid rgba(229, 160, 13, 0.25);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.envProd {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--red);
+  background: rgba(199, 85, 90, 0.1);
+  border: 1px solid rgba(199, 85, 90, 0.25);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.envUrl {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ===== TARGET TOGGLE ===== */
+
+.targetToggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.targetBtn {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  padding: 6px 14px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.targetBtn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-secondary);
+}
+
+.targetActive {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ===== LOADING ===== */
+
+.loading {
+  padding: 40px;
+  text-align: center;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ===== LAYOUT ===== */
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.groupLabel {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+/* ===== SECTION (collapsible table) ===== */
+
+.section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.sectionHeader:hover {
+  background: var(--bg-card-hover);
+}
+
+.sectionLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chevron {
+  color: var(--text-muted);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.sectionName {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tagTable {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--steel-blue);
+  background: rgba(var(--steel-blue-rgb), 0.08);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.tagView {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #C9A84C;
+  background: rgba(199, 168, 76, 0.1);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.sectionCount {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ===== TABLE ===== */
+
+.sectionBody {
+  border-top: 1px solid var(--border);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 11px;
+}
+
+.table th {
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.thIdx {
+  width: 32px;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.table td {
+  padding: 5px 10px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tdIdx {
+  color: var(--text-muted);
+  opacity: 0.4;
+  font-size: 10px;
+}
+
+.table tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.table tbody tr:hover td {
+  background: rgba(var(--steel-blue-rgb), 0.04);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rowExpanded td {
+  background: rgba(var(--steel-blue-rgb), 0.06) !important;
+}
+
+/* Value type colors */
+.vNull {
+  color: var(--text-muted);
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.vTrue {
+  color: var(--green);
+}
+
+.vFalse {
+  color: var(--red);
+  opacity: 0.7;
+}
+
+.vNum {
+  color: var(--steel-blue);
+}
+
+/* ===== JSON BLOCK ===== */
+
+.jsonBlock {
+  border-top: 1px solid var(--border);
+}
+
+.jsonHeader {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 14px 4px;
+}
+
+.json {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  padding: 4px 14px 12px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* ===== EMPTY ===== */
+
+.emptyTable {
+  padding: 20px;
+  text-align: center;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table {
+    font-size: 10px;
+  }
+
+  .table td {
+    max-width: 160px;
+  }
+}

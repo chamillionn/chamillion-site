@@ -14,6 +14,7 @@ export interface Platform {
   url: string | null;
   referral_url: string | null;
   logo_url: string | null;
+  wallet_address: string | null;
 }
 
 export interface Strategy {
@@ -37,13 +38,41 @@ export interface Position {
   closed_at: string | null;
 }
 
+export interface SnapshotPosition {
+  asset: string;
+  platform: string | null;
+  strategy: string | null;
+  size: number;
+  cost_basis: number;
+  current_value: number;
+  pnl: number;
+  roi_pct: number;
+  allocation_pct: number;
+}
+
 export interface Snapshot {
   id: string;
-  snapshot_date: string;
+  snapshot_date: string; // ISO timestamptz
   total_value: number;
   total_cost: number;
-  positions_data: Record<string, unknown> | null;
+  positions_data: SnapshotPosition[] | null;
   notes: string | null;
+  created_at: string;
+}
+
+export type CapitalFlowType = "buy" | "sell" | "deposit_fiat" | "withdraw_fiat";
+
+export interface CapitalFlow {
+  id: string;
+  date: string;
+  type: CapitalFlowType;
+  amount_eur: number;
+  asset: string | null;
+  quantity: number | null;
+  price_per_unit: number | null;
+  exchange: string | null;
+  notes: string | null;
+  created_at: string;
 }
 
 export interface Profile {
@@ -111,6 +140,11 @@ export interface Database {
         Row: Profile;
         Insert: Omit<Profile, "id"> & { id?: string };
         Update: Partial<Profile>;
+      };
+      capital_flows: {
+        Row: CapitalFlow;
+        Insert: Omit<CapitalFlow, "id" | "created_at"> & { id?: string };
+        Update: Partial<CapitalFlow>;
       };
     };
     Views: {

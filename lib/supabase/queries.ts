@@ -5,6 +5,7 @@ import type {
   PositionEnriched,
   PortfolioSummary,
   Snapshot,
+  CapitalFlow,
   Profile,
 } from "./types";
 
@@ -46,7 +47,33 @@ export async function getPlatforms(): Promise<Platform[]> {
   return (data as Platform[]) ?? [];
 }
 
-export async function getSnapshots(limit = 30): Promise<Snapshot[]> {
+/**
+ * Get daily snapshots for the homepage chart.
+ * Snapshots are stored every 15 min — this deduplicates to 1 per day (latest).
+ */
+export async function getDailySnapshots(days = 30): Promise<Snapshot[]> {
+  const supabase = await createClient();
+  // Fetch enough rows to cover `days` days (max 96/day at 15-min intervals)
+  const { data } = await supabase
+    .from("snapshots")
+    .select("*")
+    .order("snapshot_date", { ascending: false })
+    .limit(days * 96);
+
+  const all = (data as Snapshot[]) ?? [];
+
+  // Group by date, keep latest per day
+  const byDay = new Map<string, Snapshot>();
+  for (const s of all) {
+    const day = s.snapshot_date.slice(0, 10);
+    if (!byDay.has(day)) byDay.set(day, s);
+  }
+
+  return [...byDay.values()].slice(0, days);
+}
+
+/** Get raw snapshots (all granularity). */
+export async function getSnapshots(limit = 100): Promise<Snapshot[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("snapshots")
@@ -54,6 +81,61 @@ export async function getSnapshots(limit = 30): Promise<Snapshot[]> {
     .order("snapshot_date", { ascending: false })
     .limit(limit);
   return (data as Snapshot[]) ?? [];
+}
+
+/** Get all snapshots for a specific date (YYYY-MM-DD). */
+export async function getSnapshotsByDate(date: string): Promise<Snapshot[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("snapshots")
+    .select("*")
+    .gte("snapshot_date", `${date}T00:00:00`)
+    .lt("snapshot_date", `${date}T23:59:59.999`)
+    .order("snapshot_date", { ascending: false });
+  return (data as Snapshot[]) ?? [];
+}
+
+/* ── Capital flows ── */
+
+export async function getCapitalFlows(): Promise<CapitalFlow[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("capital_flows")
+    .select("*")
+    .order("date", { ascending: false });
+  return (data as CapitalFlow[]) ?? [];
+}
+
+/** Total EUR invested (buys + fiat deposits - sells - withdrawals). */
+export async function getCostBasis(): Promise<{ invested: number; withdrawn: number; net: number }> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("capital_flows").select("type, amount_eur");
+  const flows = (data as { type: string; amount_eur: number }[]) ?? [];
+
+  let invested = 0;
+  let withdrawn = 0;
+  for (const f of flows) {
+    if (f.type === "buy" || f.type === "deposit_fiat") invested += f.amount_eur;
+    else withdrawn += f.amount_eur;
+  }
+  return { invested, withdrawn, net: invested - withdrawn };
+}
+
+/* ── Admin (all positions including closed) ── */
+
+export async function getAllPositions() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("positions")
+    .select("*, platforms(name), strategies(name)")
+    .order("is_active", { ascending: false })
+    .order("opened_at", { ascending: false });
+  return (data ?? []) as Array<
+    import("./types").Position & {
+      platforms: { name: string } | null;
+      strategies: { name: string } | null;
+    }
+  >;
 }
 
 /* ── User (requires auth) ── */

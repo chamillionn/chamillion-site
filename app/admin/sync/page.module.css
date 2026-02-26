@@ -1,0 +1,166 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.heading {
+  font-family: var(--font-playfair), serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.syncAllBtn {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  padding: 7px 16px;
+  background: var(--steel-blue);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.syncAllBtn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.syncAllBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== GRID ===== */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cardIcon {
+  color: var(--steel-blue);
+}
+
+.cardTitle {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ===== RESULT ===== */
+
+.resultBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(var(--steel-blue-rgb), 0.04);
+  border-radius: 6px;
+}
+
+.resultRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resultLabel {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+.resultValue {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+.resultErrors {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.errorLine {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  color: var(--red);
+  line-height: 1.4;
+}
+
+.timestamp {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ===== SYNC BUTTON ===== */
+
+.syncBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  padding: 8px 16px;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.syncBtn:hover:not(:disabled) {
+  border-color: var(--steel-blue);
+  color: var(--steel-blue);
+}
+
+.syncBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.syncBtnSuccess {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.syncBtnError {
+  border-color: var(--red);
+  color: var(--red);
+}
