@@ -34,7 +34,7 @@
 }
 
 .articleHeader {
-  padding: 32px 0 24px;
+  padding: 32px 0 0;
   text-align: center;
   animation: fadeInUp 0.8s ease-out 0.1s both;
 }
@@ -57,6 +57,16 @@
   line-height: 1.5;
 }
 
+/* ===== POST META ===== */
+.postMeta {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 16px;
+}
+
 /* ===== DIVIDERS ===== */
 .divider {
   border: none;
@@ -67,9 +77,10 @@
 
 .dividerHeavy {
   border: none;
-  height: 2px;
+  height: 1px;
   background: linear-gradient(90deg, transparent, var(--accent-strong), transparent);
-  margin: 48px 0;
+  margin: 32px 0;
+  opacity: 0.6;
 }
 
 /* ===== BODY TEXT ===== */

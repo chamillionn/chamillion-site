@@ -19,6 +19,7 @@ export default function Header() {
             />
           </div>
           <span>Chamillion</span>
+          <span className={styles.extendedBadge}>Premium</span>
         </Link>
         <nav className={styles.headerNav}>
           <Link href="/">Inicio</Link>

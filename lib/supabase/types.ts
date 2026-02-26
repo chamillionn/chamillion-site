@@ -85,6 +85,12 @@ export interface Profile {
   subscribed_at: string | null;
 }
 
+export interface SiteSetting {
+  key: string;
+  value: unknown; // JSONB — cast per key
+  updated_at: string;
+}
+
 /* ── View types ── */
 
 export interface PositionEnriched {
@@ -158,6 +164,12 @@ export type Database = {
         Row: Flatten<CapitalFlow>;
         Insert: Flatten<Omit<CapitalFlow, "id" | "created_at" | "asset" | "quantity" | "price_per_unit" | "exchange" | "notes"> & { id?: string; created_at?: string; asset?: string | null; quantity?: number | null; price_per_unit?: number | null; exchange?: string | null; notes?: string | null }>;
         Update: Flatten<Partial<CapitalFlow>>;
+        Relationships: [];
+      };
+      site_settings: {
+        Row: Flatten<SiteSetting>;
+        Insert: Flatten<Omit<SiteSetting, "updated_at"> & { updated_at?: string }>;
+        Update: Flatten<Partial<SiteSetting>>;
         Relationships: [];
       };
     };

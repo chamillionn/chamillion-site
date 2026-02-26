@@ -47,12 +47,13 @@
   height: 28px;
   border-radius: 7px;
   background: linear-gradient(135deg, rgba(var(--steel-blue-rgb), 0.19), rgba(var(--steel-blue-rgb), 0.06));
-  border: 1px solid rgba(var(--steel-blue-rgb), 0.15);
+  border: 1px solid rgba(var(--steel-blue-rgb), 0.35);
+  box-shadow: 0 0 0 2px rgba(var(--steel-blue-rgb), 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
 }
 
 .logoBox:hover {
@@ -73,6 +74,21 @@
   color: var(--text-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.headerLogo .extendedBadge {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--steel-blue-dim);
+  text-transform: uppercase;
+}
+
+.extendedBadge::before {
+  content: "·";
+  margin-right: 8px;
+  color: var(--text-muted);
 }
 
 .headerNav {

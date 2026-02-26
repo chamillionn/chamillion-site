@@ -154,6 +154,7 @@ export interface HomeProps {
   totalValue: number;
   dailyData: DailyData[];
   capitalInvested: number | null;
+  isDemo?: boolean;
 }
 
 // SVG Donut chart
@@ -1264,9 +1265,11 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   );
 }
 
-export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested }: HomeProps) {
+export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, isDemo }: HomeProps) {
   const [loaded, setLoaded] = useState(false);
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
+  const [navDropdown, setNavDropdown] = useState(false);
+  const navDropdownRef = useRef<HTMLDivElement>(null);
   const mobile = useMediaQuery(768);
   const portfolio = useScrollReveal(0.1);
   const ctas = useScrollReveal(0.1);
@@ -1278,6 +1281,17 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
     const t = setTimeout(() => setLoaded(true), 100);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    if (!navDropdown) return;
+    function handleClick(e: MouseEvent) {
+      if (navDropdownRef.current && !navDropdownRef.current.contains(e.target as Node)) {
+        setNavDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [navDropdown]);
 
   return (
     <div
@@ -1397,24 +1411,103 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
             transform: loaded ? "translateY(0)" : "translateY(-8px)",
             transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
           }}>
-            <a
-              href="https://chamillion.substack.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: V.textSecondary,
-                textDecoration: "none",
-                fontSize: 13,
-                fontWeight: 500,
-                letterSpacing: "-0.01em",
-                transition: "color 0.2s ease",
-                position: "relative" as const,
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = V.textPrimary)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = V.textSecondary)}
-            >
-              Newsletter
-            </a>
+            <div ref={navDropdownRef} style={{ position: "relative" }}>
+              <button
+                onClick={() => setNavDropdown((v) => !v)}
+                style={{
+                  color: navDropdown ? V.textPrimary : V.textSecondary,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  letterSpacing: "-0.01em",
+                  transition: "color 0.2s ease",
+                  padding: 0,
+                  fontFamily: "inherit",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = V.textPrimary)}
+                onMouseLeave={(e) => { if (!navDropdown) e.currentTarget.style.color = V.textSecondary; }}
+              >
+                Newsletter
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transition: "transform 0.2s ease", transform: navDropdown ? "rotate(180deg)" : "rotate(0)" }}>
+                  <path d="M2.5 4L5 6.5L7.5 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {navDropdown && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 12px)",
+                    right: 0,
+                    width: 240,
+                    background: V.bgCard,
+                    border: `1px solid ${V.border}`,
+                    borderRadius: 12,
+                    padding: 6,
+                    zIndex: 100,
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <a
+                    href="https://chamillion.substack.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      textDecoration: "none",
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = steelA(0.06))}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 448 512" fill="none" style={{ flexShrink: 0 }}>
+                      <path fill={V.steel} d="M0 0h448v62.804H0V0zm0 229.083h448v282.388L223.954 385.808 0 511.471V229.083zm0-114.542h448v62.804H0v-62.804z"/>
+                    </svg>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: V.steel, letterSpacing: "-0.01em" }}>Substack</div>
+                      <div style={{ fontSize: 9, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace", textTransform: "uppercase", letterSpacing: "0.06em" }}>Gratis</div>
+                    </div>
+                  </a>
+                  <Link
+                    href="/newsletter"
+                    onClick={() => setNavDropdown(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      textDecoration: "none",
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = steelA(0.06))}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                      <rect x="3" y="3" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
+                      <rect x="14" y="3" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
+                      <rect x="3" y="14" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
+                      <rect x="14" y="14" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
+                    </svg>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: V.textPrimary, letterSpacing: "-0.01em" }}>Web</div>
+                      <div style={{ fontSize: 9, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace", textTransform: "uppercase", letterSpacing: "0.06em" }}>Extendida</div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
             <Link
               href="/hub"
               style={{
@@ -1526,20 +1619,6 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                   <path d="M3 8L8 13L13 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </a>
-              <a
-                href="#newsletter-hub"
-                style={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: V.textSecondary,
-                  textDecoration: "none",
-                  transition: "color 0.2s ease",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = V.textPrimary)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = V.textSecondary)}
-              >
-                Leer newsletter
-              </a>
             </div>
 
           </div>
@@ -1585,9 +1664,28 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                 color: V.textMuted,
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
               }}
             >
               Estado de la Cartera
+              {isDemo && (
+                <span
+                  style={{
+                    fontFamily: "var(--font-dm-mono), monospace",
+                    fontSize: 9,
+                    letterSpacing: "0.06em",
+                    color: "#C9A84C",
+                    background: "rgba(201, 168, 76, 0.1)",
+                    border: "1px solid rgba(201, 168, 76, 0.25)",
+                    borderRadius: 4,
+                    padding: "1px 6px",
+                  }}
+                >
+                  Demo
+                </span>
+              )}
             </div>
             <div
               style={{

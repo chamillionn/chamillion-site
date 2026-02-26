@@ -4,8 +4,10 @@ import {
   getPlatforms,
   getDailySnapshots,
   getCostBasis,
+  isDemoMode,
 } from "@/lib/supabase/queries";
 import HomeClient from "./home-client";
+import { DEMO_DATA } from "@/lib/dummy-data";
 
 const PLATFORM_COLORS = [
   "#5BAA7C",
@@ -30,7 +32,35 @@ const TYPE_LABELS: Record<string, string> = {
 
 export const revalidate = 300; // ISR: revalidate every 5 min
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Chamillion",
+  url: "https://chamillion.site",
+  description:
+    "Documentando la vanguardia de los mercados financieros, y haciendo dinero. Con un ojo en cada pantalla.",
+  author: {
+    "@type": "Person",
+    name: "Chamillion",
+    url: "https://x.com/chamillionnnnn",
+  },
+};
+
 export default async function HomePage() {
+  const demo = await isDemoMode();
+
+  if (demo) {
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <HomeClient {...DEMO_DATA} isDemo />
+      </>
+    );
+  }
+
   const [summary, positions, allPlatforms, snapshots, costBasis] = await Promise.all([
     getPortfolioSummary(),
     getPositions(),
@@ -74,20 +104,6 @@ export default async function HomePage() {
       }),
       total: s.total_value,
     }));
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Chamillion",
-    url: "https://chamillion.site",
-    description:
-      "Documentando la vanguardia de los mercados financieros, y haciendo dinero. Con un ojo en cada pantalla.",
-    author: {
-      "@type": "Person",
-      name: "Chamillion",
-      url: "https://x.com/chamillionnnnn",
-    },
-  };
 
   return (
     <>

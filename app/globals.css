@@ -22,6 +22,19 @@
   --text-muted: #5A5F6A;
   --green: #5BAA7C;
   --red: #C7555A;
+
+  /* ── Newsletter / posts ── */
+  --divider: rgba(255, 255, 255, 0.05);
+  --accent-strong: #7A9BB5;
+  --accent-light: #9BBCD0;
+  --bg-surface: #15181E;
+  --bg-surface-alt: #191D24;
+  --bg-elevated: #1A1E25;
+  --bg-page: #0C0E11;
+  --text-tertiary: #3D424D;
+  --shadow-glow: rgba(107, 142, 160, 0.15);
+  --tooltip-bg: #1A1E25;
+  --tooltip-color: #E8EAED;
 }
 
 /* ── Light palette ── */
@@ -40,6 +53,19 @@
   --text-muted: #a89080;
   --green: #3d8a5e;
   --red: #b94449;
+
+  /* ── Newsletter / posts ── */
+  --divider: rgba(0, 0, 0, 0.05);
+  --accent-strong: #3b6784;
+  --accent-light: #5a8ba8;
+  --bg-surface: #e8ddd0;
+  --bg-surface-alt: #e5d8c9;
+  --bg-elevated: #ede3d6;
+  --bg-page: #f4e9da;
+  --text-tertiary: #c4b4a0;
+  --shadow-glow: rgba(74, 122, 154, 0.15);
+  --tooltip-bg: #2a2015;
+  --tooltip-color: #f4e9da;
 }
 
 html {

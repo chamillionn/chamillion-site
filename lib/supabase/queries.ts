@@ -121,6 +121,18 @@ export async function getCostBasis(): Promise<{ invested: number; withdrawn: num
   return { invested, withdrawn, net: invested - withdrawn };
 }
 
+/* ── Site settings ── */
+
+export async function isDemoMode(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("site_settings")
+    .select("value")
+    .eq("key", "demo_mode")
+    .single();
+  return data?.value === true;
+}
+
 /* ── Admin (all positions including closed) ── */
 
 export async function getAllPositions() {

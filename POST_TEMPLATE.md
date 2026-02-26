@@ -27,7 +27,7 @@ import styles from "../post.module.css";
 | **Divider (sección)** | `<hr className={styles.dividerHeavy} />` | `.dividerHeavy` |
 | **Imagen** | `<Image className={styles.heroImg} src="/assets/newsletter/nombre.ext" alt="desc" width={W} height={H} />` | `.heroImg` |
 | **Lista (bullets)** | `<ul className={styles.hubList}><li>item</li></ul>` | `.hubList` |
-| **Widget/embed** | Ver sección 6 | `.iframe` |
+| **Widget/embed** | Ver sección 6 | `.iframe` + `.iframeNombreWidget` |
 
 ### Reglas de conversión
 
@@ -47,8 +47,13 @@ import Image from "next/image";
 import styles from "../post.module.css";
 
 export const metadata: Metadata = {
-  title: "TÍTULO — Chamillion",
+  title: "TÍTULO",
   description: "DESCRIPCIÓN_CORTA",
+  openGraph: {
+    title: "TÍTULO — Chamillion",
+    description: "DESCRIPCIÓN_CORTA",
+    images: [{ url: "/assets/newsletter/banner-post-XX.jpeg" }],
+  },
 };
 
 export default function PostXX() {
@@ -73,6 +78,7 @@ export default function PostXX() {
         <div className={styles.articleHeader}>
           <h1>TÍTULO</h1>
           <p className={styles.articleSubtitle}>SUBTÍTULO</p>
+          <div className={styles.postMeta}>DD MMM YYYY · X min</div>
         </div>
 
         <hr className={styles.dividerHeavy} />
@@ -108,12 +114,17 @@ export default function PostXX() {
 
 ```tsx
 export const metadata: Metadata = {
-  title: "Título del Post — Chamillion",
+  title: "Título del Post",
   description: "Descripción corta para SEO y redes",
+  openGraph: {
+    title: "Título del Post — Chamillion",
+    description: "Descripción corta para SEO y redes",
+    images: [{ url: "/assets/newsletter/banner-post-XX.jpeg" }],
+  },
 };
 ```
 
-El título incluye `— Chamillion` manualmente (el root layout no añade sufijo).
+El root layout añade ` — Chamillion` al `<title>` via `title.template`. OG title se pone manualmente con el sufijo.
 
 ---
 
@@ -161,17 +172,17 @@ public/widgets/post-XX/
 ```tsx
 <iframe
   src="/widgets/post-XX/widget-name/index.html"
-  height={700}
   loading="lazy"
-  className={styles.iframe}
+  className={`${styles.iframe} ${styles.iframeWidgetName}`}
   title="Descripción accesible del widget"
 />
 ```
 
-- `height` varía por widget (no hay estándar)
+- Altura del iframe via clase CSS (ej. `.iframeWidgetName { height: 700px; }`) en `post.module.css`, no inline
 - `loading="lazy"` siempre
 - `title` obligatorio (accesibilidad)
 - Los widgets gestionan su propio dark/light mode internamente
+- Incluir responsivo en `@media (max-width: 600px)` si la altura cambia en móvil
 
 ---
 

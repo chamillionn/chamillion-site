@@ -43,6 +43,7 @@ export default function Post01() {
             Un viaje con dinero real por los mercados que están reemplazando al
             sistema.
           </p>
+          <div className={styles.postMeta}>26 ene 2025 · 8 min</div>
         </div>
 
         <hr className={styles.dividerHeavy} />
@@ -60,6 +61,8 @@ export default function Post01() {
         </p>
 
         <p>Pero eso ya lo sabes.</p>
+
+        <hr className={styles.divider} />
 
         <p>
           Hacer algo al respecto no es fácil: el sistema está amañado. Los
@@ -184,6 +187,8 @@ export default function Post01() {
           comisiones no se coman los resultados desde el primer día, y es una
           cantidad que cualquiera puede reunir.
         </p>
+
+        <hr className={styles.divider} />
 
         {/* TRANSPARENCIA */}
         <h2>Transparencia</h2>
