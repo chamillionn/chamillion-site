@@ -75,22 +75,42 @@ export default async function HomePage() {
       total: s.total_value,
     }));
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Chamillion",
+    url: "https://chamillion.site",
+    description:
+      "Documentando la vanguardia de los mercados financieros, y haciendo dinero. Con un ojo en cada pantalla.",
+    author: {
+      "@type": "Person",
+      name: "Chamillion",
+      url: "https://x.com/chamillionnnnn",
+    },
+  };
+
   return (
-    <HomeClient
-      summary={
-        summary
-          ? {
-              totalValue: summary.total_value,
-              totalCost: summary.total_cost,
-              totalPnl: summary.total_pnl,
-              totalRoiPct: summary.total_roi_pct,
-            }
-          : null
-      }
-      platforms={platforms}
-      totalValue={totalValue}
-      dailyData={dailyData}
-      capitalInvested={costBasis.net > 0 ? costBasis.net : null}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <HomeClient
+        summary={
+          summary
+            ? {
+                totalValue: summary.total_value,
+                totalCost: summary.total_cost,
+                totalPnl: summary.total_pnl,
+                totalRoiPct: summary.total_roi_pct,
+              }
+            : null
+        }
+        platforms={platforms}
+        totalValue={totalValue}
+        dailyData={dailyData}
+        capitalInvested={costBasis.net > 0 ? costBasis.net : null}
+      />
+    </>
   );
 }

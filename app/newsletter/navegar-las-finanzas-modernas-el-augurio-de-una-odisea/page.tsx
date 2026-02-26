@@ -3,9 +3,15 @@ import Image from "next/image";
 import styles from "../post.module.css";
 
 export const metadata: Metadata = {
-  title: "Navegar las finanzas modernas: El augurio de una odisea — Chamillion",
+  title: "Navegar las finanzas modernas: El augurio de una odisea",
   description:
     "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
+  openGraph: {
+    title: "Navegar las finanzas modernas: El augurio de una odisea — Chamillion",
+    description:
+      "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
+    images: [{ url: "/assets/newsletter/banner-post-01.jpeg" }],
+  },
 };
 
 export default function Post01() {

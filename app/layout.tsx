@@ -45,7 +45,11 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Chamillion",
+  metadataBase: new URL("https://chamillion.site"),
+  title: {
+    default: "Chamillion",
+    template: "%s — Chamillion",
+  },
   description:
     "Documentando la vanguardia de los mercados financieros, y haciendo dinero. Con un ojo en cada pantalla.",
   openGraph: {
@@ -54,7 +58,8 @@ export const metadata: Metadata = {
       "Documentando la vanguardia de los mercados financieros, y haciendo dinero. Con un ojo en cada pantalla.",
     siteName: "Chamillion",
     type: "website",
-    images: [{ url: "/og-image.png", width: 1388, height: 1388 }],
+    locale: "es_ES",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
@@ -63,6 +68,9 @@ export const metadata: Metadata = {
       "Documentando la vanguardia de los mercados financieros, y haciendo dinero. Con un ojo en cada pantalla.",
     creator: "@chamillionnnnn",
     images: ["/og-image.png"],
+  },
+  other: {
+    "theme-color": "#0C0E11",
   },
 };
 

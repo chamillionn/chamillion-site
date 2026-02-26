@@ -1492,8 +1492,8 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                 fontWeight: 300,
               }}
             >
-              Explorando los mercados descentralizados con dinero real. 500 € de
-              inicio, 100 € al mes. Todo público, todo verificable on-chain.
+              Documentando la vanguardia de los mercados financieros, y haciendo
+              dinero. Con un ojo en cada pantalla.
             </p>
 
             {/* Navigation links */}
