@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Snapshot, SnapshotPosition } from "@/lib/supabase/types";
+import { deleteSnapshot } from "./actions";
 import styles from "../crud.module.css";
 
 function fmtEur(n: number) {
@@ -109,6 +110,7 @@ export default function SnapshotsTable({ snapshots }: Props) {
                 <th>PnL</th>
                 <th>Posiciones</th>
                 <th>Notas</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -149,6 +151,15 @@ function SnapshotRow({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!confirm("¿Eliminar este snapshot?")) return;
+    setDeleting(true);
+    await deleteSnapshot(s.id);
+  }
+
   return (
     <>
       <tr
@@ -185,11 +196,23 @@ function SnapshotRow({
         </td>
         <td>{posCount}</td>
         <td style={{ color: "var(--text-muted)", fontSize: 12 }}>{s.notes || "—"}</td>
+        <td>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+            title="Eliminar snapshot"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+            </svg>
+          </button>
+        </td>
       </tr>
 
       {isExpanded && s.positions_data && s.positions_data.length > 0 && (
         <tr>
-          <td colSpan={7} style={{ padding: 0 }}>
+          <td colSpan={8} style={{ padding: 0 }}>
             <PositionsSubTable positions={s.positions_data} />
           </td>
         </tr>
