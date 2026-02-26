@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
 import AdminShell from "./shell";
 
 export default async function AdminLayout({
@@ -7,20 +7,10 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const admin = await requireAdmin();
+  if (!admin) redirect("/login");
 
-  if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, email, display_name")
-    .eq("id", user.id)
-    .single() as { data: { role: string; email: string; display_name: string | null } | null };
-
-  if (!profile || profile.role !== "admin") redirect("/");
+  const { profile } = admin;
 
   return (
     <AdminShell email={profile.email} displayName={profile.display_name}>

@@ -2,27 +2,40 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import type { CapitalFlowType } from "@/lib/supabase/types";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+const VALID_FLOW_TYPES: CapitalFlowType[] = ["buy", "sell", "deposit_fiat", "withdraw_fiat"];
+
+function safeNumber(raw: string | null): number | null {
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
 
 export async function createCapitalFlow(formData: FormData) {
+  const type = formData.get("type") as string;
+  if (!VALID_FLOW_TYPES.includes(type as CapitalFlowType)) {
+    return { error: `Tipo inválido: ${type}` };
+  }
+
+  const amount_eur = Number(formData.get("amount_eur"));
+  if (!Number.isFinite(amount_eur) || amount_eur === 0) {
+    return { error: "amount_eur debe ser un número válido y distinto de 0" };
+  }
+
   const supabase = await createClient();
-
-  const quantity = formData.get("quantity") as string;
-  const pricePerUnit = formData.get("price_per_unit") as string;
-
-  const { error } = await (supabase.from("capital_flows") as any).insert({
+  const { error } = await supabase.from("capital_flows").insert({
     date: (formData.get("date") as string) || new Date().toISOString(),
-    type: formData.get("type") as string,
-    amount_eur: Number(formData.get("amount_eur")),
+    type: type as CapitalFlowType,
+    amount_eur,
     asset: (formData.get("asset") as string) || null,
-    quantity: quantity ? Number(quantity) : null,
-    price_per_unit: pricePerUnit ? Number(pricePerUnit) : null,
+    quantity: safeNumber(formData.get("quantity") as string),
+    price_per_unit: safeNumber(formData.get("price_per_unit") as string),
     exchange: (formData.get("exchange") as string) || null,
     notes: (formData.get("notes") as string) || null,
   });
 
-  if (error) return { error: (error as any).message };
+  if (error) return { error: error.message };
 
   revalidatePath("/admin");
   return { success: true };
@@ -30,10 +43,9 @@ export async function createCapitalFlow(formData: FormData) {
 
 export async function deleteCapitalFlow(id: string) {
   const supabase = await createClient();
+  const { error } = await supabase.from("capital_flows").delete().eq("id", id);
 
-  const { error } = await (supabase.from("capital_flows") as any).delete().eq("id", id);
-
-  if (error) return { error: (error as any).message };
+  if (error) return { error: error.message };
 
   revalidatePath("/admin");
   return { success: true };

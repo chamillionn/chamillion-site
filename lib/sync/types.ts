@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
 
 export interface SyncResult {
   platform: string;
@@ -41,17 +41,7 @@ export async function authCheck(request: Request): Promise<boolean> {
 
   // 2. Check Supabase session (admin role)
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single() as { data: { role: string } | null };
-
-    return profile?.role === "admin";
+    return (await requireAdmin()) !== null;
   } catch {
     return false;
   }

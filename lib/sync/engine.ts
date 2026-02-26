@@ -19,7 +19,7 @@ export async function syncPlatform(adapter: PlatformAdapter): Promise<SyncResult
   const supabase = createServiceClient();
 
   // 1. Get platform row + wallet from DB
-  const { data: platforms } = await (supabase.from("platforms") as ReturnType<typeof supabase.from>)
+  const { data: platforms } = await supabase.from("platforms")
     .select("id, wallet_address")
     .eq("name", adapter.platformName)
     .limit(1);
@@ -36,7 +36,7 @@ export async function syncPlatform(adapter: PlatformAdapter): Promise<SyncResult
   const { id: platformId, wallet_address: wallet } = platform;
 
   // 2. Fetch existing active positions for diff
-  const { data: existingRows } = await (supabase.from("positions") as ReturnType<typeof supabase.from>)
+  const { data: existingRows } = await supabase.from("positions")
     .select("id, asset")
     .eq("platform_id", platformId)
     .eq("is_active", true);
@@ -78,10 +78,10 @@ export async function syncPlatform(adapter: PlatformAdapter): Promise<SyncResult
 
     const existingId = existingMap.get(pos.asset);
     const { error } = existingId
-      ? await (supabase.from("positions") as ReturnType<typeof supabase.from>)
+      ? await supabase.from("positions")
           .update(row)
           .eq("id", existingId)
-      : await (supabase.from("positions") as ReturnType<typeof supabase.from>)
+      : await supabase.from("positions")
           .insert({ ...row, asset: pos.asset, platform_id: platformId, opened_at: new Date().toISOString() });
 
     if (error) {
@@ -97,7 +97,7 @@ export async function syncPlatform(adapter: PlatformAdapter): Promise<SyncResult
     .map(([, id]) => id);
 
   if (staleIds.length > 0) {
-    const { error: deactivateErr } = await (supabase.from("positions") as ReturnType<typeof supabase.from>)
+    const { error: deactivateErr } = await supabase.from("positions")
       .update({ is_active: false, closed_at: new Date().toISOString() })
       .in("id", staleIds);
 

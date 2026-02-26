@@ -80,9 +80,7 @@ export async function captureSnapshot(): Promise<SnapshotResult> {
   }));
 
   // 3. Insert snapshot for this 15-min slot (skip if already exists)
-  const { error: insertErr } = await (
-    supabase.from("snapshots") as ReturnType<typeof supabase.from>
-  ).upsert(
+  const { error: insertErr } = await supabase.from("snapshots").upsert(
     {
       snapshot_date: slotISO,
       total_value: s.total_value ?? 0,

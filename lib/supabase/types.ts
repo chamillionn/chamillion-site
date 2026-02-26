@@ -114,49 +114,65 @@ export interface PortfolioSummary {
 
 /* ── Supabase generic Database type ── */
 
-export interface Database {
+/** Forces TypeScript to eagerly resolve Omit/Partial into plain object types.
+ *  Required for Supabase client generics (conditional type resolution). */
+type Flatten<T> = { [K in keyof T]: T[K] };
+
+export type Database = {
   public: {
     Tables: {
       platforms: {
-        Row: Platform;
-        Insert: Omit<Platform, "id"> & { id?: string };
-        Update: Partial<Platform>;
+        Row: Flatten<Platform>;
+        Insert: Flatten<Omit<Platform, "id" | "referral_url" | "logo_url"> & { id?: string; referral_url?: string | null; logo_url?: string | null }>;
+        Update: Flatten<Partial<Platform>>;
+        Relationships: [];
       };
       strategies: {
-        Row: Strategy;
-        Insert: Omit<Strategy, "id"> & { id?: string };
-        Update: Partial<Strategy>;
+        Row: Flatten<Strategy>;
+        Insert: Flatten<Omit<Strategy, "id" | "description"> & { id?: string; description?: string | null }>;
+        Update: Flatten<Partial<Strategy>>;
+        Relationships: [];
       };
       positions: {
-        Row: Position;
-        Insert: Omit<Position, "id"> & { id?: string };
-        Update: Partial<Position>;
+        Row: Flatten<Position>;
+        Insert: Flatten<Omit<Position, "id" | "strategy_id" | "notes" | "closed_at"> & { id?: string; strategy_id?: string | null; notes?: string | null; closed_at?: string | null }>;
+        Update: Flatten<Partial<Position>>;
+        Relationships: [
+          { foreignKeyName: "positions_platform_id_fkey"; columns: ["platform_id"]; referencedRelation: "platforms"; referencedColumns: ["id"]; isOneToOne: false },
+          { foreignKeyName: "positions_strategy_id_fkey"; columns: ["strategy_id"]; referencedRelation: "strategies"; referencedColumns: ["id"]; isOneToOne: false },
+        ];
       };
       snapshots: {
-        Row: Snapshot;
-        Insert: Omit<Snapshot, "id"> & { id?: string };
-        Update: Partial<Snapshot>;
+        Row: Flatten<Snapshot>;
+        Insert: Flatten<Omit<Snapshot, "id" | "created_at" | "notes"> & { id?: string; created_at?: string; notes?: string | null }>;
+        Update: Flatten<Partial<Snapshot>>;
+        Relationships: [];
       };
       profiles: {
-        Row: Profile;
-        Insert: Omit<Profile, "id"> & { id?: string };
-        Update: Partial<Profile>;
+        Row: Flatten<Profile>;
+        Insert: Flatten<Omit<Profile, "id" | "display_name" | "stripe_customer_id" | "subscribed_at"> & { id?: string; display_name?: string | null; stripe_customer_id?: string | null; subscribed_at?: string | null }>;
+        Update: Flatten<Partial<Profile>>;
+        Relationships: [];
       };
       capital_flows: {
-        Row: CapitalFlow;
-        Insert: Omit<CapitalFlow, "id" | "created_at"> & { id?: string };
-        Update: Partial<CapitalFlow>;
+        Row: Flatten<CapitalFlow>;
+        Insert: Flatten<Omit<CapitalFlow, "id" | "created_at" | "asset" | "quantity" | "price_per_unit" | "exchange" | "notes"> & { id?: string; created_at?: string; asset?: string | null; quantity?: number | null; price_per_unit?: number | null; exchange?: string | null; notes?: string | null }>;
+        Update: Flatten<Partial<CapitalFlow>>;
+        Relationships: [];
       };
     };
     Views: {
       positions_enriched: {
-        Row: PositionEnriched;
+        Row: Flatten<PositionEnriched>;
+        Relationships: [];
       };
       portfolio_summary: {
-        Row: PortfolioSummary;
+        Row: Flatten<PortfolioSummary>;
+        Relationships: [];
       };
     };
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
+    Functions: { [_ in never]: never };
+    Enums: { [_ in never]: never };
+    CompositeTypes: { [_ in never]: never };
   };
-}
+};
