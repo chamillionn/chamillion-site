@@ -126,15 +126,6 @@ button:focus-visible,
   animation: fadeIn 0.45s ease-out;
 }
 
-/* ── Theme toggle (global, fixed) ── */
-
-.theme-toggle-fixed {
-  position: fixed;
-  top: 22px;
-  right: 20px;
-  z-index: 1000;
-}
-
 /* ── Camaleón fondo (usado en newsletter) ── */
 
 .face-bg {

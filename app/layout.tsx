@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import {
   DM_Mono,
   Playfair_Display,
@@ -8,7 +7,6 @@ import {
   Instrument_Serif,
   Outfit,
 } from "next/font/google";
-import ThemeToggle from "@/components/theme-toggle";
 import "./globals.css";
 
 const dmMono = DM_Mono({
@@ -75,17 +73,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning className={`${dmMono.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${outfit.variable}`}>
-      <Script id="theme-init" strategy="beforeInteractive">{`
-        (function(){
-          var t = localStorage.getItem("chamillion-theme");
-          if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-          document.documentElement.setAttribute("data-theme", t);
-        })();
-      `}</Script>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem("chamillion-theme");if(!t)t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)})()` }} />
+      </head>
       <body>
-        <div className="theme-toggle-fixed">
-          <ThemeToggle />
-        </div>
         {children}
       </body>
     </html>

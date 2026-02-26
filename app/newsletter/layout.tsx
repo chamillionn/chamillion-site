@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
+import Header from "./header";
 import styles from "./layout.module.css";
 
 export const metadata: Metadata = {
@@ -16,25 +15,7 @@ export default function NewsletterLayout({
 }) {
   return (
     <div className={styles.wrapper}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <Link className={styles.headerLogo} href="/">
-            <div className={styles.logoBox}>
-              <Image
-                src="/assets/newsletter/logo.jpg"
-                alt="Chamillion"
-                width={24}
-                height={24}
-              />
-            </div>
-            <span>Chamillion</span>
-          </Link>
-          <nav className={styles.headerNav}>
-            <Link href="/">Inicio</Link>
-            <Link href="/newsletter">Archivo</Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
       {children}
     </div>
   );

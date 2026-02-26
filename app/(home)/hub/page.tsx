@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import ThemeToggle from "@/components/theme-toggle";
 import styles from "./page.module.css";
 
 const FEATURES = [
@@ -28,6 +29,9 @@ export default function HubPage() {
 
   return (
     <div className={`page-transition ${styles.page}`}>
+      <div className={styles.toggleWrap}>
+        <ThemeToggle />
+      </div>
       <div className={styles.content}>
         <span className={styles.badge}>
           <span className={styles.badgeDot} />

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import ThemeToggle from "@/components/theme-toggle";
 import { V, steelA, bgCardA } from "@/lib/theme";
 
 // Scroll-triggered reveal
@@ -1304,6 +1305,7 @@ export default function Home() {
             >
               Hub
             </Link>
+            <ThemeToggle />
           </div>
         </nav>
 
@@ -1877,20 +1879,6 @@ export default function Home() {
           }}
         >
           <div>
-            <div
-              style={{
-                fontFamily: "var(--font-jetbrains), monospace",
-                fontSize: 12,
-                fontWeight: 600,
-                color: V.textSecondary,
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
-                marginBottom: 16,
-              }}
-            >
-              Chamillion
-            </div>
-
             <div
               style={{
                 display: "flex",
