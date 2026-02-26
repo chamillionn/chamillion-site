@@ -1,0 +1,15 @@
+name: Portfolio Sync
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # permite ejecutar manualmente desde GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call sync endpoint
+        run: |
+          curl -sf -X GET https://chamillion.site/api/sync \
+            -H "Authorization: Bearer ${{ secrets.SYNC_SECRET }}"

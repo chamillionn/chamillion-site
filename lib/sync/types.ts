@@ -10,16 +10,14 @@ export interface SyncResult {
 /**
  * Auth check for sync routes.
  * Accepts either:
- *  1. Bearer token (SYNC_SECRET for manual calls, CRON_SECRET for Vercel Cron)
+ *  1. Bearer token (SYNC_SECRET for GitHub Actions cron / manual calls)
  *  2. Valid admin Supabase session (for admin panel calls)
  */
 export async function authCheck(request: Request): Promise<boolean> {
-  // 1. Check Bearer token (SYNC_SECRET or Vercel CRON_SECRET)
+  // 1. Check Bearer token
   const auth = request.headers.get("authorization");
-  const syncSecret = process.env.SYNC_SECRET;
-  const cronSecret = process.env.CRON_SECRET;
-  if (syncSecret && auth === `Bearer ${syncSecret}`) return true;
-  if (cronSecret && auth === `Bearer ${cronSecret}`) return true;
+  const secret = process.env.SYNC_SECRET;
+  if (secret && auth === `Bearer ${secret}`) return true;
 
   // 2. Check Supabase session (admin role)
   try {
