@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import type { PositionEnriched, PortfolioSummary } from "@/lib/supabase/types";
 
 export interface SnapshotResult {
@@ -29,7 +29,7 @@ export async function captureSnapshot(): Promise<SnapshotResult> {
   const slotDate = roundTo15Min(new Date());
   const slotISO = slotDate.toISOString();
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   // 1. Read current portfolio summary
   const { data: summary, error: summaryErr } = await supabase
@@ -48,6 +48,17 @@ export async function captureSnapshot(): Promise<SnapshotResult> {
   }
 
   const s = summary as PortfolioSummary;
+
+  // Skip snapshot if no positions exist yet
+  if (s.total_positions === 0 || s.total_value == null) {
+    return {
+      captured: false,
+      snapshot_date: slotISO,
+      total_value: 0,
+      positions_count: 0,
+      error: "No positions to snapshot",
+    };
+  }
 
   // 2. Read current positions for historical breakdown
   const { data: positions } = await supabase

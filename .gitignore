@@ -16,3 +16,4 @@ next-env.d.ts
 # debug
 npm-debug.log*
 prompts_pendientes
+.vercel

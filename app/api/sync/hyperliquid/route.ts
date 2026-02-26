@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { authCheck, type SyncResult } from "@/lib/sync/types";
 
 const HL_API = "https://api.hyperliquid.xyz/info";
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     timestamp: new Date().toISOString(),
   };
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   // Get the Hyperliquid platform + wallet address from DB
   const { data: platforms } = await (supabase.from("platforms") as ReturnType<typeof supabase.from>)
