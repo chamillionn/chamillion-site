@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
 
 function requireNumber(fd: FormData, key: string): number {
   const n = Number(fd.get(key));
@@ -11,12 +11,14 @@ function requireNumber(fd: FormData, key: string): number {
 
 export async function createPosition(formData: FormData) {
   try {
+    const admin = await requireAdmin();
+    if (!admin) return { error: "Unauthorized" };
+
     const size = requireNumber(formData, "size");
     const cost_basis = requireNumber(formData, "cost_basis");
     const current_value = requireNumber(formData, "current_value");
 
-    const supabase = await createClient();
-    const { error } = await supabase.from("positions").insert({
+    const { error } = await admin.supabase.from("positions").insert({
       asset: formData.get("asset") as string,
       size,
       cost_basis,
@@ -39,12 +41,14 @@ export async function createPosition(formData: FormData) {
 
 export async function updatePosition(id: string, formData: FormData) {
   try {
+    const admin = await requireAdmin();
+    if (!admin) return { error: "Unauthorized" };
+
     const size = requireNumber(formData, "size");
     const cost_basis = requireNumber(formData, "cost_basis");
     const current_value = requireNumber(formData, "current_value");
 
-    const supabase = await createClient();
-    const { error } = await supabase
+    const { error } = await admin.supabase
       .from("positions")
       .update({
         asset: formData.get("asset") as string,
@@ -68,8 +72,10 @@ export async function updatePosition(id: string, formData: FormData) {
 }
 
 export async function closePosition(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const { error } = await admin.supabase
     .from("positions")
     .update({ is_active: false, closed_at: new Date().toISOString() })
     .eq("id", id);
@@ -81,8 +87,10 @@ export async function closePosition(id: string) {
 }
 
 export async function reopenPosition(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const { error } = await admin.supabase
     .from("positions")
     .update({ is_active: true, closed_at: null })
     .eq("id", id);
@@ -94,8 +102,10 @@ export async function reopenPosition(id: string) {
 }
 
 export async function deletePosition(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("positions").delete().eq("id", id);
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const { error } = await admin.supabase.from("positions").delete().eq("id", id);
 
   if (error) return { error: error.message };
 

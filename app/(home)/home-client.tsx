@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
@@ -155,6 +155,23 @@ export interface HomeProps {
   dailyData: DailyData[];
   capitalInvested: number | null;
   isDemo?: boolean;
+  platformColorsLight?: string[];
+}
+
+// Detect current theme from data-theme attribute
+function useTheme() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  useEffect(() => {
+    const read = () => {
+      const t = document.documentElement.getAttribute("data-theme");
+      setTheme(t === "light" ? "light" : "dark");
+    };
+    read();
+    const observer = new MutationObserver(read);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+  return theme;
 }
 
 // SVG Donut chart
@@ -1253,7 +1270,7 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
             <div style={{ fontSize: 10, color: V.textMuted, marginBottom: 2 }}>{hoveredData.day}</div>
             <div style={{ fontSize: 14, fontWeight: 600, color: V.textPrimary }}>{hoveredData.total.toFixed(2)} €</div>
             {prevTotal !== null && (
-              <div style={{ fontSize: 10, color: hoveredData.total >= prevTotal ? "#5BAA7C" : "#C7555A" }}>
+              <div style={{ fontSize: 10, color: hoveredData.total >= prevTotal ? V.green : V.red }}>
                 {hoveredData.total >= prevTotal ? "+" : ""}{(hoveredData.total - prevTotal).toFixed(2)} €
               </div>
             )}
@@ -1265,7 +1282,7 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   );
 }
 
-export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, isDemo }: HomeProps) {
+export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, isDemo, platformColorsLight }: HomeProps) {
   const [loaded, setLoaded] = useState(false);
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
   const [navDropdown, setNavDropdown] = useState(false);
@@ -1273,6 +1290,16 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
   const mobile = useMediaQuery(768);
   const portfolio = useScrollReveal(0.1);
   const ctas = useScrollReveal(0.1);
+  const theme = useTheme();
+
+  // Remap platform colors for light mode
+  const themedPlatforms = useMemo(() => {
+    if (theme !== "light" || !platformColorsLight) return platforms;
+    return platforms.map((p, i) => ({
+      ...p,
+      color: platformColorsLight[i % platformColorsLight.length],
+    }));
+  }, [platforms, theme, platformColorsLight]);
 
   const hasSummary = summary && summary.totalValue != null;
   const pnlPositive = hasSummary && summary.totalPnl >= 0;
@@ -1347,6 +1374,8 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
         {/* Nav */}
         <nav
           style={{
+            position: "relative",
+            zIndex: 200,
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -1449,7 +1478,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                     borderRadius: 12,
                     padding: 6,
                     zIndex: 100,
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                    boxShadow: `0 8px 32px ${V.shadowDropdown}`,
                     display: "flex",
                     flexDirection: "column",
                     gap: 4,
@@ -1676,9 +1705,9 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                     fontFamily: "var(--font-dm-mono), monospace",
                     fontSize: 9,
                     letterSpacing: "0.06em",
-                    color: "#C9A84C",
-                    background: "rgba(201, 168, 76, 0.1)",
-                    border: "1px solid rgba(201, 168, 76, 0.25)",
+                    color: V.gold,
+                    background: `rgba(${V.goldRgb}, 0.1)`,
+                    border: `1px solid rgba(${V.goldRgb}, 0.25)`,
                     borderRadius: 4,
                     padding: "1px 6px",
                   }}
@@ -1733,11 +1762,11 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                     marginTop: 6,
                     fontFamily: "var(--font-jetbrains), monospace",
                     fontSize: 12,
-                    color: pnlPositive ? "#5BAA7C" : "#C7555A",
+                    color: pnlPositive ? V.green : V.red,
                   }}
                 >
                   <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
-                    <path d={pnlPositive ? "M5 1L9 6H1L5 1Z" : "M5 9L9 4H1L5 9Z"} fill={pnlPositive ? "#5BAA7C" : "#C7555A"} />
+                    <path d={pnlPositive ? "M5 1L9 6H1L5 1Z" : "M5 9L9 4H1L5 9Z"} fill={pnlPositive ? V.green : V.red} />
                   </svg>
                   {pnlPositive ? "+" : ""}<AnimatedNumber target={summary.totalPnl} suffix=" €" decimals={2} duration={2000} /> ({summary.totalRoiPct.toFixed(1)}%)
                 </div>
@@ -1766,14 +1795,14 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                       Posiciones
                     </div>
                     <div style={{ fontSize: 13, fontFamily: "var(--font-jetbrains), monospace", color: V.textSecondary }}>
-                      {platforms.reduce((sum, p) => sum + p.positions.length, 0)}
+                      {themedPlatforms.reduce((sum, p) => sum + p.positions.length, 0)}
                     </div>
                   </div>
                 </div>
               )}
 
               {/* On-chain wallets */}
-              {platforms.some(p => p.walletAddress) && (
+              {themedPlatforms.some(p => p.walletAddress) && (
                 <div
                   style={{
                     marginTop: 14,
@@ -1786,7 +1815,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                     gap: 4,
                   }}
                 >
-                  {platforms.filter(p => p.walletAddress).map((p, i, arr) => {
+                  {themedPlatforms.filter(p => p.walletAddress).map((p, i, arr) => {
                     const addr = p.walletAddress!;
                     const short = `${addr.slice(0, 6)}...${addr.slice(-4)}`;
                     return (
@@ -1801,12 +1830,12 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
             </div>
 
             {/* Donut */}
-            <DonutChart platforms={platforms} total={totalValue} hoveredPlatform={hoveredPlatform} onHover={setHoveredPlatform} />
+            <DonutChart platforms={themedPlatforms} total={totalValue} hoveredPlatform={hoveredPlatform} onHover={setHoveredPlatform} />
 
             {/* Legend — desktop: vertical list / mobile: compact pills */}
             {!mobile ? (
               <div>
-                {platforms.map((platform, i) => (
+                {themedPlatforms.map((platform, i) => (
                   <PlatformLegendItem
                     key={platform.name}
                     platform={platform}
@@ -1828,7 +1857,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                   marginTop: 4,
                 }}
               >
-                {platforms.map((platform, i) => {
+                {themedPlatforms.map((platform, i) => {
                   const isHovered = hoveredPlatform === platform.name;
                   const isDimmed = hoveredPlatform !== null && !isHovered;
                   return (

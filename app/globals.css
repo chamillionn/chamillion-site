@@ -22,6 +22,9 @@
   --text-muted: #5A5F6A;
   --green: #5BAA7C;
   --red: #C7555A;
+  --gold: #C9A84C;
+  --gold-rgb: 201, 168, 76;
+  --shadow-dropdown: rgba(0, 0, 0, 0.3);
 
   /* ── Newsletter / posts ── */
   --divider: rgba(255, 255, 255, 0.05);
@@ -39,33 +42,37 @@
 
 /* ── Light palette ── */
 [data-theme="light"] {
-  --steel-blue: #4a7a9a;
-  --steel-blue-rgb: 74, 122, 154;
-  --steel-blue-dim: #3b6784;
-  --bg-dark: #f4e9da;
-  --bg-card: #ede3d6;
-  --bg-card-rgb: 237, 227, 214;
-  --bg-card-hover: #f0e6d8;
-  --border: #d4c4b0;
-  --border-rgb: 212, 196, 176;
-  --text-primary: #1e1410;
-  --text-secondary: #6b5a4e;
-  --text-muted: #a89080;
-  --green: #3d8a5e;
-  --red: #b94449;
+  --accent: #3a6d88;
+  --steel-blue: #3a6d88;
+  --steel-blue-rgb: 58, 109, 136;
+  --steel-blue-dim: #2c5468;
+  --bg-dark: #e2d5c3;
+  --bg-card: #e8dac8;
+  --bg-card-rgb: 232, 218, 200;
+  --bg-card-hover: #ecdece;
+  --border: #c4b49e;
+  --border-rgb: 196, 180, 158;
+  --text-primary: #1a1410;
+  --text-secondary: #4a3f35;
+  --text-muted: #6e6054;
+  --green: #2a7348;
+  --red: #a8333a;
+  --gold: #8a7020;
+  --gold-rgb: 138, 112, 32;
+  --shadow-dropdown: rgba(0, 0, 0, 0.18);
 
   /* ── Newsletter / posts ── */
-  --divider: rgba(0, 0, 0, 0.05);
-  --accent-strong: #3b6784;
-  --accent-light: #5a8ba8;
-  --bg-surface: #e8ddd0;
-  --bg-surface-alt: #e5d8c9;
-  --bg-elevated: #ede3d6;
-  --bg-page: #f4e9da;
-  --text-tertiary: #c4b4a0;
-  --shadow-glow: rgba(74, 122, 154, 0.15);
+  --divider: rgba(0, 0, 0, 0.08);
+  --accent-strong: #2c5468;
+  --accent-light: #4a8aaa;
+  --bg-surface: #ddd0be;
+  --bg-surface-alt: #d8cab8;
+  --bg-elevated: #e8dac8;
+  --bg-page: #e2d5c3;
+  --text-tertiary: #a09282;
+  --shadow-glow: rgba(58, 109, 136, 0.2);
   --tooltip-bg: #2a2015;
-  --tooltip-color: #f4e9da;
+  --tooltip-color: #e8dac8;
 }
 
 html {
@@ -146,6 +153,22 @@ button:focus-visible,
   50% { transform: translate(-15%, 2%); }
   70% { transform: translate(7%, 5%); }
   90% { transform: translate(-10%, -5%); }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+/* ── Accessibility: reduce motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .page-transition {

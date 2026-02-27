@@ -1,11 +1,15 @@
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
+import { redirect } from "next/navigation";
 import DebugView from "./debug-view";
 
 const TABLES = ["platforms", "strategies", "positions", "snapshots", "profiles"] as const;
 const VIEWS = ["positions_enriched", "portfolio_summary"] as const;
 
 export default async function DebugPage() {
-  const supabase = await createClient();
+  const admin = await requireAdmin();
+  if (!admin) redirect("/login");
+
+  const supabase = admin.supabase;
 
   const tables: Record<string, { rows: Record<string, unknown>[]; count: number }> = {};
   const views: Record<string, { rows: Record<string, unknown>[]; count: number }> = {};

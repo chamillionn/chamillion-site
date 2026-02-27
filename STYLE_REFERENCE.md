@@ -44,16 +44,17 @@ La paleta se define como CSS custom properties en `app/globals.css` con soporte 
 
 | Rol | Variable CSS | Valor |
 |---|---|---|
-| **Fondo** | `--bg-dark` | `#f4e9da` |
-| **Tarjetas** | `--bg-card` | `#ede3d6` |
-| **Tarjetas hover** | `--bg-card-hover` | `#f0e6d8` |
-| **Bordes** | `--border` | `#d4c4b0` |
-| **Texto primario** | `--text-primary` | `#1e1410` |
-| **Texto secundario** | `--text-secondary` | `#6b5a4e` |
-| **Texto muted** | `--text-muted` | `#a89080` |
-| **Acento azul** | `--steel-blue` | `#4a7a9a` |
-| **Verde** | `--green` | `#3d8a5e` |
-| **Rojo** | `--red` | `#b94449` |
+| **Fondo** | `--bg-dark` | `#e2d5c3` |
+| **Tarjetas** | `--bg-card` | `#e8dac8` |
+| **Tarjetas hover** | `--bg-card-hover` | `#ecdece` |
+| **Bordes** | `--border` | `#c4b49e` |
+| **Texto primario** | `--text-primary` | `#1a1410` |
+| **Texto secundario** | `--text-secondary` | `#4a3f35` |
+| **Texto muted** | `--text-muted` | `#6e6054` |
+| **Acento azul** | `--steel-blue` | `#3a6d88` |
+| **Verde (PnL+)** | `--green` | `#2a7348` |
+| **Rojo (PnL-)** | `--red` | `#a8333a` |
+| **Oro (demo badge)** | `--gold` | `#8a7020` |
 
 ### Widgets (public/widgets/)
 

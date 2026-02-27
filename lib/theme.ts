@@ -14,6 +14,11 @@ export const V = {
   textPrimary: "var(--text-primary)",
   textSecondary: "var(--text-secondary)",
   textMuted: "var(--text-muted)",
+  green: "var(--green)",
+  red: "var(--red)",
+  gold: "var(--gold)",
+  goldRgb: "var(--gold-rgb)",
+  shadowDropdown: "var(--shadow-dropdown)",
 } as const;
 
 export function steelA(a: number) {

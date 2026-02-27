@@ -9,11 +9,14 @@ export async function toggleDemoMode(enabled: boolean) {
 
   const { error } = await admin.supabase
     .from("site_settings")
-    .update({ value: enabled, updated_at: new Date().toISOString() })
-    .eq("key", "demo_mode");
+    .upsert(
+      { key: "demo_mode", value: enabled, updated_at: new Date().toISOString() },
+      { onConflict: "key" }
+    );
 
   if (error) return { error: error.message };
 
   revalidatePath("/");
+  revalidatePath("/admin");
   return { success: true };
 }

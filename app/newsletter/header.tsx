@@ -16,6 +16,7 @@ export default function Header() {
               alt="Chamillion"
               width={24}
               height={24}
+              sizes="24px"
             />
           </div>
           <span>Chamillion</span>

@@ -34,10 +34,20 @@ export interface PlatformAdapter {
  *  2. Valid admin Supabase session (for admin panel calls)
  */
 export async function authCheck(request: Request): Promise<boolean> {
-  // 1. Check Bearer token
+  // 1. Check Bearer token (timing-safe comparison to prevent timing attacks)
   const auth = request.headers.get("authorization");
   const secret = process.env.SYNC_SECRET;
-  if (secret && auth === `Bearer ${secret}`) return true;
+  if (secret && auth?.startsWith("Bearer ")) {
+    const token = auth.slice(7);
+    if (token.length === secret.length) {
+      const a = new TextEncoder().encode(token);
+      const b = new TextEncoder().encode(secret);
+      // Constant-time comparison: always compare all bytes
+      let mismatch = 0;
+      for (let i = 0; i < a.length; i++) mismatch |= a[i] ^ b[i];
+      if (mismatch === 0) return true;
+    }
+  }
 
   // 2. Check Supabase session (admin role)
   try {

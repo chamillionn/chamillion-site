@@ -33,18 +33,45 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Refresh the session — IMPORTANT: don't remove this.
+  const pathname = request.nextUrl.pathname;
+  const isProtectedRoute =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/hub") ||
+    pathname.startsWith("/auth");
+
+  // Only call getUser() (HTTP round-trip to Supabase Auth) when needed:
+  // - Protected routes always need auth verification
+  // - Public routes only need session refresh if auth cookies exist
+  const hasAuthCookies = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-"));
+
+  if (!isProtectedRoute && !hasAuthCookies) {
+    return supabaseResponse;
+  }
+
+  // Refresh the session — validates JWT and refreshes tokens if needed.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
-
-  // /admin/* — require authenticated session
+  // /admin/* — require authenticated session + admin role
   if (pathname.startsWith("/admin")) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || profile.role !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
       return NextResponse.redirect(url);
     }
   }
@@ -57,7 +84,6 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Check the user's role
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")

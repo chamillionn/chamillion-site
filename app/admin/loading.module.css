@@ -1,0 +1,68 @@
+/* ===== ADMIN LOADING SKELETON ===== */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bar {
+  border-radius: 6px;
+  background: var(--bg-card);
+}
+
+.heading {
+  composes: bar;
+  width: 160px;
+  height: 28px;
+  margin-bottom: 4px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  composes: bar;
+  height: 72px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.tableWrap {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tableHeader {
+  height: 38px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+
+.tableRow {
+  height: 42px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+/* Subtle shimmer */
+.bar,
+.card,
+.tableRow {
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.card:nth-child(2),
+.tableRow:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3),
+.tableRow:nth-child(3) { animation-delay: 0.2s; }
+.card:nth-child(4),
+.tableRow:nth-child(4) { animation-delay: 0.3s; }
+.tableRow:nth-child(5) { animation-delay: 0.4s; }

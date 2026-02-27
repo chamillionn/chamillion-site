@@ -121,6 +121,7 @@ export default function HubPage() {
               alt="Chamillion"
               width={24}
               height={24}
+              sizes="24px"
             />
           </div>
           <span className={styles.logoText}>Chamillion</span>

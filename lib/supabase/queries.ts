@@ -53,10 +53,11 @@ export async function getPlatforms(): Promise<Platform[]> {
  */
 export async function getDailySnapshots(days = 30): Promise<Snapshot[]> {
   const supabase = await createClient();
-  // Fetch enough rows to cover `days` days (max 96/day at 15-min intervals)
+  // Fetch enough rows to cover `days` days (max 96/day at 15-min intervals).
+  // Only select columns needed for the chart — exclude heavy positions_data JSONB.
   const { data } = await supabase
     .from("snapshots")
-    .select("*")
+    .select("id, snapshot_date, total_value, total_cost, created_at")
     .order("snapshot_date", { ascending: false })
     .limit(days * 96);
 
@@ -97,12 +98,13 @@ export async function getSnapshotsByDate(date: string): Promise<Snapshot[]> {
 
 /* ── Capital flows ── */
 
-export async function getCapitalFlows(): Promise<CapitalFlow[]> {
+export async function getCapitalFlows(limit = 200): Promise<CapitalFlow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("capital_flows")
     .select("*")
-    .order("date", { ascending: false });
+    .order("date", { ascending: false })
+    .limit(limit);
   return (data as CapitalFlow[]) ?? [];
 }
 

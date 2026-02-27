@@ -7,28 +7,33 @@ import {
   Instrument_Serif,
   Outfit,
 } from "next/font/google";
+import NavigationProgress from "@/components/nav-progress";
 import "./globals.css";
 
 const dmMono = DM_Mono({
   weight: ["300", "400", "500"],
   subsets: ["latin"],
   variable: "--font-dm-mono",
+  display: "swap",
 });
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
+  display: "swap",
 });
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
   variable: "--font-source-sans",
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   variable: "--font-jetbrains",
+  display: "swap",
 });
 
 const instrumentSerif = Instrument_Serif({
@@ -36,12 +41,14 @@ const instrumentSerif = Instrument_Serif({
   style: ["normal", "italic"],
   subsets: ["latin"],
   variable: "--font-instrument-serif",
+  display: "swap",
 });
 
 const outfit = Outfit({
   weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin"],
   variable: "--font-outfit",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -85,6 +92,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem("chamillion-theme");if(!t)t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)})()` }} />
       </head>
       <body>
+        <NavigationProgress />
         {children}
       </body>
     </html>

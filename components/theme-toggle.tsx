@@ -38,9 +38,13 @@ export default function ThemeToggle() {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("chamillion-theme", theme);
 
-    // Sync with embedded iframes
+    // Sync with embedded iframes (restrict to same origin)
     document.querySelectorAll("iframe").forEach((f) => {
-      f.contentWindow?.postMessage({ type: "chamillion-theme", theme }, "*");
+      try {
+        f.contentWindow?.postMessage({ type: "chamillion-theme", theme }, window.location.origin);
+      } catch {
+        // Cross-origin iframes will throw — ignore silently
+      }
     });
   }, [theme, mounted]);
 

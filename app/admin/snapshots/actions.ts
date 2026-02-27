@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
 
 export async function deleteSnapshot(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("snapshots").delete().eq("id", id);
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const { error } = await admin.supabase.from("snapshots").delete().eq("id", id);
 
   if (error) return { error: error.message };
 

@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
 
 export async function createStrategy(formData: FormData) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("strategies").insert({
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const { error } = await admin.supabase.from("strategies").insert({
     name: formData.get("name") as string,
     status: formData.get("status") as string,
     description: (formData.get("description") as string) || null,
@@ -18,8 +20,10 @@ export async function createStrategy(formData: FormData) {
 }
 
 export async function updateStrategy(id: string, formData: FormData) {
-  const supabase = await createClient();
-  const { error } = await supabase
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const { error } = await admin.supabase
     .from("strategies")
     .update({
       name: formData.get("name") as string,
@@ -35,8 +39,10 @@ export async function updateStrategy(id: string, formData: FormData) {
 }
 
 export async function deleteStrategy(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("strategies").delete().eq("id", id);
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const { error } = await admin.supabase.from("strategies").delete().eq("id", id);
 
   if (error) return { error: error.message };
 

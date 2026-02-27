@@ -27,6 +27,7 @@ export default function Post01() {
             width={1568}
             height={700}
             priority
+            sizes="(max-width: 860px) 100vw, 860px"
           />
         </div>
       </div>
@@ -360,6 +361,8 @@ export default function Post01() {
           alt="Wanderer above the Sea of Fog — Camaleón"
           width={1920}
           height={1080}
+          loading="lazy"
+          sizes="(max-width: 860px) 100vw, 860px"
         />
 
         <div className={styles.closingText}>

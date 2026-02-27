@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
 import type { CapitalFlowType } from "@/lib/supabase/types";
 
 const VALID_FLOW_TYPES: CapitalFlowType[] = ["buy", "sell", "deposit_fiat", "withdraw_fiat"];
@@ -23,8 +23,10 @@ export async function createCapitalFlow(formData: FormData) {
     return { error: "amount_eur debe ser un número válido y distinto de 0" };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.from("capital_flows").insert({
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const { error } = await admin.supabase.from("capital_flows").insert({
     date: (formData.get("date") as string) || new Date().toISOString(),
     type: type as CapitalFlowType,
     amount_eur,
@@ -42,8 +44,10 @@ export async function createCapitalFlow(formData: FormData) {
 }
 
 export async function deleteCapitalFlow(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("capital_flows").delete().eq("id", id);
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const { error } = await admin.supabase.from("capital_flows").delete().eq("id", id);
 
   if (error) return { error: error.message };
 

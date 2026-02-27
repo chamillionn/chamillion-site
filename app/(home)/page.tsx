@@ -20,6 +20,17 @@ const PLATFORM_COLORS = [
   "#8BC34A",
 ];
 
+const PLATFORM_COLORS_LIGHT = [
+  "#358a55",
+  "#3a6d88",
+  "#8a7020",
+  "#6040a0",
+  "#a8333a",
+  "#b05a30",
+  "#2e6fa0",
+  "#4a7e28",
+];
+
 const TYPE_LABELS: Record<string, string> = {
   perps: "Perps",
   prediction: "Prediction",
@@ -56,7 +67,7 @@ export default async function HomePage() {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <HomeClient {...DEMO_DATA} isDemo />
+        <HomeClient {...DEMO_DATA} isDemo platformColorsLight={PLATFORM_COLORS_LIGHT} />
       </>
     );
   }
@@ -112,6 +123,7 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <HomeClient
+        platformColorsLight={PLATFORM_COLORS_LIGHT}
         summary={
           summary
             ? {
