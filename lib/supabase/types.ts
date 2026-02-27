@@ -85,6 +85,18 @@ export interface Profile {
   subscribed_at: string | null;
 }
 
+export interface Post {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  date: string; // YYYY-MM-DD
+  banner_path: string | null;
+  premium: boolean;
+  published: boolean;
+  created_at: string;
+}
+
 export interface SiteSetting {
   key: string;
   value: unknown; // JSONB — cast per key
@@ -170,6 +182,12 @@ export type Database = {
         Row: Flatten<SiteSetting>;
         Insert: Flatten<Omit<SiteSetting, "updated_at"> & { updated_at?: string }>;
         Update: Flatten<Partial<SiteSetting>>;
+        Relationships: [];
+      };
+      posts: {
+        Row: Flatten<Post>;
+        Insert: Flatten<Omit<Post, "id" | "created_at" | "subtitle" | "banner_path"> & { id?: string; created_at?: string; subtitle?: string | null; banner_path?: string | null }>;
+        Update: Flatten<Partial<Post>>;
         Relationships: [];
       };
     };

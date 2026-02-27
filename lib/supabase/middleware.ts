@@ -78,24 +78,12 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // /hub/* — require authenticated session with role 'member' or 'admin'
+  // /hub/* — require authenticated session (any role, page handles access)
   if (pathname.startsWith("/hub")) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "member" && profile.role !== "admin")) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
       return NextResponse.redirect(url);
     }
   }

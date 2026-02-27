@@ -64,8 +64,25 @@
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
   flex: 1;
+}
+
+.navSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 8px;
+}
+
+.navSectionLabel {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 6px 10px 3px;
+  opacity: 0.6;
 }
 
 .navItem {
