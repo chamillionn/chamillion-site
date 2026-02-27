@@ -37,6 +37,7 @@ export async function updateSession(request: NextRequest) {
   const isProtectedRoute =
     pathname.startsWith("/admin") ||
     pathname.startsWith("/hub") ||
+    pathname.startsWith("/cuenta") ||
     pathname.startsWith("/auth");
 
   // Only call getUser() (HTTP round-trip to Supabase Auth) when needed:
@@ -60,6 +61,7 @@ export async function updateSession(request: NextRequest) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
+      url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
     }
 
@@ -76,11 +78,12 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // /hub/* — require session with role 'member' or 'admin'
+  // /hub/* — require authenticated session with role 'member' or 'admin'
   if (pathname.startsWith("/hub")) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
+      url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
     }
 
@@ -93,6 +96,16 @@ export async function updateSession(request: NextRequest) {
     if (!profile || (profile.role !== "member" && profile.role !== "admin")) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // /cuenta — require authenticated session (any role)
+  if (pathname.startsWith("/cuenta")) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
     }
   }

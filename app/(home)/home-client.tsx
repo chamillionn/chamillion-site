@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
+import UserMenu from "@/components/user-menu";
 import { V, steelA, bgCardA } from "@/lib/theme";
 
 // Scroll-triggered reveal
@@ -1552,6 +1553,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
             >
               Hub
             </Link>
+            <UserMenu />
             <ThemeToggle />
           </div>
         </nav>

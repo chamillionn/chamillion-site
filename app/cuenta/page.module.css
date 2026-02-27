@@ -1,0 +1,215 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.backLink {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+
+.backLink:hover {
+  color: var(--steel-blue);
+}
+
+.title {
+  font-family: var(--font-playfair), serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+/* ── Field ── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.value {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.input {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 14px;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus {
+  border-color: var(--steel-blue);
+}
+
+/* ── Badge ── */
+
+.badge {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.badgeFree {
+  background: rgba(var(--border-rgb), 0.5);
+  color: var(--text-secondary);
+}
+
+.badgeMember {
+  background: rgba(var(--steel-blue-rgb), 0.12);
+  color: var(--steel-blue);
+}
+
+.badgeAdmin {
+  background: rgba(var(--gold-rgb), 0.12);
+  color: var(--gold);
+}
+
+/* ── Buttons ── */
+
+.button {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  padding: 10px 20px;
+  background: var(--steel-blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.button:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonSecondary {
+  composes: button;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.buttonSecondary:hover:not(:disabled) {
+  opacity: 1;
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.buttonDanger {
+  composes: button;
+  background: transparent;
+  color: var(--red);
+  border: 1px solid var(--border);
+}
+
+.buttonDanger:hover:not(:disabled) {
+  opacity: 1;
+  border-color: var(--red);
+}
+
+/* ── Divider ── */
+
+.divider {
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── CTA ── */
+
+.cta {
+  padding: 16px;
+  background: rgba(var(--steel-blue-rgb), 0.06);
+  border: 1px solid rgba(var(--steel-blue-rgb), 0.15);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ctaText {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.ctaButton {
+  composes: button;
+  opacity: 0.5;
+  cursor: not-allowed;
+  align-self: flex-start;
+}
+
+/* ── Feedback ── */
+
+.success {
+  font-size: 13px;
+  color: var(--green);
+}
+
+.error {
+  font-size: 13px;
+  color: var(--red);
+}
+
+/* ── Admin link ── */
+
+.adminLink {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--steel-blue);
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  transition: opacity 0.2s;
+}
+
+.adminLink:hover {
+  opacity: 0.75;
+}

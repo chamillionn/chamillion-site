@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
+import UserMenu from "@/components/user-menu";
 import styles from "./layout.module.css";
 
 export default function Header() {
@@ -25,6 +26,7 @@ export default function Header() {
         <nav className={styles.headerNav}>
           <Link href="/">Inicio</Link>
           <Link href="/newsletter">Archivo</Link>
+          <UserMenu />
           <ThemeToggle />
         </nav>
       </div>

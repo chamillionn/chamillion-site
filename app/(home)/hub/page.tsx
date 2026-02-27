@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
+import UserMenu from "@/components/user-menu";
 import styles from "./page.module.css";
 
 const FEATURES = [
@@ -129,6 +130,7 @@ export default function HubPage() {
         <nav className={styles.headerNav}>
           <Link href="/">Inicio</Link>
           <Link href="/newsletter">Newsletter</Link>
+          <UserMenu />
           <ThemeToggle />
         </nav>
       </header>

@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./page.module.css";
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") || "/";
+  const isAdmin = next.startsWith("/admin");
+
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -20,7 +25,7 @@ export default function LoginPage() {
     const { error: authError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
 
@@ -41,10 +46,13 @@ export default function LoginPage() {
           &larr; Inicio
         </Link>
 
-        <h1 className={styles.title}>Admin</h1>
+        <h1 className={styles.title}>
+          {isAdmin ? "Admin" : "Iniciar sesion"}
+        </h1>
         <p className={styles.subtitle}>
-          Acceso restringido. Introduce tu email para recibir un enlace de
-          acceso.
+          {isAdmin
+            ? "Acceso restringido. Introduce tu email para recibir un enlace de acceso."
+            : "Introduce tu email para recibir un enlace de acceso."}
         </p>
 
         {sent ? (
@@ -90,5 +98,13 @@ export default function LoginPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
