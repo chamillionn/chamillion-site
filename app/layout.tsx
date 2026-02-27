@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     siteName: "Chamillion",
     type: "website",
     locale: "es_ES",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     description:
       "Documentando la vanguardia de los mercados financieros, y haciendo dinero. Con un ojo en cada pantalla.",
     creator: "@chamillionnnnn",
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
   other: {
     "theme-color": "#0C0E11",
