@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { updateDisplayName } from "./actions";
 import styles from "./page.module.css";
 
+interface Price {
+  id: string;
+  unitAmount: number;
+  currency: string;
+  interval: string | null;
+}
+
 interface Props {
   email: string;
   displayName: string | null;
   role: "free" | "member" | "admin";
+  subscriptionStatus: string | null;
+  stripeCustomerId: string | null;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -18,13 +27,50 @@ const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
 };
 
-export default function CuentaClient({ email, displayName, role }: Props) {
+const STATUS_LABELS: Record<string, string> = {
+  active: "Activa",
+  past_due: "Pago pendiente",
+  canceled: "Cancelada",
+  trialing: "Prueba",
+  none: "Sin suscripcion",
+};
+
+const INTERVAL_LABELS: Record<string, string> = {
+  month: "mes",
+  year: "año",
+};
+
+function formatPrice(cents: number, currency: string): string {
+  return new Intl.NumberFormat("es-ES", {
+    style: "currency",
+    currency,
+  }).format(cents / 100);
+}
+
+export default function CuentaClient({
+  email,
+  displayName,
+  role,
+  subscriptionStatus,
+  stripeCustomerId,
+}: Props) {
   const [name, setName] = useState(displayName ?? "");
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     msg: string;
   } | null>(null);
+  const [prices, setPrices] = useState<Price[]>([]);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  useEffect(() => {
+    if (role !== "free") return;
+    fetch("/api/stripe/prices")
+      .then((r) => r.json())
+      .then((data) => setPrices(data))
+      .catch(() => {});
+  }, [role]);
 
   async function handleSave() {
     setSaving(true);
@@ -43,6 +89,36 @@ export default function CuentaClient({ email, displayName, role }: Props) {
     }
   }
 
+  async function handleCheckout(priceId: string) {
+    setCheckoutLoading(priceId);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setCheckoutLoading(null);
+    }
+  }
+
+  async function handlePortal() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setPortalLoading(false);
+    }
+  }
+
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -55,6 +131,11 @@ export default function CuentaClient({ email, displayName, role }: Props) {
       : role === "member"
         ? styles.badgeMember
         : styles.badgeFree;
+
+  const hasStripeSubscription =
+    !!stripeCustomerId &&
+    subscriptionStatus !== "none" &&
+    subscriptionStatus !== null;
 
   return (
     <div className={styles.page}>
@@ -78,6 +159,18 @@ export default function CuentaClient({ email, displayName, role }: Props) {
             {ROLE_LABELS[role]}
           </span>
         </div>
+
+        {/* Subscription status for members/admins */}
+        {role !== "free" && (
+          <div className={styles.field}>
+            <span className={styles.label}>Suscripcion</span>
+            <span className={styles.value}>
+              {hasStripeSubscription
+                ? (STATUS_LABELS[subscriptionStatus ?? ""] ?? subscriptionStatus)
+                : "Acceso otorgado"}
+            </span>
+          </div>
+        )}
 
         {/* Display name */}
         <div className={styles.field}>
@@ -112,17 +205,54 @@ export default function CuentaClient({ email, displayName, role }: Props) {
 
         <div className={styles.divider} />
 
-        {/* CTA for free users */}
+        {/* CTA for free users — pricing cards */}
         {role === "free" && (
           <div className={styles.cta}>
             <p className={styles.ctaText}>
               Suscribete para acceder al Hub y al contenido premium de la
               newsletter.
             </p>
-            <button disabled className={styles.ctaButton}>
-              Proximamente
-            </button>
+            {prices.length > 0 ? (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {prices.map((p) => (
+                  <button
+                    key={p.id}
+                    className={styles.button}
+                    onClick={() => handleCheckout(p.id)}
+                    disabled={checkoutLoading !== null}
+                    style={
+                      checkoutLoading === p.id ? { opacity: 0.6 } : undefined
+                    }
+                  >
+                    {checkoutLoading === p.id
+                      ? "Redirigiendo..."
+                      : `${formatPrice(p.unitAmount, p.currency)}/${INTERVAL_LABELS[p.interval ?? ""] ?? p.interval}`}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <span
+                style={{
+                  fontFamily: "var(--font-dm-mono), monospace",
+                  fontSize: 12,
+                  color: "var(--text-muted)",
+                }}
+              >
+                Cargando planes...
+              </span>
+            )}
           </div>
+        )}
+
+        {/* Portal button for members with Stripe subscription */}
+        {role !== "free" && hasStripeSubscription && (
+          <button
+            className={styles.buttonSecondary}
+            onClick={handlePortal}
+            disabled={portalLoading}
+          >
+            {portalLoading ? "Redirigiendo..." : "Gestionar suscripcion"}
+          </button>
         )}
 
         {/* Admin link */}

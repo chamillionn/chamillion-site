@@ -24,6 +24,22 @@ const ROLE_CYCLE: Record<Profile["role"], Profile["role"]> = {
   admin: "admin", // no cycling admin role from UI
 };
 
+const SUB_STATUS_LABELS: Record<string, string> = {
+  active: "Activa",
+  past_due: "Pendiente",
+  canceled: "Cancelada",
+  trialing: "Prueba",
+  none: "—",
+};
+
+const SUB_STATUS_CLASS: Record<string, string> = {
+  active: styles.tagActive,
+  past_due: styles.tagPaused,
+  canceled: styles.tag,
+  trialing: styles.tagActive,
+  none: styles.tag,
+};
+
 export default function UsuariosTable({
   profiles,
   currentUserId,
@@ -93,6 +109,7 @@ export default function UsuariosTable({
                 <th>Email</th>
                 <th>Nombre</th>
                 <th>Rol</th>
+                <th>Suscripcion</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -112,6 +129,11 @@ export default function UsuariosTable({
                     <td>
                       <span className={ROLE_CLASS[profile.role]}>
                         {ROLE_LABELS[profile.role]}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={SUB_STATUS_CLASS[profile.subscription_status ?? "none"] ?? styles.tag}>
+                        {SUB_STATUS_LABELS[profile.subscription_status ?? "none"] ?? profile.subscription_status ?? "—"}
                       </span>
                     </td>
                     <td>

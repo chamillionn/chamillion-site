@@ -14,6 +14,6 @@ export const config = {
      * - favicon.ico, icon.png, og-image.png (metadata files)
      * - /assets/* and /widgets/* (public static assets)
      */
-    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|og-image\\.png|assets/|widgets/).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|og-image\\.png|assets/|widgets/|api/stripe/webhook).*)",
   ],
 };

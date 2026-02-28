@@ -82,6 +82,8 @@ export interface Profile {
   display_name: string | null;
   role: "free" | "member" | "admin";
   stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  subscription_status: string | null; // none | active | past_due | canceled | trialing
   subscribed_at: string | null;
 }
 
@@ -168,7 +170,7 @@ export type Database = {
       };
       profiles: {
         Row: Flatten<Profile>;
-        Insert: Flatten<Omit<Profile, "id" | "display_name" | "stripe_customer_id" | "subscribed_at"> & { id?: string; display_name?: string | null; stripe_customer_id?: string | null; subscribed_at?: string | null }>;
+        Insert: Flatten<Omit<Profile, "id" | "display_name" | "stripe_customer_id" | "stripe_subscription_id" | "subscription_status" | "subscribed_at"> & { id?: string; display_name?: string | null; stripe_customer_id?: string | null; stripe_subscription_id?: string | null; subscription_status?: string | null; subscribed_at?: string | null }>;
         Update: Flatten<Partial<Profile>>;
         Relationships: [];
       };

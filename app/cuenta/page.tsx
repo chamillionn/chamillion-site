@@ -13,6 +13,8 @@ export default async function CuentaPage() {
       email={ctx.profile.email}
       displayName={ctx.profile.display_name}
       role={ctx.profile.role}
+      subscriptionStatus={ctx.profile.subscription_status}
+      stripeCustomerId={ctx.profile.stripe_customer_id}
     />
   );
 }
