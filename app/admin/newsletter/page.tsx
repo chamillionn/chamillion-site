@@ -9,7 +9,7 @@ export default async function AdminNewsletter() {
   const admin = await requireAdmin();
   if (!admin) redirect("/login");
 
-  const { data } = await admin.supabase
+  const { data } = await admin.dataClient
     .from("posts")
     .select("*")
     .order("date", { ascending: false });

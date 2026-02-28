@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import type { Post } from "@/lib/supabase/types";
+import { useToast } from "@/components/admin-toast";
 import { togglePostPremium, togglePostPublished } from "./actions";
 import styles from "../crud.module.css";
 
@@ -53,6 +54,7 @@ function Toggle({
 }
 
 export default function NewsletterTable({ posts }: { posts: Post[] }) {
+  const { toast } = useToast();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -60,7 +62,8 @@ export default function NewsletterTable({ posts }: { posts: Post[] }) {
     setError(null);
     startTransition(async () => {
       const res = await togglePostPremium(id, value);
-      if (res.error) setError(res.error);
+      if (res.error) { setError(res.error); toast(res.error, "error"); }
+      else toast(value ? "Marcado premium" : "Premium desactivado", "success");
     });
   }
 
@@ -68,7 +71,8 @@ export default function NewsletterTable({ posts }: { posts: Post[] }) {
     setError(null);
     startTransition(async () => {
       const res = await togglePostPublished(id, value);
-      if (res.error) setError(res.error);
+      if (res.error) { setError(res.error); toast(res.error, "error"); }
+      else toast(value ? "Post publicado" : "Post despublicado", "success");
     });
   }
 

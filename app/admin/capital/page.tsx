@@ -1,11 +1,17 @@
+import { requireAdmin } from "@/lib/supabase/admin";
+import { redirect } from "next/navigation";
 import { getCapitalFlows, getCostBasis } from "@/lib/supabase/queries";
 import CapitalTable from "./capital-table";
 import crudStyles from "../crud.module.css";
 
 export default async function CapitalPage() {
+  const admin = await requireAdmin();
+  if (!admin) redirect("/login");
+
+  const dc = admin.dataClient;
   const [flows, costBasis] = await Promise.all([
-    getCapitalFlows(),
-    getCostBasis(),
+    getCapitalFlows(undefined, dc),
+    getCostBasis(dc),
   ]);
 
   return (

@@ -4,8 +4,16 @@ import { syncPlatform } from "@/lib/sync/engine";
 import { captureSnapshot } from "@/lib/sync/snapshot";
 import { HyperliquidAdapter } from "@/lib/sync/adapters/hyperliquid";
 import { PolymarketAdapter } from "@/lib/sync/adapters/polymarket";
+import { FakeDexAdapter } from "@/lib/sync/adapters/fakedex";
+import type { PlatformAdapter } from "@/lib/sync/types";
 
-const ADAPTERS = [HyperliquidAdapter, PolymarketAdapter];
+const IS_DEV = !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("hpyyuftotmpnzogaykgh");
+
+const ADAPTERS: PlatformAdapter[] = [
+  HyperliquidAdapter,
+  PolymarketAdapter,
+  ...(IS_DEV ? [FakeDexAdapter] : []),
+];
 
 export async function GET(request: Request) {
   if (!(await authCheck(request))) {

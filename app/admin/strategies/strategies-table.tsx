@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Strategy } from "@/lib/supabase/types";
+import { useToast } from "@/components/admin-toast";
 import { createStrategy, updateStrategy, deleteStrategy } from "./actions";
 import styles from "../crud.module.css";
 
@@ -15,6 +16,7 @@ function statusClass(status: string) {
 }
 
 export default function StrategiesTable({ strategies }: { strategies: Strategy[] }) {
+  const { toast } = useToast();
   const [editing, setEditing] = useState<Strategy | null>(null);
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,13 +38,16 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
       return;
     }
 
+    toast(editing ? "Estrategia actualizada" : "Estrategia creada", "success");
     setCreating(false);
     setEditing(null);
   }
 
   async function handleDelete(id: string) {
     if (!confirm("¿Eliminar esta estrategia?")) return;
-    await deleteStrategy(id);
+    const res = await deleteStrategy(id);
+    if (res.error) toast(res.error, "error");
+    else toast("Estrategia eliminada", "success");
   }
 
   const showForm = creating || editing;

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { Profile } from "@/lib/supabase/types";
+import { useToast } from "@/components/admin-toast";
 import { setUserRole, deleteUser } from "./actions";
 import styles from "../crud.module.css";
 
@@ -30,17 +31,19 @@ export default function UsuariosTable({
   profiles: Profile[];
   currentUserId: string;
 }) {
+  const { toast } = useToast();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   function handleRoleToggle(profile: Profile) {
-    if (profile.role === "admin") return; // don't change admin roles from here
+    if (profile.role === "admin") return;
     const nextRole = ROLE_CYCLE[profile.role];
     setError(null);
     startTransition(async () => {
       const res = await setUserRole(profile.id, nextRole);
-      if (res.error) setError(res.error);
+      if (res.error) { setError(res.error); toast(res.error, "error"); }
+      else toast(`Rol cambiado a ${ROLE_LABELS[nextRole]}`, "success");
     });
   }
 
@@ -54,7 +57,8 @@ export default function UsuariosTable({
     setError(null);
     startTransition(async () => {
       const res = await deleteUser(id);
-      if (res.error) setError(res.error);
+      if (res.error) { setError(res.error); toast(res.error, "error"); }
+      else toast("Usuario eliminado", "success");
     });
   }
 

@@ -9,7 +9,7 @@ export default async function AdminUsuarios() {
   const admin = await requireAdmin();
   if (!admin) redirect("/login");
 
-  const { data } = await admin.supabase
+  const { data } = await admin.dataClient
     .from("profiles")
     .select("*")
     .order("role")

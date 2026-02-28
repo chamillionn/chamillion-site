@@ -7,6 +7,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 export async function setUserRole(id: string, role: "free" | "member" | "admin") {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase
     .from("profiles")
@@ -22,6 +23,7 @@ export async function setUserRole(id: string, role: "free" | "member" | "admin")
 export async function deleteUser(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   // Requires service role to delete from auth.users
   const service = createServiceClient();

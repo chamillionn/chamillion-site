@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CapitalFlow, CapitalFlowType } from "@/lib/supabase/types";
+import { useToast } from "@/components/admin-toast";
 import { createCapitalFlow, deleteCapitalFlow } from "./actions";
 import styles from "../crud.module.css";
 
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export default function CapitalTable({ flows, costBasis }: Props) {
+  const { toast } = useToast();
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -49,12 +51,15 @@ export default function CapitalTable({ flows, costBasis }: Props) {
       return;
     }
 
+    toast("Registro creado", "success");
     setCreating(false);
   }
 
   async function handleDelete(id: string) {
     if (!confirm("¿Eliminar este registro?")) return;
-    await deleteCapitalFlow(id);
+    const res = await deleteCapitalFlow(id);
+    if (res.error) toast(res.error, "error");
+    else toast("Registro eliminado", "success");
   }
 
   return (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Platform } from "@/lib/supabase/types";
+import { useToast } from "@/components/admin-toast";
 import { KNOWN_PLATFORMS, type PlatformPreset } from "@/lib/platforms/presets";
 import { createPlatformFromPreset, updatePlatformWallet, deletePlatform } from "./actions";
 import styles from "./platforms.module.css";
@@ -10,6 +11,7 @@ import crudStyles from "../crud.module.css";
 
 export default function PlatformsTable({ platforms }: { platforms: Platform[] }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [addingPreset, setAddingPreset] = useState<PlatformPreset | null>(null);
   const [editingWallet, setEditingWallet] = useState<Platform | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,9 +28,9 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const wallet = (formData.get("wallet_address") as string)?.trim();
+    const wallet = (formData.get("wallet_address") as string)?.trim() ?? "";
 
-    if (!wallet) {
+    if (!wallet && !addingPreset.autoWallet) {
       setError("La wallet address es obligatoria");
       setLoading(false);
       return;
@@ -42,6 +44,7 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
       return;
     }
 
+    toast(`${addingPreset.name} añadida`, "success");
     setAddingPreset(null);
   }
 
@@ -61,12 +64,15 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
       return;
     }
 
+    toast("Wallet actualizada", "success");
     setEditingWallet(null);
   }
 
   async function handleDelete(id: string) {
     if (!confirm("¿Eliminar esta plataforma? Las posiciones asociadas perderán la referencia.")) return;
-    await deletePlatform(id);
+    const res = await deletePlatform(id);
+    if (res.error) toast(res.error, "error");
+    else toast("Plataforma eliminada", "success");
   }
 
   async function handleSync(slug: string) {
@@ -276,20 +282,28 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
             </div>
             <p className={styles.modalDesc}>{addingPreset.description}</p>
             <form onSubmit={handleAddPreset} className={crudStyles.form}>
-              <label className={crudStyles.field}>
-                <span className={crudStyles.fieldLabel}>Wallet Address</span>
-                <input
-                  name="wallet_address"
-                  required
-                  className={crudStyles.input}
-                  placeholder="0x..."
-                  autoFocus
-                  spellCheck={false}
-                />
-              </label>
-              <p className={styles.hint}>
-                Dirección pública de tu wallet. Se usa solo para leer posiciones (read-only).
-              </p>
+              {addingPreset.autoWallet ? (
+                <p className={styles.hint}>
+                  Esta plataforma genera datos de prueba — no necesita wallet.
+                </p>
+              ) : (
+                <>
+                  <label className={crudStyles.field}>
+                    <span className={crudStyles.fieldLabel}>Wallet Address</span>
+                    <input
+                      name="wallet_address"
+                      required
+                      className={crudStyles.input}
+                      placeholder="0x..."
+                      autoFocus
+                      spellCheck={false}
+                    />
+                  </label>
+                  <p className={styles.hint}>
+                    Dirección pública de tu wallet. Se usa solo para leer posiciones (read-only).
+                  </p>
+                </>
+              )}
               {error && <p className={crudStyles.formError}>{error}</p>}
               <div className={crudStyles.formActions}>
                 <button type="button" onClick={closeModal} className={crudStyles.btnSecondary}>

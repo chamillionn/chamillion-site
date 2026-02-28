@@ -7,15 +7,18 @@ import { KNOWN_PLATFORMS } from "@/lib/platforms/presets";
 export async function createPlatformFromPreset(slug: string, walletAddress: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const preset = KNOWN_PLATFORMS.find((p) => p.slug === slug);
   if (!preset) return { error: "Plataforma desconocida" };
+
+  const wallet = walletAddress || preset.autoWallet?.() || null;
 
   const { error } = await admin.supabase.from("platforms").insert({
     name: preset.name,
     type: preset.type,
     url: preset.url,
-    wallet_address: walletAddress,
+    wallet_address: wallet,
   });
 
   if (error) return { error: error.message };
@@ -27,6 +30,7 @@ export async function createPlatformFromPreset(slug: string, walletAddress: stri
 export async function updatePlatformWallet(id: string, walletAddress: string | null) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase
     .from("platforms")
@@ -42,6 +46,7 @@ export async function updatePlatformWallet(id: string, walletAddress: string | n
 export async function deletePlatform(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase.from("platforms").delete().eq("id", id);
 

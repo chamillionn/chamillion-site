@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/supabase/admin";
 export async function togglePostPremium(id: string, premium: boolean) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase
     .from("posts")
@@ -22,6 +23,7 @@ export async function togglePostPremium(id: string, premium: boolean) {
 export async function togglePostPublished(id: string, published: boolean) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase
     .from("posts")

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useToast } from "@/components/admin-toast";
 import { toggleDemoMode } from "./actions";
 
 export default function DemoToggle({ initialEnabled }: { initialEnabled: boolean }) {
+  const { toast } = useToast();
   const [enabled, setEnabled] = useState(initialEnabled);
   const [isPending, startTransition] = useTransition();
 
@@ -12,7 +14,12 @@ export default function DemoToggle({ initialEnabled }: { initialEnabled: boolean
     setEnabled(next);
     startTransition(async () => {
       const result = await toggleDemoMode(next);
-      if (result.error) setEnabled(!next);
+      if (result.error) {
+        setEnabled(!next);
+        toast(result.error, "error");
+      } else {
+        toast(next ? "Modo demo activado" : "Modo demo desactivado", "success");
+      }
     });
   }
 

@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Platform, PositionEnriched, PortfolioSummary } from "@/lib/supabase/types";
+import { useToast } from "@/components/admin-toast";
 import { KNOWN_PLATFORMS } from "@/lib/platforms/presets";
 import styles from "./page.module.css";
 
 interface SyncResult {
   platform: string;
   updated: number;
+  deactivated: number;
   errors: string[];
   timestamp: string;
 }
@@ -21,10 +24,12 @@ interface Props {
 
 export default function Dashboard({ summary, positions, platforms }: Props) {
   const router = useRouter();
+  const { toast } = useToast();
   const [syncState, setSyncState] = useState<Record<string, {
     loading: boolean;
     result: SyncResult | null;
   }>>({});
+  const [syncAllLoading, setSyncAllLoading] = useState(false);
 
   const hasData = summary && summary.total_value != null;
   const activePositions = positions.filter(
@@ -55,6 +60,14 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
 
   const unassigned = platformMap.get(null) ?? [];
 
+  // Syncable platforms (for "Sync All")
+  const syncableSlugs = platforms
+    .map((p) => KNOWN_PLATFORMS.find((k) => k.name === p.name))
+    .filter((k) => k?.syncable)
+    .map((k) => k!.slug);
+
+  const anySyncing = syncAllLoading || Object.values(syncState).some((s) => s.loading);
+
   async function handleSync(slug: string) {
     setSyncState((prev) => ({
       ...prev,
@@ -69,12 +82,18 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
         : {
           platform: slug,
           updated: 0,
+          deactivated: 0,
           errors: [String(data.error || "Error desconocido")],
           timestamp: new Date().toISOString(),
         };
       setSyncState((prev) => ({ ...prev, [slug]: { loading: false, result } }));
+
+      if (result.errors.length > 0) toast(result.errors[0], "error");
+      else toast(`${slug}: ${result.updated} actualizadas`, "success");
+
       router.refresh();
     } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error de conexion";
       setSyncState((prev) => ({
         ...prev,
         [slug]: {
@@ -82,12 +101,46 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
           result: {
             platform: slug,
             updated: 0,
-            errors: [e instanceof Error ? e.message : "Error de conexión"],
+            deactivated: 0,
+            errors: [msg],
             timestamp: new Date().toISOString(),
           },
         },
       }));
+      toast(msg, "error");
     }
+  }
+
+  async function handleSyncAll() {
+    setSyncAllLoading(true);
+
+    try {
+      const res = await fetch("/api/sync");
+      const data = await res.json();
+
+      if (data.results) {
+        const newState: typeof syncState = {};
+        let totalUpdated = 0;
+        let totalErrors = 0;
+
+        for (const r of data.results as SyncResult[]) {
+          const key = r.platform?.toLowerCase() ?? "unknown";
+          newState[key] = { loading: false, result: r };
+          totalUpdated += r.updated;
+          totalErrors += r.errors.length;
+        }
+        setSyncState(newState);
+
+        if (totalErrors > 0) toast(`Sync: ${totalUpdated} ok, ${totalErrors} errores`, "error");
+        else toast(`Sync completo: ${totalUpdated} posiciones actualizadas`, "success");
+      }
+
+      router.refresh();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Error de conexion", "error");
+    }
+
+    setSyncAllLoading(false);
   }
 
   const stats = [
@@ -103,11 +156,41 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
       value: hasData ? `${summary.total_roi_pct >= 0 ? "+" : ""}${summary.total_roi_pct.toFixed(1)}%` : "—",
       color: hasData ? (summary.total_roi_pct >= 0 ? "var(--green)" : "var(--red)") : undefined,
     },
+    {
+      label: "Posiciones",
+      value: `${activePositions.length}`,
+    },
   ];
 
   return (
     <div>
-      <h1 className={styles.heading}>Dashboard</h1>
+      {/* Header with title + sync all */}
+      <div className={styles.dashHeader}>
+        <h1 className={styles.heading}>Dashboard</h1>
+        {syncableSlugs.length > 0 && (
+          <button
+            onClick={handleSyncAll}
+            disabled={anySyncing}
+            className={styles.syncAllBtn}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={anySyncing ? styles.syncSpin : ""}
+            >
+              <path d="M1 4v6h6M23 20v-6h-6" />
+              <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" />
+            </svg>
+            {syncAllLoading ? "Sincronizando..." : "Sync All"}
+          </button>
+        )}
+      </div>
 
       {/* Stats grid */}
       <div className={styles.grid}>
@@ -151,14 +234,14 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
                   </svg>
                 )}
                 <span className={styles.platformName}>{platform.name}</span>
-                {profileHref && (
+                <span className={styles.posCount}>{platformPositions.length}</span>
+                {profileHref && profileHref !== "#" && (
                   <a
                     href={profileHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.profileLink}
                   >
-                    Ver perfil
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
                     </svg>
@@ -166,18 +249,18 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
                 )}
               </div>
 
-              {slug && (
+              {slug && preset?.syncable && (
                 <div className={styles.syncArea}>
                   {sync?.result && !sync.loading && (
                     <span className={sync.result.errors.length > 0 ? styles.syncError : styles.syncSuccess}>
                       {sync.result.errors.length > 0
                         ? sync.result.errors[0]
-                        : `${sync.result.updated} actualizadas`}
+                        : `${sync.result.updated} ok`}
                     </span>
                   )}
                   <button
                     onClick={() => handleSync(slug)}
-                    disabled={sync?.loading}
+                    disabled={sync?.loading || syncAllLoading}
                     className={styles.syncBtn}
                   >
                     <svg
@@ -194,7 +277,7 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
                       <path d="M1 4v6h6M23 20v-6h-6" />
                       <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" />
                     </svg>
-                    {sync?.loading ? "Syncing..." : "Sync"}
+                    {sync?.loading ? "..." : "Sync"}
                   </button>
                 </div>
               )}
@@ -223,7 +306,8 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
               >
                 <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
-              <span className={styles.platformName}>Otras posiciones</span>
+              <span className={styles.platformName}>Sin plataforma</span>
+              <span className={styles.posCount}>{unassigned.length}</span>
             </div>
           </div>
           <PositionsTable positions={unassigned} />
@@ -232,10 +316,14 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
 
       {activePositions.length === 0 && (
         <div className={styles.empty}>
-          <p>No hay posiciones activas.</p>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-muted)", marginBottom: 12 }}>
+            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          <p style={{ fontWeight: 500, marginBottom: 4 }}>No hay posiciones activas</p>
           <p>
-            Ve a <strong>Plataformas</strong> para añadir una plataforma y sincronizar,
-            o a <strong>Posiciones</strong> para añadir manualmente.
+            Ve a <Link href="/admin/platforms" style={{ color: "var(--steel-blue)" }}>Plataformas</Link> para
+            añadir una y sincronizar, o
+            a <Link href="/admin/positions" style={{ color: "var(--steel-blue)" }}>Posiciones</Link> para añadir manualmente.
           </p>
         </div>
       )}

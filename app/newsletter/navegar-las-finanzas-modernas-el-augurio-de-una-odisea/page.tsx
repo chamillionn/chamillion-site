@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/server";
+import PaywallGate from "@/components/paywall-gate";
 import styles from "../post.module.css";
+
+const SLUG = "navegar-las-finanzas-modernas-el-augurio-de-una-odisea";
 
 export const metadata: Metadata = {
   title: "Navegar las finanzas modernas: El augurio de una odisea",
@@ -14,7 +18,37 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Post01() {
+export default async function Post01() {
+  const supabase = await createClient();
+  const { data: post } = await supabase
+    .from("posts")
+    .select("premium")
+    .eq("slug", SLUG)
+    .single();
+
+  const isPremium = post?.premium ?? false;
+
+  /* Teaser: banner + header + first paragraphs (always visible) */
+  const teaser = (
+    <>
+      <p>
+        El dinero vale menos cada día: <em>se diluye</em>, y con él su
+        definición.
+      </p>
+
+      <p>
+        El orden financiero mundial se asfixia bajo su propio peso, y cada
+        ciclo necesita más gasolina para seguir funcionando. Los bancos
+        centrales imprimen, los gobiernos se endeudan, y la factura se reparte
+        silenciosamente entre todos.
+      </p>
+
+      <p>Pero eso ya lo sabes.</p>
+
+      <hr className={styles.divider} />
+    </>
+  );
+
   return (
     <>
       {/* BANNER */}
@@ -48,6 +82,8 @@ export default function Post01() {
         </div>
 
         <hr className={styles.dividerHeavy} />
+
+        <PaywallGate isPremium={isPremium} teaser={teaser}>
 
         <p>
           El dinero vale menos cada día: <em>se diluye</em>, y con él su
@@ -398,6 +434,8 @@ export default function Post01() {
           decisión financiera. Los resultados pasados no garantizan resultados
           futuros.
         </div>
+
+        </PaywallGate>
       </article>
     </>
   );

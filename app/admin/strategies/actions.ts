@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/supabase/admin";
 export async function createStrategy(formData: FormData) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase.from("strategies").insert({
     name: formData.get("name") as string,
@@ -22,6 +23,7 @@ export async function createStrategy(formData: FormData) {
 export async function updateStrategy(id: string, formData: FormData) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase
     .from("strategies")
@@ -41,6 +43,7 @@ export async function updateStrategy(id: string, formData: FormData) {
 export async function deleteStrategy(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase.from("strategies").delete().eq("id", id);
 

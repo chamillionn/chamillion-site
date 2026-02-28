@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Snapshot, SnapshotPosition } from "@/lib/supabase/types";
+import { useToast } from "@/components/admin-toast";
 import { deleteSnapshot } from "./actions";
 import styles from "../crud.module.css";
 
@@ -151,13 +152,16 @@ function SnapshotRow({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const { toast } = useToast();
   const [deleting, setDeleting] = useState(false);
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
     if (!confirm("¿Eliminar este snapshot?")) return;
     setDeleting(true);
-    await deleteSnapshot(s.id);
+    const res = await deleteSnapshot(s.id);
+    if (res.error) { toast(res.error, "error"); setDeleting(false); }
+    else toast("Snapshot eliminado", "success");
   }
 
   return (

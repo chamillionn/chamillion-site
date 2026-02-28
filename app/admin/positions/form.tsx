@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Platform, Strategy, Position } from "@/lib/supabase/types";
+import { useToast } from "@/components/admin-toast";
 import { createPosition, updatePosition } from "./actions";
 import styles from "./page.module.css";
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function PositionForm({ platforms, strategies, position, onClose }: Props) {
+  const { toast } = useToast();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const isEdit = !!position;
@@ -34,6 +36,7 @@ export default function PositionForm({ platforms, strategies, position, onClose 
       return;
     }
 
+    toast(isEdit ? "Posicion actualizada" : "Posicion creada", "success");
     onClose();
   }
 

@@ -12,14 +12,67 @@ function LoginForm() {
   const isAdmin = next.startsWith("/admin");
 
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Magic link state
+  const [magicLoading, setMagicLoading] = useState(false);
+  const [magicSent, setMagicSent] = useState(false);
+  const [magicError, setMagicError] = useState("");
+
+  async function ensureProfile() {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile) {
+      await supabase.from("profiles").insert({
+        id: user.id,
+        email: user.email!,
+        role: "free",
+      });
+    }
+  }
+
+  async function handlePasswordLogin(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      setLoading(false);
+      setError(
+        authError.message === "Invalid login credentials"
+          ? "Email o contrasena incorrectos"
+          : authError.message,
+      );
+      return;
+    }
+
+    await ensureProfile();
+    window.location.href = next;
+  }
+
+  async function handleMagicLink(e: React.FormEvent) {
+    e.preventDefault();
+    setMagicError("");
+    setMagicLoading(true);
 
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithOtp({
@@ -29,14 +82,14 @@ function LoginForm() {
       },
     });
 
-    setLoading(false);
+    setMagicLoading(false);
 
     if (authError) {
-      setError(authError.message);
+      setMagicError(authError.message);
       return;
     }
 
-    setSent(true);
+    setMagicSent(true);
   }
 
   return (
@@ -51,11 +104,44 @@ function LoginForm() {
         </h1>
         <p className={styles.subtitle}>
           {isAdmin
-            ? "Acceso restringido. Introduce tu email para recibir un enlace de acceso."
-            : "Introduce tu email para recibir un enlace de acceso."}
+            ? "Acceso restringido."
+            : "Introduce tus credenciales para acceder."}
         </p>
 
-        {sent ? (
+        {/* ── Password login ── */}
+        <form onSubmit={handlePasswordLogin} className={styles.form}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@email.com"
+            required
+            className={styles.input}
+            autoFocus
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Contrasena"
+            required
+            className={styles.input}
+          />
+          <button
+            type="submit"
+            disabled={loading || !email || !password}
+            className={styles.button}
+          >
+            {loading ? "Entrando..." : "Entrar"}
+          </button>
+          {error && <p className={styles.error}>{error}</p>}
+        </form>
+
+        {/* ── Separator ── */}
+        <div className={styles.separator}>o</div>
+
+        {/* ── Magic link ── */}
+        {magicSent ? (
           <div className={styles.success}>
             <svg
               width="20"
@@ -76,24 +162,15 @@ function LoginForm() {
             </span>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              required
-              className={styles.input}
-              autoFocus
-            />
+          <form onSubmit={handleMagicLink} className={styles.form}>
             <button
               type="submit"
-              disabled={loading || !email}
+              disabled={magicLoading || !email}
               className={styles.button}
             >
-              {loading ? "Enviando..." : "Enviar magic link"}
+              {magicLoading ? "Enviando..." : "Enviar magic link"}
             </button>
-            {error && <p className={styles.error}>{error}</p>}
+            {magicError && <p className={styles.error}>{magicError}</p>}
           </form>
         )}
       </div>

@@ -11,6 +11,8 @@ export interface PlatformPreset {
   syncable: boolean;
   /** Build a wallet-specific profile URL */
   profileUrl: (wallet: string) => string;
+  /** Auto-generated wallet for platforms that don't need a real one */
+  autoWallet?: () => string;
 }
 
 export const KNOWN_PLATFORMS: PlatformPreset[] = [
@@ -33,5 +35,16 @@ export const KNOWN_PLATFORMS: PlatformPreset[] = [
     icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z",
     syncable: true,
     profileUrl: (w) => `https://polymarket.com/profile/${w}`,
+  },
+  {
+    slug: "fakedex",
+    name: "FakeDEX",
+    type: "dex",
+    url: "#",
+    description: "Plataforma ficticia para testing en dev",
+    icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",
+    syncable: true,
+    profileUrl: () => "#",
+    autoWallet: () => `0xFAKE${Math.random().toString(16).slice(2, 10)}`,
   },
 ];

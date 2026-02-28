@@ -25,6 +25,7 @@ export async function createCapitalFlow(formData: FormData) {
 
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase.from("capital_flows").insert({
     date: (formData.get("date") as string) || new Date().toISOString(),
@@ -46,6 +47,7 @@ export async function createCapitalFlow(formData: FormData) {
 export async function deleteCapitalFlow(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase.from("capital_flows").delete().eq("id", id);
 

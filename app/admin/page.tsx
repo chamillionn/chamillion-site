@@ -1,12 +1,18 @@
+import { requireAdmin } from "@/lib/supabase/admin";
+import { redirect } from "next/navigation";
 import { getPortfolioSummary, getPositions, getPlatforms, isDemoMode } from "@/lib/supabase/queries";
 import Dashboard from "./dashboard";
 
 export default async function AdminDashboard() {
+  const admin = await requireAdmin();
+  if (!admin) redirect("/login");
+
+  const dc = admin.dataClient;
   const [summary, positions, platforms, demo] = await Promise.all([
-    getPortfolioSummary(),
-    getPositions(),
-    getPlatforms(),
-    isDemoMode(),
+    getPortfolioSummary(dc),
+    getPositions(dc),
+    getPlatforms(dc),
+    isDemoMode(dc),
   ]);
 
   return (

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/supabase/admin";
 
-const TABLES = ["platforms", "strategies", "positions", "snapshots", "profiles"] as const;
+const TABLES = ["platforms", "strategies", "positions", "snapshots", "profiles", "capital_flows", "posts", "site_settings"] as const;
 const VIEWS = ["positions_enriched", "portfolio_summary"] as const;
 
 export async function GET() {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { supabase } = admin;
+  const supabase = admin.dataClient;
 
   const tables: Record<string, { rows: unknown[]; count: number }> = {};
   const views: Record<string, { rows: unknown[]; count: number }> = {};
@@ -18,7 +18,6 @@ export async function GET() {
       const { data, count } = await supabase
         .from(name)
         .select("*", { count: "exact" })
-        .order("created_at", { ascending: false })
         .limit(100);
       tables[name] = { rows: data ?? [], count: count ?? 0 };
     }),

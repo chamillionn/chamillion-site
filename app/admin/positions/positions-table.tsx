@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Platform, Strategy, Position } from "@/lib/supabase/types";
+import { useToast } from "@/components/admin-toast";
 import { closePosition, reopenPosition, deletePosition } from "./actions";
 import PositionForm from "./form";
 import styles from "./page.module.css";
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function PositionsTable({ positions, platforms, strategies }: Props) {
+  const { toast } = useToast();
   const [filter, setFilter] = useState<"active" | "closed" | "all">("active");
   const [editing, setEditing] = useState<PositionRow | null>(null);
   const [creating, setCreating] = useState(false);
@@ -31,21 +33,27 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
 
   async function handleClose(id: string) {
     setActionLoading(id);
-    await closePosition(id);
+    const res = await closePosition(id);
     setActionLoading(null);
+    if (res.error) toast(res.error, "error");
+    else toast("Posicion cerrada", "success");
   }
 
   async function handleReopen(id: string) {
     setActionLoading(id);
-    await reopenPosition(id);
+    const res = await reopenPosition(id);
     setActionLoading(null);
+    if (res.error) toast(res.error, "error");
+    else toast("Posicion reabierta", "success");
   }
 
   async function handleDelete(id: string) {
     if (!confirm("¿Eliminar esta posición permanentemente?")) return;
     setActionLoading(id);
-    await deletePosition(id);
+    const res = await deletePosition(id);
     setActionLoading(null);
+    if (res.error) toast(res.error, "error");
+    else toast("Posicion eliminada", "success");
   }
 
   const fmt = (n: number) =>

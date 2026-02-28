@@ -1,13 +1,25 @@
 import { cache } from "react";
 import { createClient } from "./server";
+import {
+  createTargetClient,
+  getAdminDbTarget,
+  isViewingRemoteDb,
+  type DbTarget,
+} from "./admin-db";
 import type { Profile } from "./types";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 export interface AdminContext {
+  /** Auth client — always the native env */
   supabase: SupabaseClient;
+  /** Target-aware client for data reads (may point to dev or prod) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dataClient: any;
   user: { id: string; email?: string };
   profile: Profile;
+  dbTarget: DbTarget;
+  isRemote: boolean;
 }
 
 /**
@@ -36,6 +48,10 @@ export const requireAdmin = cache(
     const p = profile as Profile | null;
     if (!p || p.role !== "admin") return null;
 
-    return { supabase, user, profile: p };
+    const dataClient = await createTargetClient();
+    const dbTarget = await getAdminDbTarget();
+    const isRemote = await isViewingRemoteDb();
+
+    return { supabase, dataClient, user, profile: p, dbTarget, isRemote };
   },
 );

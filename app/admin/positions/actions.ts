@@ -13,6 +13,7 @@ export async function createPosition(formData: FormData) {
   try {
     const admin = await requireAdmin();
     if (!admin) return { error: "Unauthorized" };
+    if (admin.isRemote) return { error: "Modo lectura" };
 
     const size = requireNumber(formData, "size");
     const cost_basis = requireNumber(formData, "cost_basis");
@@ -43,6 +44,7 @@ export async function updatePosition(id: string, formData: FormData) {
   try {
     const admin = await requireAdmin();
     if (!admin) return { error: "Unauthorized" };
+    if (admin.isRemote) return { error: "Modo lectura" };
 
     const size = requireNumber(formData, "size");
     const cost_basis = requireNumber(formData, "cost_basis");
@@ -74,6 +76,7 @@ export async function updatePosition(id: string, formData: FormData) {
 export async function closePosition(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase
     .from("positions")
@@ -89,6 +92,7 @@ export async function closePosition(id: string) {
 export async function reopenPosition(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase
     .from("positions")
@@ -104,6 +108,7 @@ export async function reopenPosition(id: string) {
 export async function deletePosition(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
 
   const { error } = await admin.supabase.from("positions").delete().eq("id", id);
 
