@@ -8,7 +8,7 @@ export async function toggleDemoMode(enabled: boolean) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("site_settings")
     .upsert(
       { key: "demo_mode", value: enabled, updated_at: new Date().toISOString() },
