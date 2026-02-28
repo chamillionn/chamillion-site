@@ -56,28 +56,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // /admin/* — require authenticated session + admin role
+  // /admin/* — require authenticated session (role checked in admin layout via requireAdmin)
   if (pathname.startsWith("/admin")) {
     if (!user) {
-      console.warn("[middleware] /admin: no user session, redirecting to /login");
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    console.info(`[middleware] /admin: user=${user.id}, profile=${JSON.stringify(profile)}, error=${profileError?.message ?? "none"}`);
-
-    if (!profile || profile.role !== "admin") {
-      console.warn(`[middleware] /admin: access denied — role=${profile?.role ?? "null"}`);
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
       return NextResponse.redirect(url);
     }
   }
