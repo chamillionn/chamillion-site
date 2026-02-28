@@ -1,23 +1,14 @@
 
 
-# Plan AUTH
-BLOQUE 1 check
-BLOQUE 2 check
-## BLOQUE 3
-- 
 
 
 
 ----------------------------------
 
 - Ultimo post card roll scroll para ver varios
-
-
-
-
+- Noi me deja quitar modo demo en prod
 
 - algo más de contraste 
-
 ---
 
 # ADMIN
@@ -29,3 +20,16 @@ Cambia la estructura de las paginas de admin o borra alguna si lo consideras.
 Haz mejoras esteticas y de experiencia de usuario de toda la admin page.
 ## Historial
 - Grafico y mejor presentacion
+
+
+
+
+
+---
+| Haz una auditoria general del proyecto. Busca casos limite, teste funcionalidades y revisa codigo a fondo
+
+Refactoriza y estandariza procesos redundantes
+Mueve archivos mal colocados
+Borra archivos innecesarios
+
+Mejora funcionalidades
