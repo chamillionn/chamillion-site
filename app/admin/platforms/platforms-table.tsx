@@ -121,15 +121,11 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
                 <svg
                   width="28"
                   height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  viewBox={preset.iconViewBox ?? "0 0 24 24"}
+                  fill="currentColor"
                   className={styles.presetIcon}
                 >
-                  <path d={preset.icon} />
+                  <path d={preset.icon} fillRule={preset.iconFillRule} />
                 </svg>
                 <div className={styles.presetInfo}>
                   <span className={styles.presetName}>{preset.name}</span>
@@ -172,15 +168,11 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
                             <svg
                               width="16"
                               height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                              viewBox={preset.iconViewBox ?? "0 0 24 24"}
+                              fill="currentColor"
                               className={styles.platformCellIcon}
                             >
-                              <path d={preset.icon} />
+                              <path d={preset.icon} fillRule={preset.iconFillRule} />
                             </svg>
                           )}
                           <span className={crudStyles.bold}>{p.name}</span>
@@ -268,15 +260,11 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
               <svg
                 width="24"
                 height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                viewBox={addingPreset.iconViewBox ?? "0 0 24 24"}
+                fill="currentColor"
                 className={styles.presetIcon}
               >
-                <path d={addingPreset.icon} />
+                <path d={addingPreset.icon} fillRule={addingPreset.iconFillRule} />
               </svg>
               <h2 className={crudStyles.modalTitle}>Añadir {addingPreset.name}</h2>
             </div>

@@ -222,15 +222,11 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
                   <svg
                     width="20"
                     height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    viewBox={preset.iconViewBox ?? "0 0 24 24"}
+                    fill="currentColor"
                     className={styles.platformIcon}
                   >
-                    <path d={preset.icon} />
+                    <path d={preset.icon} fillRule={preset.iconFillRule} />
                   </svg>
                 )}
                 <span className={styles.platformName}>{platform.name}</span>
