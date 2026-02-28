@@ -13,18 +13,31 @@ export function getStripe(): Stripe {
 }
 
 /**
- * Fetch active prices for the membership product.
- * Returns prices sorted by unit_amount (cheapest first).
+ * Fetch active prices for all membership products.
+ * Returns prices sorted by unit_amount (cheapest first), with product name.
  */
-export async function getActivePrices(): Promise<Stripe.Price[]> {
-  const prices = await getStripe().prices.list({
-    product: process.env.STRIPE_PRODUCT_ID!,
-    active: true,
-  });
+export async function getActivePrices(): Promise<
+  (Stripe.Price & { product_name: string })[]
+> {
+  const productIds = (process.env.STRIPE_PRODUCT_IDS ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
 
-  return prices.data.sort(
-    (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0),
+  const results = await Promise.all(
+    productIds.map(async (productId) => {
+      const [prices, product] = await Promise.all([
+        getStripe().prices.list({ product: productId, active: true }),
+        getStripe().products.retrieve(productId),
+      ]);
+      return prices.data.map((p) => ({
+        ...p,
+        product_name: product.name,
+      }));
+    }),
   );
+
+  return results.flat().sort((a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0));
 }
 
 /**

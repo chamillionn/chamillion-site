@@ -12,6 +12,7 @@ export async function GET() {
 
   const formatted = prices.map((p) => ({
     id: p.id,
+    name: p.product_name,
     unitAmount: p.unit_amount,
     currency: p.currency,
     interval: p.recurring?.interval ?? null,

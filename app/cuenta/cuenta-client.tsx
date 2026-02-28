@@ -8,6 +8,7 @@ import styles from "./page.module.css";
 
 interface Price {
   id: string;
+  name: string;
   unitAmount: number;
   currency: string;
   interval: string | null;
@@ -226,7 +227,7 @@ export default function CuentaClient({
                   >
                     {checkoutLoading === p.id
                       ? "Redirigiendo..."
-                      : `${formatPrice(p.unitAmount, p.currency)}/${INTERVAL_LABELS[p.interval ?? ""] ?? p.interval}`}
+                      : `${p.name} · ${formatPrice(p.unitAmount, p.currency)}/${INTERVAL_LABELS[p.interval ?? ""] ?? p.interval}`}
                   </button>
                 ))}
               </div>

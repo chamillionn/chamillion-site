@@ -7,6 +7,7 @@ import styles from "./paywall-cta.module.css";
 
 interface Price {
   id: string;
+  name: string;
   unitAmount: number;
   currency: string;
   interval: string | null;
@@ -97,7 +98,7 @@ export default function PaywallCTA({ isLoggedIn }: Props) {
                   >
                     {loading === p.id
                       ? "Redirigiendo..."
-                      : `${formatPrice(p.unitAmount, p.currency)}/${INTERVAL_LABELS[p.interval ?? ""] ?? p.interval}`}
+                      : `${p.name} · ${formatPrice(p.unitAmount, p.currency)}/${INTERVAL_LABELS[p.interval ?? ""] ?? p.interval}`}
                   </button>
                 ))
               ) : (
