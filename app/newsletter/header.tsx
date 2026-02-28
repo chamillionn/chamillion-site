@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
 import UserMenu from "@/components/user-menu";
+import PremiumBadge from "@/components/premium-badge";
 import styles from "./layout.module.css";
 
 export default function Header() {
@@ -21,7 +22,7 @@ export default function Header() {
             />
           </div>
           <span>Chamillion</span>
-          <span className={styles.extendedBadge}>Premium</span>
+          <PremiumBadge className={styles.extendedBadge} />
         </Link>
         <nav className={styles.headerNav}>
           <Link href="/">Inicio</Link>

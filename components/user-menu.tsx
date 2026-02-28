@@ -98,12 +98,16 @@ export default function UserMenu() {
     "?"
   ).toUpperCase();
 
+  const isPremium = user.role === "member" || user.role === "admin";
+
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Menu de usuario"
+        title={isPremium ? (user.role === "admin" ? "Admin" : "Premium") : undefined}
         style={{
+          position: "relative",
           width: 28,
           height: 28,
           borderRadius: "50%",
@@ -142,19 +146,52 @@ export default function UserMenu() {
             gap: 2,
           }}
         >
-          {/* Email */}
+          {/* Email + role badge */}
           <div
             style={{
-              padding: "8px 10px 6px",
-              fontSize: 12,
-              color: V.textMuted,
-              fontFamily: "var(--font-jetbrains), monospace",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              padding: "8px 10px 8px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
             }}
           >
-            {user.email}
+            <div
+              style={{
+                fontSize: 12,
+                color: V.textMuted,
+                fontFamily: "var(--font-jetbrains), monospace",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {user.email}
+            </div>
+            {isPremium && (
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontSize: 10,
+                  fontFamily: "var(--font-dm-mono), monospace",
+                  fontWeight: 500,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: V.steel,
+                  background: steelA(0.1),
+                  border: `1px solid ${steelA(0.25)}`,
+                  borderRadius: 4,
+                  padding: "2px 7px",
+                  width: "fit-content",
+                }}
+              >
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                {user.role === "admin" ? "Admin" : "Premium"}
+              </div>
+            )}
           </div>
 
           <div

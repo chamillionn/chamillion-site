@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
 import UserMenu from "@/components/user-menu";
+import PremiumBadge from "@/components/premium-badge";
 import { V, steelA, bgCardA } from "@/lib/theme";
 
 // Scroll-triggered reveal
@@ -1432,6 +1433,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
             >
               Chamillion
             </span>
+            <PremiumBadge />
           </div>
           <div style={{
             display: "flex",

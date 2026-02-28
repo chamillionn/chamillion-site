@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
 import UserMenu from "@/components/user-menu";
+import PremiumBadge from "@/components/premium-badge";
 import styles from "./page.module.css";
 
 const FEATURES = [
@@ -132,6 +133,7 @@ export default function HubPage({ userRole }: HubProps) {
             />
           </div>
           <span className={styles.logoText}>Chamillion</span>
+          <PremiumBadge />
         </Link>
         <nav className={styles.headerNav}>
           <Link href="/">Inicio</Link>
