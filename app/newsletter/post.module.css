@@ -178,6 +178,12 @@
   height: 420px;
 }
 
+@media (max-width: 600px) {
+  .iframeStablecoins {
+    height: 380px;
+  }
+}
+
 /* ===== HIGHLIGHT BOX ===== */
 .highlightBox {
   text-align: center;

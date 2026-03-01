@@ -32,14 +32,20 @@ function formatPrice(cents: number, currency: string): string {
 export default function PaywallCTA({ isLoggedIn }: Props) {
   const pathname = usePathname();
   const [prices, setPrices] = useState<Price[]>([]);
+  const [priceError, setPriceError] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isLoggedIn) return;
+  function fetchPrices() {
+    setPriceError(false);
     fetch("/api/stripe/prices")
       .then((r) => r.json())
       .then((data) => setPrices(data))
-      .catch(() => {});
+      .catch(() => setPriceError(true));
+  }
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    fetchPrices();
   }, [isLoggedIn]);
 
   async function handleCheckout(priceId: string) {
@@ -87,7 +93,11 @@ export default function PaywallCTA({ isLoggedIn }: Props) {
               premium de Chamillion.
             </p>
             <div className={styles.actions}>
-              {prices.length > 0 ? (
+              {priceError ? (
+                <button className={styles.secondaryBtn} onClick={fetchPrices}>
+                  Error al cargar planes. Reintentar
+                </button>
+              ) : prices.length > 0 ? (
                 prices.map((p) => (
                   <button
                     key={p.id}

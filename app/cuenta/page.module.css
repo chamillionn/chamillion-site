@@ -55,6 +55,10 @@
   font-family: var(--font-jetbrains), monospace;
   font-size: 14px;
   color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .input {

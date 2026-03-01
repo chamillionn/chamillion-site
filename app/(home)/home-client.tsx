@@ -236,6 +236,7 @@ function DonutChart({ platforms, total, hoveredPlatform, onHover }: { platforms:
               stroke={platform.color}
               strokeLinecap="round"
               onMouseEnter={() => onHover(platform.name)}
+              onTouchStart={(e) => { e.preventDefault(); onHover(hoveredPlatform === platform.name ? null : platform.name); }}
               style={{
                 "--circ": circumference,
                 "--vis": visibleLength,
@@ -882,6 +883,7 @@ function ChameleonPeek({ mobile }: { mobile: boolean }) {
 
         function screenToSvg(cx: number, cy: number) {
           const r = svg!.getBoundingClientRect();
+          if (!r.width || !r.height) return { x: eyeCx, y: eyeCy };
           const s = Math.min(SVG_W / r.width, SVG_H / r.height);
           const ox = (SVG_W - r.width * s) / 2;
           const oy = (SVG_H - r.height * s) / 2;
@@ -1230,26 +1232,34 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
                 height={H}
                 fill="transparent"
                 onMouseEnter={() => setHoveredDay(i)}
+                onTouchStart={() => setHoveredDay(i)}
+                onTouchEnd={() => setHoveredDay(null)}
                 style={{ cursor: "crosshair" }}
               />
             );
           })}
 
-          {/* X-axis labels */}
-          {dailyData.map((d, i) => (
-            <text
-              key={i}
-              x={points[i].x}
-              y={H - 4}
-              textAnchor="middle"
-              fill={hoveredDay === i ? V.textSecondary : V.textMuted}
-              fontSize="10"
-              fontFamily="var(--font-jetbrains), monospace"
-              style={{ transition: "fill 0.15s ease" }}
-            >
-              {d.day}
-            </text>
-          ))}
+          {/* X-axis labels — reduce density on small screens */}
+          {(() => {
+            const labelStep = W < 400 ? 7 : W < 600 ? 4 : 2;
+            return dailyData.map((d, i) => {
+              if (i % labelStep !== 0 && i !== dailyData.length - 1) return null;
+              return (
+                <text
+                  key={i}
+                  x={points[i].x}
+                  y={H - 4}
+                  textAnchor="middle"
+                  fill={hoveredDay === i ? V.textSecondary : V.textMuted}
+                  fontSize="10"
+                  fontFamily="var(--font-jetbrains), monospace"
+                  style={{ transition: "fill 0.15s ease" }}
+                >
+                  {d.day}
+                </text>
+              );
+            });
+          })()}
         </svg>
 
         {/* Tooltip */}
@@ -1288,6 +1298,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
   const [loaded, setLoaded] = useState(false);
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
   const [navDropdown, setNavDropdown] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navDropdownRef = useRef<HTMLDivElement>(null);
   const mobile = useMediaQuery(768);
   const portfolio = useScrollReveal(0.1);
@@ -1321,6 +1332,15 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [navDropdown]);
+
+  // Close mobile menu on Escape
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    function handleKey(e: KeyboardEvent) { if (e.key === "Escape") setMobileMenuOpen(false); }
+    document.addEventListener("keydown", handleKey);
+    document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", handleKey); document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
 
   return (
     <div
@@ -1437,13 +1457,13 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
           </div>
           <div style={{
             display: "flex",
-            gap: 24,
+            gap: mobile ? 14 : 24,
             alignItems: "center",
             opacity: loaded ? 1 : 0,
             transform: loaded ? "translateY(0)" : "translateY(-8px)",
             transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
           }}>
-            <div ref={navDropdownRef} style={{ position: "relative" }}>
+            <div ref={navDropdownRef} style={{ position: "relative", display: mobile ? "none" : "block" }}>
               <button
                 onClick={() => setNavDropdown((v) => !v)}
                 style={{
@@ -1540,25 +1560,193 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                 </div>
               )}
             </div>
-            <Link
-              href="/hub"
-              style={{
-                color: V.textMuted,
-                textDecoration: "none",
-                fontSize: 13,
-                fontWeight: 500,
-                letterSpacing: "-0.01em",
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = V.textSecondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = V.textMuted)}
-            >
-              Hub
-            </Link>
-            <UserMenu />
-            <ThemeToggle />
+            {!mobile && (
+              <Link
+                href="/hub"
+                style={{
+                  color: V.textMuted,
+                  textDecoration: "none",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  letterSpacing: "-0.01em",
+                  transition: "color 0.2s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = V.textSecondary)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = V.textMuted)}
+              >
+                Hub
+              </Link>
+            )}
+            {mobile ? (
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Abrir menu"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 4,
+                  color: V.textSecondary,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                  <line x1="4" y1="7" x2="20" y2="7" />
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="17" x2="20" y2="17" />
+                </svg>
+              </button>
+            ) : (
+              <>
+                <UserMenu />
+                <ThemeToggle />
+              </>
+            )}
           </div>
         </nav>
+
+        {/* Mobile menu drawer */}
+        {mobile && mobileMenuOpen && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              background: "rgba(0,0,0,0.5)",
+              backdropFilter: "blur(4px)",
+            }}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                width: 280,
+                maxWidth: "85vw",
+                height: "100%",
+                background: V.bgCard,
+                borderLeft: `1px solid ${V.border}`,
+                padding: "24px 20px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                animation: "fadeIn 0.2s ease-out",
+                overflowY: "auto",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Cerrar menu"
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: V.textSecondary }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Newsletter section */}
+              <div style={{ fontSize: 10, fontFamily: "var(--font-jetbrains), monospace", color: V.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 10px", marginBottom: 4 }}>Newsletter</div>
+              <a
+                href="https://chamillion.substack.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "12px 10px",
+                  borderRadius: 8,
+                  textDecoration: "none",
+                  color: V.textPrimary,
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 448 512" fill="none" style={{ flexShrink: 0 }}>
+                  <path fill={V.steel} d="M0 0h448v62.804H0V0zm0 229.083h448v282.388L223.954 385.808 0 511.471V229.083zm0-114.542h448v62.804H0v-62.804z"/>
+                </svg>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500 }}>Substack</div>
+                  <div style={{ fontSize: 10, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace" }}>Gratis</div>
+                </div>
+              </a>
+              <Link
+                href="/newsletter"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "12px 10px",
+                  borderRadius: 8,
+                  textDecoration: "none",
+                  color: V.textPrimary,
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: V.textSecondary }}>
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500 }}>Web</div>
+                  <div style={{ fontSize: 10, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace" }}>Extendida</div>
+                </div>
+              </Link>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${V.border}, transparent)`, margin: "8px 0" }} />
+
+              {/* Hub */}
+              <div style={{ fontSize: 10, fontFamily: "var(--font-jetbrains), monospace", color: V.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 10px", marginBottom: 4 }}>Navegacion</div>
+              <Link
+                href="/hub"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "12px 10px",
+                  borderRadius: 8,
+                  textDecoration: "none",
+                  color: V.textPrimary,
+                  fontSize: 14,
+                  fontWeight: 500,
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: V.textSecondary }}>
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                  <path d="M2 12h20" />
+                </svg>
+                Hub
+              </Link>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${V.border}, transparent)`, margin: "8px 0" }} />
+
+              {/* Account section */}
+              <div style={{ fontSize: 10, fontFamily: "var(--font-jetbrains), monospace", color: V.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 10px", marginBottom: 4 }}>Cuenta</div>
+              <UserMenu variant="expanded" onNavigate={() => setMobileMenuOpen(false)} />
+
+              {/* Divider */}
+              <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${V.border}, transparent)`, margin: "8px 0" }} />
+
+              {/* Settings section */}
+              <div style={{ fontSize: 10, fontFamily: "var(--font-jetbrains), monospace", color: V.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 10px", marginBottom: 4 }}>Ajustes</div>
+              <div style={{ padding: "8px 10px", display: "flex", alignItems: "center", gap: 12 }}>
+                <ThemeToggle />
+                <span style={{ fontSize: 14, fontWeight: 500, color: V.textPrimary }}>Tema</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Hero — asymmetric split */}
         <div

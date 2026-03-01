@@ -436,6 +436,28 @@ export default async function Post01() {
         </div>
 
         </PaywallGate>
+
+        {/* Back to archive */}
+        <div style={{
+          textAlign: "center",
+          padding: "40px 0 0",
+          borderTop: "1px solid var(--border)",
+          marginTop: 40,
+        }}>
+          <a
+            href="/newsletter"
+            style={{
+              fontFamily: "var(--font-dm-mono), monospace",
+              fontSize: 13,
+              color: "var(--text-secondary)",
+              textDecoration: "none",
+              letterSpacing: "0.02em",
+              transition: "color 0.2s",
+            }}
+          >
+            &larr; Volver al archivo
+          </a>
+        </div>
       </article>
     </>
   );

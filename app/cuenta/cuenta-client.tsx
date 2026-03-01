@@ -62,15 +62,21 @@ export default function CuentaClient({
     msg: string;
   } | null>(null);
   const [prices, setPrices] = useState<Price[]>([]);
+  const [priceError, setPriceError] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
-  useEffect(() => {
-    if (role !== "free") return;
+  function fetchPrices() {
+    setPriceError(false);
     fetch("/api/stripe/prices")
       .then((r) => r.json())
       .then((data) => setPrices(data))
-      .catch(() => {});
+      .catch(() => setPriceError(true));
+  }
+
+  useEffect(() => {
+    if (role !== "free") return;
+    fetchPrices();
   }, [role]);
 
   async function handleSave() {
@@ -92,6 +98,7 @@ export default function CuentaClient({
 
   async function handleCheckout(priceId: string) {
     setCheckoutLoading(priceId);
+    setFeedback(null);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -101,21 +108,30 @@ export default function CuentaClient({
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        setFeedback({ type: "error", msg: "Error al iniciar el pago. Intentalo de nuevo." });
+        setCheckoutLoading(null);
       }
     } catch {
+      setFeedback({ type: "error", msg: "Error al iniciar el pago. Intentalo de nuevo." });
       setCheckoutLoading(null);
     }
   }
 
   async function handlePortal() {
     setPortalLoading(true);
+    setFeedback(null);
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        setFeedback({ type: "error", msg: "Error al abrir el portal. Intentalo de nuevo." });
+        setPortalLoading(false);
       }
     } catch {
+      setFeedback({ type: "error", msg: "Error al abrir el portal. Intentalo de nuevo." });
       setPortalLoading(false);
     }
   }
@@ -213,7 +229,16 @@ export default function CuentaClient({
               Suscribete para acceder al Hub y al contenido premium de la
               newsletter.
             </p>
-            {prices.length > 0 ? (
+            {priceError ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+                <span style={{ fontFamily: "var(--font-dm-mono), monospace", fontSize: 12, color: "var(--red)" }}>
+                  No se pudieron cargar los planes.
+                </span>
+                <button className={styles.button} onClick={fetchPrices} style={{ fontSize: 12, padding: "6px 14px" }}>
+                  Reintentar
+                </button>
+              </div>
+            ) : prices.length > 0 ? (
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {prices.map((p) => (
                   <button

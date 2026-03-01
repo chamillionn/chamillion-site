@@ -72,13 +72,27 @@ export default async function HomePage() {
     );
   }
 
-  const [summary, positions, allPlatforms, snapshots, costBasis] = await Promise.all([
-    getPortfolioSummary(),
-    getPositions(),
-    getPlatforms(),
-    getDailySnapshots(30),
-    getCostBasis(),
-  ]);
+  let summary, positions, allPlatforms, snapshots, costBasis;
+  try {
+    [summary, positions, allPlatforms, snapshots, costBasis] = await Promise.all([
+      getPortfolioSummary(),
+      getPositions(),
+      getPlatforms(),
+      getDailySnapshots(30),
+      getCostBasis(),
+    ]);
+  } catch (e) {
+    console.error("Homepage data fetch failed:", e);
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <HomeClient {...DEMO_DATA} isDemo platformColorsLight={PLATFORM_COLORS_LIGHT} />
+      </>
+    );
+  }
 
   // Group positions by platform, sorted by value desc
   const platforms = allPlatforms

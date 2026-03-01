@@ -11,7 +11,7 @@ interface UserState {
   role: "free" | "member" | "admin";
 }
 
-export default function UserMenu() {
+export default function UserMenu({ variant = "compact", onNavigate }: { variant?: "compact" | "expanded"; onNavigate?: () => void }) {
   const [user, setUser] = useState<UserState | null>(null);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function UserMenu() {
   }
 
   if (loading) {
-    return <div style={{ width: 28, height: 28 }} />;
+    return variant === "expanded" ? null : <div style={{ width: 28, height: 28 }} />;
   }
 
   // Not logged in — show "Acceder" link
@@ -71,7 +71,18 @@ export default function UserMenu() {
     return (
       <Link
         href="/login"
-        style={{
+        onClick={onNavigate}
+        style={variant === "expanded" ? {
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 10px",
+          fontSize: 14,
+          fontWeight: 500,
+          color: V.textPrimary,
+          textDecoration: "none",
+          borderRadius: 8,
+        } : {
           color: V.textSecondary,
           textDecoration: "none",
           fontSize: 13,
@@ -79,13 +90,20 @@ export default function UserMenu() {
           letterSpacing: "-0.01em",
           transition: "color 0.2s",
         }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.color = "var(--text-primary)")
+        onMouseEnter={variant === "compact" ? (e) =>
+          (e.currentTarget.style.color = "var(--text-primary)") : undefined
         }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.color = "var(--text-secondary)")
+        onMouseLeave={variant === "compact" ? (e) =>
+          (e.currentTarget.style.color = "var(--text-secondary)") : undefined
         }
       >
+        {variant === "expanded" && (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: V.textSecondary }}>
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
+          </svg>
+        )}
         Acceder
       </Link>
     );
@@ -100,6 +118,141 @@ export default function UserMenu() {
 
   const isPremium = user.role === "member" || user.role === "admin";
 
+  // ── Expanded variant for mobile drawers ──
+  if (variant === "expanded") {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {/* User card */}
+        <div style={{
+          padding: "10px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          background: steelA(0.06),
+          borderRadius: 10,
+          border: `1px solid ${steelA(0.1)}`,
+        }}>
+          <div style={{
+            width: 34,
+            height: 34,
+            borderRadius: "50%",
+            background: steelA(0.15),
+            border: `1px solid ${steelA(0.3)}`,
+            color: V.steel,
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: "var(--font-dm-mono), monospace",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            {initial}
+          </div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: V.textPrimary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {user.displayName || user.email.split("@")[0]}
+            </div>
+            <div style={{ fontSize: 11, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>
+              {user.email}
+            </div>
+          </div>
+          {isPremium && (
+            <div style={{
+              fontSize: 9,
+              fontFamily: "var(--font-dm-mono), monospace",
+              fontWeight: 500,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: V.steel,
+              background: steelA(0.12),
+              border: `1px solid ${steelA(0.25)}`,
+              borderRadius: 4,
+              padding: "2px 6px",
+              flexShrink: 0,
+            }}>
+              {user.role === "admin" ? "Admin" : "Premium"}
+            </div>
+          )}
+        </div>
+
+        {/* Account links */}
+        <Link
+          href="/cuenta"
+          onClick={onNavigate}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "12px 10px",
+            fontSize: 14,
+            fontWeight: 500,
+            color: V.textPrimary,
+            textDecoration: "none",
+            borderRadius: 8,
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: V.textSecondary }}>
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          Mi cuenta
+        </Link>
+
+        {user.role === "admin" && (
+          <Link
+            href="/admin"
+            onClick={onNavigate}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 10px",
+              fontSize: 14,
+              fontWeight: 500,
+              color: V.textPrimary,
+              textDecoration: "none",
+              borderRadius: 8,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: V.textSecondary }}>
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Admin
+          </Link>
+        )}
+
+        <button
+          onClick={handleLogout}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            width: "100%",
+            padding: "12px 10px",
+            fontSize: 14,
+            fontWeight: 500,
+            color: V.red,
+            background: "none",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            textAlign: "left",
+            fontFamily: "inherit",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Cerrar sesion
+        </button>
+      </div>
+    );
+  }
+
+  // ── Compact variant (default) — avatar + dropdown ──
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button

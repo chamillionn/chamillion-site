@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -10,11 +10,29 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/";
   const isAdmin = next.startsWith("/admin");
+  const authError = searchParams.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [error, setError] = useState(
+    authError === "auth_failed"
+      ? "El enlace de autenticacion ha expirado o no es valido. Intentalo de nuevo."
+      : ""
+  );
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        window.location.href = next;
+      } else {
+        setCheckingSession(false);
+      }
+    });
+  }, [next]);
 
   // Magic link state
   const [magicLoading, setMagicLoading] = useState(false);
@@ -92,6 +110,16 @@ function LoginForm() {
     setMagicSent(true);
   }
 
+  if (checkingSession) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.card} style={{ textAlign: "center" }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Verificando sesion...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>
@@ -116,6 +144,7 @@ function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
             required
+            disabled={loading || magicLoading}
             className={styles.input}
             autoFocus
           />
@@ -125,6 +154,7 @@ function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contrasena"
             required
+            disabled={loading}
             className={styles.input}
           />
           <button
