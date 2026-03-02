@@ -1,8 +1,8 @@
 import { requireAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { isDemoMode } from "@/lib/supabase/queries";
-import DemoToggle from "./demo-toggle";
-import styles from "../page.module.css";
+import SettingsTabs from "./settings-tabs";
+import crudStyles from "../crud.module.css";
 
 export default async function SettingsPage() {
   const admin = await requireAdmin();
@@ -12,8 +12,8 @@ export default async function SettingsPage() {
 
   return (
     <div>
-      <h1 className={styles.heading}>Ajustes</h1>
-      <DemoToggle initialEnabled={demoEnabled} />
+      <h1 className={crudStyles.heading}>Ajustes</h1>
+      <SettingsTabs demoEnabled={demoEnabled} />
     </div>
   );
 }

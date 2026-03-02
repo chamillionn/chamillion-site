@@ -283,6 +283,27 @@
   margin-top: 4px;
 }
 
+/* ===== SHARED ANIMATION ===== */
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.syncSpin {
+  animation: spin 1s linear infinite;
+}
+
+/* ===== RESPONSIVE ===== */
+
+.hideMobile {}
+
+@media (max-width: 768px) {
+  .hideMobile {
+    display: none;
+  }
+}
+
 @media (max-width: 600px) {
   .fieldRow {
     flex-direction: column;

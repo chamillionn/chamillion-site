@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { Platform, PositionEnriched, PortfolioSummary } from "@/lib/supabase/types";
+import type { Platform, PositionEnriched, PortfolioSummary, Snapshot } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
 import { KNOWN_PLATFORMS } from "@/lib/platforms/presets";
 import styles from "./page.module.css";
@@ -20,9 +20,10 @@ interface Props {
   summary: PortfolioSummary | null;
   positions: PositionEnriched[];
   platforms: Platform[];
+  prevSnapshot: Snapshot | null;
 }
 
-export default function Dashboard({ summary, positions, platforms }: Props) {
+export default function Dashboard({ summary, positions, platforms, prevSnapshot }: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const [syncState, setSyncState] = useState<Record<string, {
@@ -143,22 +144,52 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
     setSyncAllLoading(false);
   }
 
+  // Delta calculations (current vs previous snapshot)
+  const prev = prevSnapshot;
+  const prevPnl = prev ? prev.total_value - prev.total_cost : null;
+  const prevRoi = prev && prev.total_cost > 0 ? ((prev.total_value - prev.total_cost) / prev.total_cost) * 100 : null;
+
+  function delta(current: number | undefined, previous: number | null): string | null {
+    if (current == null || previous == null) return null;
+    const d = current - previous;
+    if (Math.abs(d) < 0.01) return null;
+    return `${d >= 0 ? "+" : ""}${fmt(d)}`;
+  }
+
+  function deltaPct(current: number | undefined, previous: number | null): string | null {
+    if (current == null || previous == null) return null;
+    const d = current - previous;
+    if (Math.abs(d) < 0.01) return null;
+    return `${d >= 0 ? "+" : ""}${d.toFixed(1)}pp`;
+  }
+
   const stats = [
-    { label: "Valor total", value: hasData ? fmt(summary.total_value) : "—" },
-    { label: "Coste total", value: hasData ? fmt(summary.total_cost) : "—" },
+    {
+      label: "Valor total",
+      value: hasData ? fmt(summary.total_value) : "—",
+      delta: hasData ? delta(summary.total_value, prev?.total_value ?? null) : null,
+    },
+    {
+      label: "Coste total",
+      value: hasData ? fmt(summary.total_cost) : "—",
+      delta: hasData ? delta(summary.total_cost, prev?.total_cost ?? null) : null,
+    },
     {
       label: "PnL",
       value: hasData ? `${summary.total_pnl >= 0 ? "+" : ""}${fmt(summary.total_pnl)}` : "—",
       color: hasData ? (summary.total_pnl >= 0 ? "var(--green)" : "var(--red)") : undefined,
+      delta: hasData ? delta(summary.total_pnl, prevPnl) : null,
     },
     {
       label: "ROI",
       value: hasData ? `${summary.total_roi_pct >= 0 ? "+" : ""}${summary.total_roi_pct.toFixed(1)}%` : "—",
       color: hasData ? (summary.total_roi_pct >= 0 ? "var(--green)" : "var(--red)") : undefined,
+      delta: hasData ? deltaPct(summary.total_roi_pct, prevRoi) : null,
     },
     {
       label: "Posiciones",
       value: `${activePositions.length}`,
+      delta: prev?.positions_data ? `${activePositions.length - prev.positions_data.length >= 0 ? "+" : ""}${activePositions.length - prev.positions_data.length}` : null,
     },
   ];
 
@@ -200,6 +231,14 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
             <span className={styles.statValue} style={s.color ? { color: s.color } : undefined}>
               {s.value}
             </span>
+            {s.delta && (
+              <span
+                className={styles.statDelta}
+                style={{ color: s.delta.startsWith("+") ? "var(--green)" : "var(--red)" }}
+              >
+                {s.delta.startsWith("+") ? "▲" : "▼"} {s.delta}
+              </span>
+            )}
           </div>
         ))}
       </div>
@@ -248,10 +287,13 @@ export default function Dashboard({ summary, positions, platforms }: Props) {
               {slug && preset?.syncable && (
                 <div className={styles.syncArea}>
                   {sync?.result && !sync.loading && (
-                    <span className={sync.result.errors.length > 0 ? styles.syncError : styles.syncSuccess}>
+                    <span
+                      className={sync.result.errors.length > 0 ? styles.syncError : styles.syncSuccess}
+                      title={sync.result.errors.length > 0 ? sync.result.errors.join("\n") : undefined}
+                    >
                       {sync.result.errors.length > 0
                         ? sync.result.errors[0]
-                        : `${sync.result.updated} ok`}
+                        : `${sync.result.updated} ok${sync.result.deactivated > 0 ? `, ${sync.result.deactivated} cerradas` : ""}`}
                     </span>
                   )}
                   <button
@@ -334,9 +376,9 @@ function PositionsTable({ positions }: { positions: PositionEnriched[] }) {
         <thead>
           <tr>
             <th>Asset</th>
-            <th className={styles.right}>Size</th>
+            <th className={`${styles.right} ${styles.hideMobile}`}>Size</th>
             <th className={styles.right}>Valor</th>
-            <th className={styles.right}>Coste</th>
+            <th className={`${styles.right} ${styles.hideMobile}`}>Coste</th>
             <th className={styles.right}>PnL</th>
             <th className={styles.right}>ROI</th>
           </tr>
@@ -345,11 +387,11 @@ function PositionsTable({ positions }: { positions: PositionEnriched[] }) {
           {positions.map((p) => (
             <tr key={p.id}>
               <td className={styles.bold}>{p.asset}</td>
-              <td className={styles.right}>{p.size.toLocaleString("en-US")}</td>
+              <td className={`${styles.right} ${styles.hideMobile}`}>{p.size.toLocaleString("en-US")}</td>
               <td className={styles.right}>
                 ${p.current_value.toLocaleString("en-US", { minimumFractionDigits: 2 })}
               </td>
-              <td className={styles.right}>
+              <td className={`${styles.right} ${styles.hideMobile}`}>
                 ${p.cost_basis.toLocaleString("en-US", { minimumFractionDigits: 2 })}
               </td>
               <td

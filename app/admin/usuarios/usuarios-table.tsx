@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { Profile } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
 import { setUserRole, deleteUser } from "./actions";
+import ConfirmModal from "@/components/confirm-modal";
 import styles from "../crud.module.css";
 
 const ROLE_LABELS: Record<Profile["role"], string> = {
@@ -51,6 +52,30 @@ export default function UsuariosTable({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | Profile["role"]>("all");
+
+  // Summary stats
+  const roleCounts = { free: 0, member: 0, admin: 0 };
+  const subCounts: Record<string, number> = {};
+  for (const p of profiles) {
+    roleCounts[p.role]++;
+    const sub = p.subscription_status ?? "none";
+    subCounts[sub] = (subCounts[sub] ?? 0) + 1;
+  }
+
+  // Filtered list
+  const filtered = profiles.filter((p) => {
+    if (roleFilter !== "all" && p.role !== roleFilter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return (
+        p.email.toLowerCase().includes(q) ||
+        (p.display_name ?? "").toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
 
   function handleRoleToggle(profile: Profile) {
     if (profile.role === "admin") return;
@@ -80,8 +105,59 @@ export default function UsuariosTable({
 
   return (
     <>
+      {/* Summary badges */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        <span className={styles.tag} style={{ padding: "6px 12px", fontSize: 12 }}>
+          {profiles.length} total
+        </span>
+        <span className={`${styles.tag} ${styles.tagPaused}`} style={{ padding: "6px 12px", fontSize: 12 }}>
+          {roleCounts.admin} Admin
+        </span>
+        <span className={`${styles.tag} ${styles.tagActive}`} style={{ padding: "6px 12px", fontSize: 12 }}>
+          {roleCounts.member} Miembro
+        </span>
+        <span className={styles.tag} style={{ padding: "6px 12px", fontSize: 12 }}>
+          {roleCounts.free} Free
+        </span>
+        {(subCounts.active ?? 0) > 0 && (
+          <span className={`${styles.tag} ${styles.tagActive}`} style={{ padding: "6px 12px", fontSize: 12 }}>
+            {subCounts.active} Activas
+          </span>
+        )}
+        {(subCounts.trialing ?? 0) > 0 && (
+          <span className={`${styles.tag} ${styles.tagActive}`} style={{ padding: "6px 12px", fontSize: 12 }}>
+            {subCounts.trialing} Prueba
+          </span>
+        )}
+        {(subCounts.canceled ?? 0) > 0 && (
+          <span className={`${styles.tag} ${styles.tagClosed}`} style={{ padding: "6px 12px", fontSize: 12 }}>
+            {subCounts.canceled} Canceladas
+          </span>
+        )}
+      </div>
+
+      {/* Search + filter */}
       <div className={styles.toolbar}>
-        <h1 className={styles.heading}>Usuarios</h1>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar email o nombre..."
+            className={styles.input}
+            style={{ width: 200, padding: "6px 10px", fontSize: 12 }}
+          />
+          {(["all", "free", "member", "admin"] as const).map((r) => (
+            <button
+              key={r}
+              onClick={() => setRoleFilter(r)}
+              className={`${styles.btnSecondary}`}
+              style={roleFilter === r ? { borderColor: "var(--steel-blue)", color: "var(--steel-blue)" } : undefined}
+            >
+              {r === "all" ? "Todos" : ROLE_LABELS[r]}
+            </button>
+          ))}
+        </div>
         <span
           style={{
             fontFamily: "var(--font-dm-mono), monospace",
@@ -89,7 +165,7 @@ export default function UsuariosTable({
             color: "var(--text-muted)",
           }}
         >
-          {profiles.length} usuarios
+          {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
         </span>
       </div>
 
@@ -99,8 +175,10 @@ export default function UsuariosTable({
         </p>
       )}
 
-      {profiles.length === 0 ? (
-        <div className={styles.empty}>No hay usuarios registrados.</div>
+      {filtered.length === 0 ? (
+        <div className={styles.empty}>
+          {search || roleFilter !== "all" ? "No se encontraron resultados." : "No hay usuarios registrados."}
+        </div>
       ) : (
         <div className={styles.tableWrap}>
           <table className={styles.table}>
@@ -114,7 +192,7 @@ export default function UsuariosTable({
               </tr>
             </thead>
             <tbody>
-              {profiles.map((profile) => {
+              {filtered.map((profile) => {
                 const isSelf = profile.id === currentUserId;
                 return (
                   <tr key={profile.id}>
@@ -180,33 +258,14 @@ export default function UsuariosTable({
         </div>
       )}
 
-      {/* Confirm delete modal */}
-      {confirmDelete && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <h2 className={styles.modalTitle}>Eliminar usuario</h2>
-            <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20 }}>
-              Esta acción es irreversible. Se eliminará la cuenta y todos sus datos.
-            </p>
-            <div className={styles.formActions}>
-              <button
-                className={styles.btnSecondary}
-                onClick={() => setConfirmDelete(null)}
-              >
-                Cancelar
-              </button>
-              <button
-                className={styles.btnPrimary}
-                style={{ background: "var(--red)" }}
-                onClick={() => confirmDoDelete(confirmDelete)}
-                disabled={pending}
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={!!confirmDelete}
+        title="Eliminar usuario"
+        message="Esta acción es irreversible. Se eliminará la cuenta y todos sus datos."
+        onConfirm={() => confirmDelete && confirmDoDelete(confirmDelete)}
+        onCancel={() => setConfirmDelete(null)}
+        loading={pending}
+      />
     </>
   );
 }

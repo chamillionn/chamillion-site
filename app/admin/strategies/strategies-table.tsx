@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Strategy } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
 import { createStrategy, updateStrategy, deleteStrategy } from "./actions";
+import ConfirmModal from "@/components/confirm-modal";
 import styles from "../crud.module.css";
 
 const STATUSES = ["active", "paused", "closed"];
@@ -21,6 +22,7 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,14 +45,23 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
     setEditing(null);
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("¿Eliminar esta estrategia?")) return;
+  async function doDelete(id: string) {
+    setConfirmDelete(null);
     const res = await deleteStrategy(id);
     if (res.error) toast(res.error, "error");
     else toast("Estrategia eliminada", "success");
   }
 
   const showForm = creating || editing;
+
+  useEffect(() => {
+    if (!showForm) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") { setCreating(false); setEditing(null); }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [showForm]);
 
   return (
     <div>
@@ -88,7 +99,7 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
                           <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                         </svg>
                       </button>
-                      <button onClick={() => handleDelete(s.id)} className={`${styles.actionBtn} ${styles.actionBtnDanger}`} title="Eliminar">
+                      <button onClick={() => setConfirmDelete(s.id)} className={`${styles.actionBtn} ${styles.actionBtnDanger}`} title="Eliminar">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
                         </svg>
@@ -101,6 +112,14 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
           </table>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!confirmDelete}
+        title="Eliminar estrategia"
+        message="¿Eliminar esta estrategia? Las posiciones asociadas perderán la referencia."
+        onConfirm={() => confirmDelete && doDelete(confirmDelete)}
+        onCancel={() => setConfirmDelete(null)}
+      />
 
       {showForm && (
         <div className={styles.overlay} onClick={() => { setCreating(false); setEditing(null); }}>

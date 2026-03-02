@@ -5,6 +5,7 @@ import type { Platform, Strategy, Position } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
 import { closePosition, reopenPosition, deletePosition } from "./actions";
 import PositionForm from "./form";
+import ConfirmModal from "@/components/confirm-modal";
 import styles from "./page.module.css";
 
 type PositionRow = Position & {
@@ -24,6 +25,7 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
   const [editing, setEditing] = useState<PositionRow | null>(null);
   const [creating, setCreating] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const filtered = positions.filter((p) => {
     if (filter === "active") return p.is_active;
@@ -47,8 +49,8 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
     else toast("Posicion reabierta", "success");
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("¿Eliminar esta posición permanentemente?")) return;
+  async function doDelete(id: string) {
+    setConfirmDelete(null);
     setActionLoading(id);
     const res = await deletePosition(id);
     setActionLoading(null);
@@ -89,9 +91,9 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
               <tr>
                 <th>Asset</th>
                 <th>Plataforma</th>
-                <th>Estrategia</th>
-                <th className={styles.right}>Size</th>
-                <th className={styles.right}>Coste</th>
+                <th className={styles.hideMobile}>Estrategia</th>
+                <th className={`${styles.right} ${styles.hideMobile}`}>Size</th>
+                <th className={`${styles.right} ${styles.hideMobile}`}>Coste</th>
                 <th className={styles.right}>Valor</th>
                 <th className={styles.right}>PnL</th>
                 <th className={styles.right}>ROI</th>
@@ -106,9 +108,9 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
                   <tr key={p.id} className={!p.is_active ? styles.rowClosed : undefined}>
                     <td className={styles.bold}>{p.asset}</td>
                     <td>{p.platforms?.name || "—"}</td>
-                    <td>{p.strategies?.name || "—"}</td>
-                    <td className={styles.right}>{p.size}</td>
-                    <td className={styles.right}>{fmt(p.cost_basis)}</td>
+                    <td className={styles.hideMobile}>{p.strategies?.name || "—"}</td>
+                    <td className={`${styles.right} ${styles.hideMobile}`}>{p.size}</td>
+                    <td className={`${styles.right} ${styles.hideMobile}`}>{fmt(p.cost_basis)}</td>
                     <td className={styles.right}>{fmt(p.current_value)}</td>
                     <td
                       className={styles.right}
@@ -159,7 +161,7 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
                           </button>
                         )}
                         <button
-                          onClick={() => handleDelete(p.id)}
+                          onClick={() => setConfirmDelete(p.id)}
                           disabled={actionLoading === p.id}
                           className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
                           title="Eliminar"
@@ -177,6 +179,14 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
           </table>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!confirmDelete}
+        title="Eliminar posición"
+        message="¿Eliminar esta posición permanentemente? Esta acción no se puede deshacer."
+        onConfirm={() => confirmDelete && doDelete(confirmDelete)}
+        onCancel={() => setConfirmDelete(null)}
+      />
 
       {(creating || editing) && (
         <PositionForm

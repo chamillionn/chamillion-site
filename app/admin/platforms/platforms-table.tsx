@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Platform } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
 import { KNOWN_PLATFORMS, type PlatformPreset } from "@/lib/platforms/presets";
 import { createPlatformFromPreset, updatePlatformWallet, deletePlatform } from "./actions";
+import ConfirmModal from "@/components/confirm-modal";
 import styles from "./platforms.module.css";
 import crudStyles from "../crud.module.css";
 
@@ -17,6 +18,7 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [syncState, setSyncState] = useState<Record<string, { loading: boolean; msg: string; ok: boolean }>>({});
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const addedNames = new Set(platforms.map((p) => p.name));
   const available = KNOWN_PLATFORMS.filter((p) => !addedNames.has(p.name));
@@ -68,8 +70,8 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
     setEditingWallet(null);
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("¿Eliminar esta plataforma? Las posiciones asociadas perderán la referencia.")) return;
+  async function doDelete(id: string) {
+    setConfirmDelete(null);
     const res = await deletePlatform(id);
     if (res.error) toast(res.error, "error");
     else toast("Plataforma eliminada", "success");
@@ -98,6 +100,15 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
       }));
     }
   }
+
+  useEffect(() => {
+    if (!addingPreset && !editingWallet) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closeModal();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [addingPreset, editingWallet]);
 
   function closeModal() {
     setAddingPreset(null);
@@ -229,7 +240,7 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleDelete(p.id)}
+                            onClick={() => setConfirmDelete(p.id)}
                             className={`${crudStyles.actionBtn} ${crudStyles.actionBtnDanger}`}
                             title="Eliminar"
                           >
@@ -251,6 +262,14 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
       {platforms.length === 0 && available.length === 0 && (
         <div className={crudStyles.empty}>No hay plataformas disponibles.</div>
       )}
+
+      <ConfirmModal
+        open={!!confirmDelete}
+        title="Eliminar plataforma"
+        message="¿Eliminar esta plataforma? Las posiciones asociadas perderán la referencia."
+        onConfirm={() => confirmDelete && doDelete(confirmDelete)}
+        onCancel={() => setConfirmDelete(null)}
+      />
 
       {/* ===== Modal: Add preset ===== */}
       {addingPreset && (

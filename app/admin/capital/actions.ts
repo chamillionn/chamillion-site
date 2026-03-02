@@ -44,6 +44,41 @@ export async function createCapitalFlow(formData: FormData) {
   return { success: true };
 }
 
+export async function updateCapitalFlow(id: string, formData: FormData) {
+  const type = formData.get("type") as string;
+  if (!VALID_FLOW_TYPES.includes(type as CapitalFlowType)) {
+    return { error: `Tipo inválido: ${type}` };
+  }
+
+  const amount_eur = Number(formData.get("amount_eur"));
+  if (!Number.isFinite(amount_eur) || amount_eur === 0) {
+    return { error: "amount_eur debe ser un número válido y distinto de 0" };
+  }
+
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const { error } = await admin.supabase
+    .from("capital_flows")
+    .update({
+      date: (formData.get("date") as string) || new Date().toISOString(),
+      type: type as CapitalFlowType,
+      amount_eur,
+      asset: (formData.get("asset") as string) || null,
+      quantity: safeNumber(formData.get("quantity") as string),
+      price_per_unit: safeNumber(formData.get("price_per_unit") as string),
+      exchange: (formData.get("exchange") as string) || null,
+      notes: (formData.get("notes") as string) || null,
+    })
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  return { success: true };
+}
+
 export async function deleteCapitalFlow(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };

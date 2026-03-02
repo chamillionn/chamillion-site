@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
-import { getPortfolioSummary, getPositions, getPlatforms, isDemoMode } from "@/lib/supabase/queries";
+import { getPortfolioSummary, getPositions, getPlatforms, getSnapshots, isDemoMode } from "@/lib/supabase/queries";
 import Dashboard from "./dashboard";
 
 export default async function AdminDashboard() {
@@ -8,11 +8,12 @@ export default async function AdminDashboard() {
   if (!admin) redirect("/login");
 
   const dc = admin.dataClient;
-  const [summary, positions, platforms, demo] = await Promise.all([
+  const [summary, positions, platforms, demo, recentSnapshots] = await Promise.all([
     getPortfolioSummary(dc),
     getPositions(dc),
     getPlatforms(dc),
     isDemoMode(dc),
+    getSnapshots(2, dc),
   ]);
 
   return (
@@ -40,6 +41,7 @@ export default async function AdminDashboard() {
         summary={summary}
         positions={positions}
         platforms={platforms}
+        prevSnapshot={recentSnapshots.length >= 2 ? recentSnapshots[1] : null}
       />
     </>
   );

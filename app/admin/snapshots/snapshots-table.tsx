@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { Snapshot, SnapshotPosition } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
 import { deleteSnapshot } from "./actions";
+import ConfirmModal from "@/components/confirm-modal";
+import SnapshotChart from "./snapshot-chart";
 import styles from "../crud.module.css";
 
 function fmtEur(n: number) {
@@ -40,6 +42,18 @@ interface Props {
 export default function SnapshotsTable({ snapshots }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [dateFilter, setDateFilter] = useState("");
+  const { toast } = useToast();
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  async function doDelete(id: string) {
+    setDeleteLoading(true);
+    const res = await deleteSnapshot(id);
+    setDeleteLoading(false);
+    setConfirmDelete(null);
+    if (res.error) toast(res.error, "error");
+    else toast("Snapshot eliminado", "success");
+  }
 
   const filtered = dateFilter
     ? snapshots.filter((s) => s.snapshot_date.startsWith(dateFilter))
@@ -59,6 +73,9 @@ export default function SnapshotsTable({ snapshots }: Props) {
 
   return (
     <div>
+      {/* Chart */}
+      <SnapshotChart snapshots={snapshots} />
+
       {/* Summary tags */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
         <div className={styles.tag} style={{ padding: "8px 14px", fontSize: 13 }}>
@@ -107,10 +124,10 @@ export default function SnapshotsTable({ snapshots }: Props) {
                 <th></th>
                 <th>Fecha</th>
                 <th>Valor</th>
-                <th>Coste</th>
+                <th className={styles.hideMobile}>Coste</th>
                 <th>PnL</th>
-                <th>Posiciones</th>
-                <th>Notas</th>
+                <th className={styles.hideMobile}>Posiciones</th>
+                <th className={styles.hideMobile}>Notas</th>
                 <th></th>
               </tr>
             </thead>
@@ -128,6 +145,7 @@ export default function SnapshotsTable({ snapshots }: Props) {
                     posCount={posCount}
                     isExpanded={isExpanded}
                     onToggle={() => toggleRow(s.id)}
+                    onRequestDelete={(id) => setConfirmDelete(id)}
                   />
                 );
               })}
@@ -135,6 +153,15 @@ export default function SnapshotsTable({ snapshots }: Props) {
           </table>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!confirmDelete}
+        title="Eliminar snapshot"
+        message="¿Eliminar este snapshot? Esta acción no se puede deshacer."
+        onConfirm={() => confirmDelete && doDelete(confirmDelete)}
+        onCancel={() => setConfirmDelete(null)}
+        loading={deleteLoading}
+      />
     </div>
   );
 }
@@ -145,24 +172,15 @@ function SnapshotRow({
   posCount,
   isExpanded,
   onToggle,
+  onRequestDelete,
 }: {
   snapshot: Snapshot;
   pnl: number;
   posCount: number;
   isExpanded: boolean;
   onToggle: () => void;
+  onRequestDelete: (id: string) => void;
 }) {
-  const { toast } = useToast();
-  const [deleting, setDeleting] = useState(false);
-
-  async function handleDelete(e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!confirm("¿Eliminar este snapshot?")) return;
-    setDeleting(true);
-    const res = await deleteSnapshot(s.id);
-    if (res.error) { toast(res.error, "error"); setDeleting(false); }
-    else toast("Snapshot eliminado", "success");
-  }
 
   return (
     <>
@@ -192,18 +210,17 @@ function SnapshotRow({
         </td>
         <td>{fmtDateTime(s.snapshot_date)}</td>
         <td className={styles.bold}>{fmtEur(s.total_value)}</td>
-        <td>{fmtEur(s.total_cost)}</td>
+        <td className={styles.hideMobile}>{fmtEur(s.total_cost)}</td>
         <td>
           <span className={`${styles.tag} ${pnl >= 0 ? styles.tagActive : styles.tagClosed}`}>
             {pnl >= 0 ? "+" : ""}{fmtEur(pnl)}
           </span>
         </td>
-        <td>{posCount}</td>
-        <td style={{ color: "var(--text-muted)", fontSize: 12 }}>{s.notes || "—"}</td>
+        <td className={styles.hideMobile}>{posCount}</td>
+        <td className={styles.hideMobile} style={{ color: "var(--text-muted)", fontSize: 12 }}>{s.notes || "—"}</td>
         <td>
           <button
-            onClick={handleDelete}
-            disabled={deleting}
+            onClick={(e) => { e.stopPropagation(); onRequestDelete(s.id); }}
             className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
             title="Eliminar snapshot"
           >

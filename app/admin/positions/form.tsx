@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Platform, Strategy, Position } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
 import { createPosition, updatePosition } from "./actions";
@@ -18,6 +18,14 @@ export default function PositionForm({ platforms, strategies, position, onClose 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const isEdit = !!position;
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

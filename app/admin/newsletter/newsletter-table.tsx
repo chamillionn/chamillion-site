@@ -57,6 +57,19 @@ export default function NewsletterTable({ posts }: { posts: Post[] }) {
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft" | "premium">("all");
+
+  const filtered = posts.filter((p) => {
+    if (statusFilter === "published" && !p.published) return false;
+    if (statusFilter === "draft" && p.published) return false;
+    if (statusFilter === "premium" && !p.premium) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return p.title.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   function handlePremium(id: string, value: boolean) {
     setError(null);
@@ -79,38 +92,62 @@ export default function NewsletterTable({ posts }: { posts: Post[] }) {
   return (
     <>
       <div className={styles.toolbar}>
-        <h1 className={styles.heading}>Newsletter</h1>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar titulo o slug..."
+            className={styles.input}
+            style={{ width: 200, padding: "6px 10px", fontSize: 12 }}
+          />
+          {(["all", "published", "draft", "premium"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setStatusFilter(f)}
+              className={styles.btnSecondary}
+              style={statusFilter === f ? { borderColor: "var(--steel-blue)", color: "var(--steel-blue)" } : undefined}
+            >
+              {f === "all" ? "Todos" : f === "published" ? "Publicados" : f === "draft" ? "Borrador" : "Premium"}
+            </button>
+          ))}
+        </div>
+        <span style={{ fontFamily: "var(--font-dm-mono), monospace", fontSize: 11, color: "var(--text-muted)" }}>
+          {filtered.length} post{filtered.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
       {error && <p className={styles.formError} style={{ marginBottom: 12 }}>{error}</p>}
 
-      {posts.length === 0 ? (
-        <div className={styles.empty}>No hay posts todavía.</div>
+      {filtered.length === 0 ? (
+        <div className={styles.empty}>
+          {search || statusFilter !== "all" ? "No se encontraron resultados." : "No hay posts todavía."}
+        </div>
       ) : (
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
                 <th>Título</th>
-                <th>Fecha</th>
-                <th>Slug</th>
+                <th className={styles.hideMobile}>Fecha</th>
+                <th className={styles.hideMobile}>Slug</th>
                 <th>Premium</th>
                 <th>Publicado</th>
                 <th>Ver</th>
               </tr>
             </thead>
             <tbody>
-              {posts.map((post) => (
+              {filtered.map((post) => (
                 <tr key={post.id}>
                   <td>
                     <span className={styles.bold}>{post.title}</span>
                   </td>
-                  <td>
+                  <td className={styles.hideMobile}>
                     <span style={{ fontFamily: "var(--font-dm-mono), monospace", fontSize: 11 }}>
                       {post.date}
                     </span>
                   </td>
-                  <td>
+                  <td className={styles.hideMobile}>
                     <span
                       style={{
                         fontFamily: "var(--font-dm-mono), monospace",

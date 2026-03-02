@@ -290,6 +290,14 @@
 
 /* ===== RESPONSIVE ===== */
 
+.hideMobile {}
+
+@media (max-width: 768px) {
+  .hideMobile {
+    display: none;
+  }
+}
+
 @media (max-width: 600px) {
   .fieldRow {
     flex-direction: column;
