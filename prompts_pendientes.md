@@ -3,11 +3,9 @@
 
 
 
-----------------------------------
+---
 
 - Ultimo post card roll scroll para ver varios
-- Noi me deja quitar modo demo en prod
-
 - algo más de contraste 
 ---
 
@@ -21,15 +19,12 @@ Haz mejoras esteticas y de experiencia de usuario de toda la admin page.
 ## Historial
 - Grafico y mejor presentacion
 
-
-
-
-
 ---
-| Haz una auditoria general del proyecto. Busca casos limite, teste funcionalidades y revisa codigo a fondo
-
-Refactoriza y estandariza procesos redundantes
-Mueve archivos mal colocados
-Borra archivos innecesarios
-
-Mejora funcionalidades
+✓ **COMPLETADO: Auditoria general del proyecto**
+- Borrado: `app/admin/debug/page.tsx` (huerfano desde Settings consolidation)
+- Refactorizado: Validacion numerica a `lib/validation.ts` (elimino duplicados en positions/capital)
+- Bug fix: Estrategias ahora valida nombre no-vacio
+- DRY: Middleware redirect (3 bloques → 1 loop)
+- Cache fix: `revalidatePath("/")` en mutations de positions/capital/snapshots (homepage data stale)
+- Prod reliability: Sync engine timeout 30s (AbortController) — evita bloqueo indefinido de cron
+- Error boundary: `app/admin/error.tsx` para SSR failures
