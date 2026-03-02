@@ -9,16 +9,15 @@ import type {
   Profile,
 } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyClient = { from: (...args: any[]) => any };
+type DataClient = Awaited<ReturnType<typeof createClient>>;
 
-async function resolve(client?: AnyClient) {
+async function resolve(client?: DataClient) {
   return client ?? (await createClient());
 }
 
 /* ── Portfolio (public reads — no auth needed) ── */
 
-export async function getPortfolioSummary(client?: AnyClient): Promise<PortfolioSummary | null> {
+export async function getPortfolioSummary(client?: DataClient): Promise<PortfolioSummary | null> {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("portfolio_summary")
@@ -27,7 +26,7 @@ export async function getPortfolioSummary(client?: AnyClient): Promise<Portfolio
   return data as PortfolioSummary | null;
 }
 
-export async function getPositions(client?: AnyClient): Promise<PositionEnriched[]> {
+export async function getPositions(client?: DataClient): Promise<PositionEnriched[]> {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("positions_enriched")
@@ -36,7 +35,7 @@ export async function getPositions(client?: AnyClient): Promise<PositionEnriched
   return (data as PositionEnriched[]) ?? [];
 }
 
-export async function getStrategies(client?: AnyClient): Promise<Strategy[]> {
+export async function getStrategies(client?: DataClient): Promise<Strategy[]> {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("strategies")
@@ -45,7 +44,7 @@ export async function getStrategies(client?: AnyClient): Promise<Strategy[]> {
   return (data as Strategy[]) ?? [];
 }
 
-export async function getPlatforms(client?: AnyClient): Promise<Platform[]> {
+export async function getPlatforms(client?: DataClient): Promise<Platform[]> {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("platforms")
@@ -58,7 +57,7 @@ export async function getPlatforms(client?: AnyClient): Promise<Platform[]> {
  * Get daily snapshots for the homepage chart.
  * Snapshots are stored every 15 min — this deduplicates to 1 per day (latest).
  */
-export async function getDailySnapshots(days = 30, client?: AnyClient): Promise<Snapshot[]> {
+export async function getDailySnapshots(days = 30, client?: DataClient): Promise<Snapshot[]> {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("snapshots")
@@ -78,7 +77,7 @@ export async function getDailySnapshots(days = 30, client?: AnyClient): Promise<
 }
 
 /** Get raw snapshots (all granularity). */
-export async function getSnapshots(limit = 100, client?: AnyClient): Promise<Snapshot[]> {
+export async function getSnapshots(limit = 100, client?: DataClient): Promise<Snapshot[]> {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("snapshots")
@@ -89,7 +88,7 @@ export async function getSnapshots(limit = 100, client?: AnyClient): Promise<Sna
 }
 
 /** Get all snapshots for a specific date (YYYY-MM-DD). */
-export async function getSnapshotsByDate(date: string, client?: AnyClient): Promise<Snapshot[]> {
+export async function getSnapshotsByDate(date: string, client?: DataClient): Promise<Snapshot[]> {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("snapshots")
@@ -102,7 +101,7 @@ export async function getSnapshotsByDate(date: string, client?: AnyClient): Prom
 
 /* ── Capital flows ── */
 
-export async function getCapitalFlows(limit = 200, client?: AnyClient): Promise<CapitalFlow[]> {
+export async function getCapitalFlows(limit = 200, client?: DataClient): Promise<CapitalFlow[]> {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("capital_flows")
@@ -113,7 +112,7 @@ export async function getCapitalFlows(limit = 200, client?: AnyClient): Promise<
 }
 
 /** Total EUR invested (buys + fiat deposits - sells - withdrawals). */
-export async function getCostBasis(client?: AnyClient): Promise<{ invested: number; withdrawn: number; net: number }> {
+export async function getCostBasis(client?: DataClient): Promise<{ invested: number; withdrawn: number; net: number }> {
   const supabase = await resolve(client);
   const { data } = await supabase.from("capital_flows").select("type, amount_eur");
   const flows = (data as { type: string; amount_eur: number }[]) ?? [];
@@ -129,7 +128,7 @@ export async function getCostBasis(client?: AnyClient): Promise<{ invested: numb
 
 /* ── Site settings ── */
 
-export async function isDemoMode(client?: AnyClient): Promise<boolean> {
+export async function isDemoMode(client?: DataClient): Promise<boolean> {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("site_settings")
@@ -141,7 +140,7 @@ export async function isDemoMode(client?: AnyClient): Promise<boolean> {
 
 /* ── Admin (all positions including closed) ── */
 
-export async function getAllPositions(client?: AnyClient) {
+export async function getAllPositions(client?: DataClient) {
   const supabase = await resolve(client);
   const { data } = await supabase
     .from("positions")

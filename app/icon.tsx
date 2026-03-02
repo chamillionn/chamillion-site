@@ -21,7 +21,6 @@ export default async function Icon() {
           position: "relative",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={b64} alt="" width={180} height={180} />
         {IS_DEV && (
           <div

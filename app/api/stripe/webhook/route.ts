@@ -5,6 +5,29 @@ import { createServiceClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
+type SupabaseClient = ReturnType<typeof createServiceClient>;
+
+/** Extract customer ID string from a Stripe object's customer field. */
+function getCustomerId(
+  customer: string | Stripe.Customer | Stripe.DeletedCustomer | null,
+): string | null {
+  if (!customer) return null;
+  return typeof customer === "string" ? customer : customer.id;
+}
+
+/** Find profile by stripe_customer_id. Returns { id, role } or null. */
+async function findProfileByCustomerId(
+  supabase: SupabaseClient,
+  customerId: string,
+) {
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("stripe_customer_id", customerId)
+    .single();
+  return data;
+}
+
 /**
  * Stripe webhook handler.
  * Verifies signature, syncs subscription state → profiles table.
@@ -50,10 +73,7 @@ export async function POST(req: NextRequest) {
           .from("profiles")
           .update({
             role: "member",
-            stripe_customer_id:
-              typeof session.customer === "string"
-                ? session.customer
-                : session.customer?.id ?? null,
+            stripe_customer_id: getCustomerId(session.customer) ?? null,
             stripe_subscription_id: subscriptionId ?? null,
             subscription_status: "active",
             subscribed_at: new Date().toISOString(),
@@ -65,18 +85,10 @@ export async function POST(req: NextRequest) {
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        const customerId =
-          typeof subscription.customer === "string"
-            ? subscription.customer
-            : subscription.customer.id;
+        const customerId = getCustomerId(subscription.customer);
+        if (!customerId) break;
 
-        // Find profile by stripe_customer_id
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("id, role")
-          .eq("stripe_customer_id", customerId)
-          .single();
-
+        const profile = await findProfileByCustomerId(supabase, customerId);
         if (!profile) break;
 
         // Never degrade admins
@@ -109,17 +121,10 @@ export async function POST(req: NextRequest) {
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        const customerId =
-          typeof subscription.customer === "string"
-            ? subscription.customer
-            : subscription.customer.id;
+        const customerId = getCustomerId(subscription.customer);
+        if (!customerId) break;
 
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("id, role")
-          .eq("stripe_customer_id", customerId)
-          .single();
-
+        const profile = await findProfileByCustomerId(supabase, customerId);
         if (!profile) break;
 
         // Never degrade admins
@@ -148,11 +153,7 @@ export async function POST(req: NextRequest) {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const customerId =
-          typeof invoice.customer === "string"
-            ? invoice.customer
-            : invoice.customer?.id;
-
+        const customerId = getCustomerId(invoice.customer);
         if (!customerId) break;
 
         // Mark as past_due but keep member access
@@ -165,7 +166,10 @@ export async function POST(req: NextRequest) {
       }
     }
   } catch (err) {
-    console.error("[stripe-webhook] Error processing event:", err);
+    console.error(
+      `[stripe-webhook] Error processing ${event.type} (${event.id}):`,
+      err,
+    );
   }
 
   // Always return 200 to prevent Stripe retries

@@ -14,9 +14,11 @@ export default function ChameleonEye() {
     fetch("/assets/face-vector.svg")
       .then((r) => r.text())
       .then((svgText) => {
-        container.innerHTML = svgText;
-        const svg = container.querySelector("svg");
+        // Parse SVG safely instead of innerHTML (prevents XSS if SVG is tampered)
+        const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+        const svg = doc.querySelector("svg");
         if (!svg) return;
+        container.replaceChildren(svg);
 
         svg.setAttribute("preserveAspectRatio", "xMaxYMax meet");
         svg.removeAttribute("width");

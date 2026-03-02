@@ -9,13 +9,13 @@ import {
 import type { Profile } from "./types";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+type TargetClient = Awaited<ReturnType<typeof createTargetClient>>;
 
 export interface AdminContext {
   /** Auth client — always the native env */
   supabase: SupabaseClient;
   /** Target-aware client for data reads (may point to dev or prod) */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dataClient: any;
+  dataClient: TargetClient;
   user: { id: string; email?: string };
   profile: Profile;
   dbTarget: DbTarget;

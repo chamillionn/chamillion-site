@@ -20,28 +20,30 @@ export default function UserMenu({ variant = "compact", onNavigate }: { variant?
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getUser().then(({ data: { user: authUser } }) => {
-      if (!authUser) {
-        setLoading(false);
-        return;
-      }
+    (async () => {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (!authUser) return;
 
-      supabase
-        .from("profiles")
-        .select("email, display_name, role")
-        .eq("id", authUser.id)
-        .single()
-        .then(({ data: profile }) => {
-          if (profile) {
-            setUser({
-              email: profile.email,
-              displayName: profile.display_name,
-              role: profile.role as UserState["role"],
-            });
-          }
-          setLoading(false);
-        });
-    });
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email, display_name, role")
+          .eq("id", authUser.id)
+          .single();
+
+        if (profile) {
+          setUser({
+            email: profile.email,
+            displayName: profile.display_name,
+            role: profile.role as UserState["role"],
+          });
+        }
+      } catch {
+        // Auth or profile fetch failed — stay logged out
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   // Close dropdown on outside click

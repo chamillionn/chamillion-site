@@ -210,7 +210,7 @@ function PostCard({ post, delay }: { post: Post; delay: number }) {
 }
 
 // ── Newsletter index ──
-export default function NewsletterClient({ posts }: { posts: Post[] }) {
+export default function NewsletterClient({ posts, error }: { posts: Post[]; error?: boolean }) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -290,18 +290,24 @@ export default function NewsletterClient({ posts }: { posts: Post[] }) {
       />
 
       {/* Post grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-          gap: 24,
-          paddingBottom: 80,
-        }}
-      >
-        {posts.map((post, i) => (
-          <PostCard key={post.slug} post={post} delay={i * 100} />
-        ))}
-      </div>
+      {error && posts.length === 0 ? (
+        <p style={{ color: V.textMuted, fontSize: 14 }}>
+          No se pudieron cargar los posts. Intenta de nuevo mas tarde.
+        </p>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+            gap: 24,
+            paddingBottom: 80,
+          }}
+        >
+          {posts.map((post, i) => (
+            <PostCard key={post.slug} post={post} delay={i * 100} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

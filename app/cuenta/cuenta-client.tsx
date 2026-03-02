@@ -69,8 +69,14 @@ export default function CuentaClient({
   function fetchPrices() {
     setPriceError(false);
     fetch("/api/stripe/prices")
-      .then((r) => r.json())
-      .then((data) => setPrices(data))
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        if (data.error) throw new Error(data.error);
+        setPrices(data);
+      })
       .catch(() => setPriceError(true));
   }
 

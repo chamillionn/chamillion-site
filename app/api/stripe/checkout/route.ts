@@ -50,10 +50,13 @@ export async function POST(req: NextRequest) {
   // Save stripe_customer_id if new
   if (customerId !== profile.stripe_customer_id) {
     const service = createServiceClient();
-    await service
+    const { error: updateErr } = await service
       .from("profiles")
       .update({ stripe_customer_id: customerId })
       .eq("id", user.id);
+    if (updateErr) {
+      console.error("[stripe-checkout] Failed to save customer ID:", updateErr.message);
+    }
   }
 
   // Create Checkout Session
