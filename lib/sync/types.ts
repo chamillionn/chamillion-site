@@ -21,7 +21,7 @@ export interface PositionRow {
 export interface PlatformAdapter {
   /** Must match the `name` column in the `platforms` DB table */
   platformName: string;
-  fetchPositions(wallet: string): Promise<{
+  fetchPositions(wallet: string, signal?: AbortSignal): Promise<{
     positions: PositionRow[];
     warnings: string[];
   }>;

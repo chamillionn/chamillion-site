@@ -25,7 +25,7 @@ interface HLSpotBalance {
 export const HyperliquidAdapter: PlatformAdapter = {
   platformName: "Hyperliquid",
 
-  async fetchPositions(wallet: string) {
+  async fetchPositions(wallet: string, signal?: AbortSignal) {
     const positions: PositionRow[] = [];
     const warnings: string[] = [];
 
@@ -34,6 +34,7 @@ export const HyperliquidAdapter: PlatformAdapter = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "clearinghouseState", user: wallet }),
+      signal,
     });
     assertOk(perpRes, "Hyperliquid perps");
     const perpData = await perpRes.json();
@@ -69,6 +70,7 @@ export const HyperliquidAdapter: PlatformAdapter = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "spotClearinghouseState", user: wallet }),
+      signal,
     });
     assertOk(spotRes, "Hyperliquid spot");
     const spotData = await spotRes.json();

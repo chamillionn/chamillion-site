@@ -13,5 +13,6 @@ export async function deleteSnapshot(id: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/admin");
+  revalidatePath("/");
   return { success: true };
 }

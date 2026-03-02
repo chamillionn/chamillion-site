@@ -18,7 +18,7 @@ function rand(min: number, max: number): number {
 export const FakeDexAdapter: PlatformAdapter = {
   platformName: "FakeDEX",
 
-  async fetchPositions() {
+  async fetchPositions(_wallet: string, _signal?: AbortSignal) {
     const count = 3 + Math.floor(Math.random() * 5); // 3-7 positions
     const picked = [...FAKE_ASSETS].sort(() => Math.random() - 0.5).slice(0, count);
 

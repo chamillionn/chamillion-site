@@ -8,8 +8,11 @@ export async function createStrategy(formData: FormData) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
+  const name = (formData.get("name") as string)?.trim();
+  if (!name) return { error: "El nombre es obligatorio" };
+
   const { error } = await admin.supabase.from("strategies").insert({
-    name: formData.get("name") as string,
+    name,
     status: formData.get("status") as string,
     description: (formData.get("description") as string) || null,
   });
@@ -25,10 +28,13 @@ export async function updateStrategy(id: string, formData: FormData) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
+  const name = (formData.get("name") as string)?.trim();
+  if (!name) return { error: "El nombre es obligatorio" };
+
   const { error } = await admin.supabase
     .from("strategies")
     .update({
-      name: formData.get("name") as string,
+      name,
       status: formData.get("status") as string,
       description: (formData.get("description") as string) || null,
     })

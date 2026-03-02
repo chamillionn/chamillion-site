@@ -45,15 +45,20 @@ export async function syncPlatform(adapter: PlatformAdapter): Promise<SyncResult
     (existingRows as { id: string; asset: string }[] ?? []).map((r) => [r.asset, r.id]),
   );
 
-  // 3. Fetch positions from external API via adapter
+  // 3. Fetch positions from external API via adapter (30s timeout)
   let positions: Awaited<ReturnType<PlatformAdapter["fetchPositions"]>>["positions"];
   let warnings: string[];
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30_000);
   try {
-    ({ positions, warnings } = await adapter.fetchPositions(wallet));
+    ({ positions, warnings } = await adapter.fetchPositions(wallet, controller.signal));
     result.errors.push(...warnings);
   } catch (e) {
-    result.errors.push(`Fetch: ${e instanceof Error ? e.message : String(e)}`);
+    const msg = e instanceof Error ? e.message : String(e);
+    result.errors.push(controller.signal.aborted ? `Fetch timeout (30s): ${adapter.platformName}` : `Fetch: ${msg}`);
     return result;
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   // 4. Upsert each position (validate before DB write)

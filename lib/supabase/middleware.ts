@@ -56,34 +56,14 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // /admin/* — require authenticated session (role checked in admin layout via requireAdmin)
-  if (pathname.startsWith("/admin")) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
-    }
-  }
-
-  // /hub/* — require authenticated session (any role, page handles access)
-  if (pathname.startsWith("/hub")) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
-    }
-  }
-
-  // /cuenta — require authenticated session (any role)
-  if (pathname.startsWith("/cuenta")) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
-    }
+  // Protected routes — require authenticated session
+  // /admin/* (role checked in admin layout via requireAdmin), /hub/*, /cuenta
+  const PROTECTED = ["/admin", "/hub", "/cuenta"];
+  if (PROTECTED.some((p) => pathname.startsWith(p)) && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;

@@ -20,12 +20,12 @@ interface PolyPosition {
 export const PolymarketAdapter: PlatformAdapter = {
   platformName: "Polymarket",
 
-  async fetchPositions(wallet: string) {
+  async fetchPositions(wallet: string, signal?: AbortSignal) {
     const positions: PositionRow[] = [];
     const warnings: string[] = [];
 
     const url = `${POLY_API}?user=${wallet}&sizeThreshold=0&limit=500`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal });
     assertOk(res, "Polymarket positions");
     const raw = await res.json();
 

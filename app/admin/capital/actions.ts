@@ -3,14 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/admin";
 import type { CapitalFlowType } from "@/lib/supabase/types";
+import { safeNumber } from "@/lib/validation";
 
 const VALID_FLOW_TYPES: CapitalFlowType[] = ["buy", "sell", "deposit_fiat", "withdraw_fiat"];
-
-function safeNumber(raw: string | null): number | null {
-  if (!raw) return null;
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : null;
-}
 
 export async function createCapitalFlow(formData: FormData) {
   const type = formData.get("type") as string;
@@ -41,6 +36,7 @@ export async function createCapitalFlow(formData: FormData) {
   if (error) return { error: error.message };
 
   revalidatePath("/admin");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -76,6 +72,7 @@ export async function updateCapitalFlow(id: string, formData: FormData) {
   if (error) return { error: error.message };
 
   revalidatePath("/admin");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -89,5 +86,6 @@ export async function deleteCapitalFlow(id: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/admin");
+  revalidatePath("/");
   return { success: true };
 }

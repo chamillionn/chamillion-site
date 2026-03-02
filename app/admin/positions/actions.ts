@@ -2,12 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/admin";
-
-function requireNumber(fd: FormData, key: string): number {
-  const n = Number(fd.get(key));
-  if (!Number.isFinite(n)) throw new Error(`${key} debe ser un número válido`);
-  return n;
-}
+import { requireNumber } from "@/lib/validation";
 
 export async function createPosition(formData: FormData) {
   try {
@@ -34,6 +29,7 @@ export async function createPosition(formData: FormData) {
     if (error) return { error: error.message };
 
     revalidatePath("/admin");
+    revalidatePath("/");
     return { success: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : String(e) };
@@ -67,6 +63,7 @@ export async function updatePosition(id: string, formData: FormData) {
     if (error) return { error: error.message };
 
     revalidatePath("/admin");
+    revalidatePath("/");
     return { success: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : String(e) };
@@ -86,6 +83,7 @@ export async function closePosition(id: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/admin");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -102,6 +100,7 @@ export async function reopenPosition(id: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/admin");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -115,5 +114,6 @@ export async function deletePosition(id: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/admin");
+  revalidatePath("/");
   return { success: true };
 }
