@@ -76,6 +76,20 @@ export async function updateCapitalFlow(id: string, formData: FormData) {
   return { success: true };
 }
 
+export async function deleteCapitalFlows(ids: string[]) {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const { error } = await admin.supabase.from("capital_flows").delete().in("id", ids);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { success: true, count: ids.length };
+}
+
 export async function deleteCapitalFlow(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };

@@ -104,6 +104,37 @@ export async function reopenPosition(id: string) {
   return { success: true };
 }
 
+export async function closePositions(ids: string[]) {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const { error } = await admin.supabase
+    .from("positions")
+    .update({ is_active: false, closed_at: new Date().toISOString() })
+    .in("id", ids);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { success: true, count: ids.length };
+}
+
+export async function deletePositions(ids: string[]) {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const { error } = await admin.supabase.from("positions").delete().in("id", ids);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { success: true, count: ids.length };
+}
+
 export async function deletePosition(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };

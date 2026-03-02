@@ -3,10 +3,12 @@
 import { useState } from "react";
 import type { Platform, Strategy, Position } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
-import { closePosition, reopenPosition, deletePosition } from "./actions";
+import { closePosition, closePositions, reopenPosition, deletePosition, deletePositions } from "./actions";
 import PositionForm from "./form";
 import ConfirmModal from "@/components/confirm-modal";
+import { useRowSelection } from "../use-row-selection";
 import styles from "./page.module.css";
+import crudStyles from "../crud.module.css";
 
 type PositionRow = Position & {
   platforms: { name: string } | null;
@@ -26,6 +28,7 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
   const [creating, setCreating] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const { selected, count: selCount, isSelected, toggle, toggleAll, clear } = useRowSelection();
 
   const filtered = positions.filter((p) => {
     if (filter === "active") return p.is_active;
@@ -58,6 +61,25 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
     else toast("Posicion eliminada", "success");
   }
 
+  async function doBulkDelete() {
+    setConfirmDelete(null);
+    const ids = [...selected];
+    setActionLoading("bulk");
+    const res = await deletePositions(ids);
+    setActionLoading(null);
+    if (res.error) toast(res.error, "error");
+    else { toast(`${res.count} posiciones eliminadas`, "success"); clear(); }
+  }
+
+  async function handleBulkClose() {
+    const ids = [...selected];
+    setActionLoading("bulk");
+    const res = await closePositions(ids);
+    setActionLoading(null);
+    if (res.error) toast(res.error, "error");
+    else { toast(`${res.count} posiciones cerradas`, "success"); clear(); }
+  }
+
   const fmt = (n: number) =>
     `$${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 
@@ -68,7 +90,7 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
           {(["active", "closed", "all"] as const).map((f) => (
             <button
               key={f}
-              onClick={() => setFilter(f)}
+              onClick={() => { setFilter(f); clear(); }}
               className={`${styles.filterBtn} ${filter === f ? styles.filterBtnActive : ""}`}
             >
               {f === "active" ? "Activas" : f === "closed" ? "Cerradas" : "Todas"}
@@ -85,10 +107,33 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
           No hay posiciones {filter === "active" ? "activas" : filter === "closed" ? "cerradas" : ""}.
         </div>
       ) : (
+        <>
+        {selCount > 0 && (
+          <div className={crudStyles.bulkBar}>
+            <span className={crudStyles.bulkCount}>{selCount} seleccionado{selCount !== 1 ? "s" : ""}</span>
+            {filter === "active" && (
+              <button onClick={handleBulkClose} disabled={actionLoading === "bulk"} className={crudStyles.btnSecondary}>
+                Cerrar
+              </button>
+            )}
+            <button onClick={() => setConfirmDelete("bulk")} disabled={actionLoading === "bulk"} className={`${crudStyles.btnSecondary} ${crudStyles.bulkBtnDanger}`}>
+              Eliminar
+            </button>
+            <button onClick={clear} className={crudStyles.btnSecondary}>Deseleccionar</button>
+          </div>
+        )}
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
+                <th className={crudStyles.checkboxCell}>
+                  <input
+                    type="checkbox"
+                    className={crudStyles.checkbox}
+                    checked={selCount === filtered.length && selCount > 0}
+                    onChange={() => toggleAll(filtered.map((p) => p.id))}
+                  />
+                </th>
                 <th>Asset</th>
                 <th>Plataforma</th>
                 <th className={styles.hideMobile}>Estrategia</th>
@@ -106,6 +151,14 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
                 const roi = p.cost_basis > 0 ? (pnl / p.cost_basis) * 100 : 0;
                 return (
                   <tr key={p.id} className={!p.is_active ? styles.rowClosed : undefined}>
+                    <td className={crudStyles.checkboxCell}>
+                      <input
+                        type="checkbox"
+                        className={crudStyles.checkbox}
+                        checked={isSelected(p.id)}
+                        onChange={() => toggle(p.id)}
+                      />
+                    </td>
                     <td className={styles.bold}>{p.asset}</td>
                     <td>{p.platforms?.name || "—"}</td>
                     <td className={styles.hideMobile}>{p.strategies?.name || "—"}</td>
@@ -178,13 +231,19 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <ConfirmModal
         open={!!confirmDelete}
-        title="Eliminar posición"
-        message="¿Eliminar esta posición permanentemente? Esta acción no se puede deshacer."
-        onConfirm={() => confirmDelete && doDelete(confirmDelete)}
+        title={confirmDelete === "bulk" ? `Eliminar ${selCount} posiciones` : "Eliminar posición"}
+        message={confirmDelete === "bulk"
+          ? `¿Eliminar ${selCount} posiciones permanentemente? Esta acción no se puede deshacer.`
+          : "¿Eliminar esta posición permanentemente? Esta acción no se puede deshacer."}
+        onConfirm={() => {
+          if (confirmDelete === "bulk") doBulkDelete();
+          else if (confirmDelete) doDelete(confirmDelete);
+        }}
         onCancel={() => setConfirmDelete(null)}
       />
 

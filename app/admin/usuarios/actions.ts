@@ -20,6 +20,24 @@ export async function setUserRole(id: string, role: "free" | "member" | "admin")
   return { success: true };
 }
 
+export async function deleteUsers(ids: string[]) {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const service = createServiceClient();
+  const errors: string[] = [];
+  for (const id of ids) {
+    const { error } = await service.auth.admin.deleteUser(id);
+    if (error) errors.push(`${id}: ${error.message}`);
+  }
+
+  if (errors.length === ids.length) return { error: errors[0] };
+
+  revalidatePath("/admin/usuarios");
+  return { success: true, count: ids.length - errors.length };
+}
+
 export async function deleteUser(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };

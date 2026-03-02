@@ -166,64 +166,9 @@ function DataPanel({
 }
 
 export default function DebugView({ tables, views, env }: Props) {
-  const [target, setTarget] = useState<"current" | "prod">("current");
-  const [prodData, setProdData] = useState<{
-    tables: Record<string, TableData>;
-    views: Record<string, TableData>;
-    env: EnvInfo;
-  } | null>(null);
-  const [loadingProd, setLoadingProd] = useState(false);
-
-  async function switchTarget(t: "current" | "prod") {
-    setTarget(t);
-    if (t === "prod" && !prodData) {
-      setLoadingProd(true);
-      try {
-        const res = await fetch("/api/debug?target=prod");
-        const data = await res.json();
-        setProdData(data);
-      } catch {
-        setProdData(null);
-      }
-      setLoadingProd(false);
-    }
-  }
-
   return (
     <div>
-      <div className={styles.header}>
-        <h1 className={styles.heading}>Debug</h1>
-        <div className={styles.targetToggle}>
-          <button
-            className={`${styles.targetBtn} ${target === "current" ? styles.targetActive : ""}`}
-            onClick={() => switchTarget("current")}
-          >
-            {env.isDev ? "Dev" : "Prod"}
-          </button>
-          <button
-            className={`${styles.targetBtn} ${target === "prod" ? styles.targetActive : ""}`}
-            onClick={() => switchTarget("prod")}
-          >
-            Production
-          </button>
-        </div>
-      </div>
-
-      {target === "current" && (
-        <DataPanel tables={tables} views={views} env={env} />
-      )}
-
-      {target === "prod" && loadingProd && (
-        <div className={styles.loading}>Cargando produccion...</div>
-      )}
-
-      {target === "prod" && !loadingProd && prodData && (
-        <DataPanel tables={prodData.tables} views={prodData.views} env={prodData.env} />
-      )}
-
-      {target === "prod" && !loadingProd && !prodData && (
-        <div className={styles.loading}>Error al cargar produccion</div>
-      )}
+      <DataPanel tables={tables} views={views} env={env} />
     </div>
   );
 }

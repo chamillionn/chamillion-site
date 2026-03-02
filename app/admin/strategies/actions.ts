@@ -46,6 +46,19 @@ export async function updateStrategy(id: string, formData: FormData) {
   return { success: true };
 }
 
+export async function deleteStrategies(ids: string[]) {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const { error } = await admin.supabase.from("strategies").delete().in("id", ids);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  return { success: true, count: ids.length };
+}
+
 export async function deleteStrategy(id: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };

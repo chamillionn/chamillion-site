@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import type { CapitalFlow, CapitalFlowType } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
-import { createCapitalFlow, updateCapitalFlow, deleteCapitalFlow } from "./actions";
+import { createCapitalFlow, updateCapitalFlow, deleteCapitalFlow, deleteCapitalFlows } from "./actions";
+import { useRowSelection } from "../use-row-selection";
 import ConfirmModal from "@/components/confirm-modal";
 import styles from "../crud.module.css";
 
@@ -39,6 +40,7 @@ export default function CapitalTable({ flows, costBasis }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const { selected, count: selCount, isSelected, toggle, toggleAll, clear } = useRowSelection();
 
   const showForm = creating || editing;
 
@@ -79,6 +81,13 @@ export default function CapitalTable({ flows, costBasis }: Props) {
     else toast("Registro eliminado", "success");
   }
 
+  async function doBulkDelete() {
+    setConfirmDelete(null);
+    const res = await deleteCapitalFlows([...selected]);
+    if (res.error) toast(res.error, "error");
+    else { toast(`${res.count} registros eliminados`, "success"); clear(); }
+  }
+
   return (
     <div>
       {/* Summary cards */}
@@ -106,10 +115,28 @@ export default function CapitalTable({ flows, costBasis }: Props) {
       {flows.length === 0 ? (
         <div className={styles.empty}>No hay registros de capital.</div>
       ) : (
+        <>
+        {selCount > 0 && (
+          <div className={styles.bulkBar}>
+            <span className={styles.bulkCount}>{selCount} seleccionado{selCount !== 1 ? "s" : ""}</span>
+            <button onClick={() => setConfirmDelete("bulk")} className={`${styles.btnSecondary} ${styles.bulkBtnDanger}`}>
+              Eliminar
+            </button>
+            <button onClick={clear} className={styles.btnSecondary}>Deseleccionar</button>
+          </div>
+        )}
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
+                <th className={styles.checkboxCell}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={selCount === flows.length && selCount > 0}
+                    onChange={() => toggleAll(flows.map((f) => f.id))}
+                  />
+                </th>
                 <th>Fecha</th>
                 <th>Tipo</th>
                 <th>Importe</th>
@@ -124,6 +151,14 @@ export default function CapitalTable({ flows, costBasis }: Props) {
             <tbody>
               {flows.map((f) => (
                 <tr key={f.id}>
+                  <td className={styles.checkboxCell}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={isSelected(f.id)}
+                      onChange={() => toggle(f.id)}
+                    />
+                  </td>
                   <td>{fmtDate(f.date)}</td>
                   <td>
                     <span className={`${styles.tag} ${typeTag(f.type)}`}>
@@ -164,13 +199,19 @@ export default function CapitalTable({ flows, costBasis }: Props) {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <ConfirmModal
         open={!!confirmDelete}
-        title="Eliminar registro"
-        message="¿Eliminar este registro de capital? Esta acción no se puede deshacer."
-        onConfirm={() => confirmDelete && doDelete(confirmDelete)}
+        title={confirmDelete === "bulk" ? `Eliminar ${selCount} registros` : "Eliminar registro"}
+        message={confirmDelete === "bulk"
+          ? `¿Eliminar ${selCount} registros de capital permanentemente? Esta acción no se puede deshacer.`
+          : "¿Eliminar este registro de capital? Esta acción no se puede deshacer."}
+        onConfirm={() => {
+          if (confirmDelete === "bulk") doBulkDelete();
+          else if (confirmDelete) doDelete(confirmDelete);
+        }}
         onCancel={() => setConfirmDelete(null)}
       />
 

@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import type { Strategy } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
-import { createStrategy, updateStrategy, deleteStrategy } from "./actions";
+import { createStrategy, updateStrategy, deleteStrategy, deleteStrategies } from "./actions";
+import { useRowSelection } from "../use-row-selection";
 import ConfirmModal from "@/components/confirm-modal";
 import styles from "../crud.module.css";
 
@@ -23,6 +24,7 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const { selected, count: selCount, isSelected, toggle, toggleAll, clear } = useRowSelection();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -52,6 +54,13 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
     else toast("Estrategia eliminada", "success");
   }
 
+  async function doBulkDelete() {
+    setConfirmDelete(null);
+    const res = await deleteStrategies([...selected]);
+    if (res.error) toast(res.error, "error");
+    else { toast(`${res.count} estrategias eliminadas`, "success"); clear(); }
+  }
+
   const showForm = creating || editing;
 
   useEffect(() => {
@@ -75,10 +84,28 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
       {strategies.length === 0 ? (
         <div className={styles.empty}>No hay estrategias registradas.</div>
       ) : (
+        <>
+        {selCount > 0 && (
+          <div className={styles.bulkBar}>
+            <span className={styles.bulkCount}>{selCount} seleccionado{selCount !== 1 ? "s" : ""}</span>
+            <button onClick={() => setConfirmDelete("bulk")} className={`${styles.btnSecondary} ${styles.bulkBtnDanger}`}>
+              Eliminar
+            </button>
+            <button onClick={clear} className={styles.btnSecondary}>Deseleccionar</button>
+          </div>
+        )}
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
+                <th className={styles.checkboxCell}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={selCount === strategies.length && selCount > 0}
+                    onChange={() => toggleAll(strategies.map((s) => s.id))}
+                  />
+                </th>
                 <th>Nombre</th>
                 <th>Estado</th>
                 <th>Descripción</th>
@@ -88,6 +115,14 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
             <tbody>
               {strategies.map((s) => (
                 <tr key={s.id}>
+                  <td className={styles.checkboxCell}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={isSelected(s.id)}
+                      onChange={() => toggle(s.id)}
+                    />
+                  </td>
                   <td className={styles.bold}>{s.name}</td>
                   <td><span className={`${styles.tag} ${statusClass(s.status)}`}>{s.status}</span></td>
                   <td>{s.description || "—"}</td>
@@ -111,13 +146,19 @@ export default function StrategiesTable({ strategies }: { strategies: Strategy[]
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <ConfirmModal
         open={!!confirmDelete}
-        title="Eliminar estrategia"
-        message="¿Eliminar esta estrategia? Las posiciones asociadas perderán la referencia."
-        onConfirm={() => confirmDelete && doDelete(confirmDelete)}
+        title={confirmDelete === "bulk" ? `Eliminar ${selCount} estrategias` : "Eliminar estrategia"}
+        message={confirmDelete === "bulk"
+          ? `¿Eliminar ${selCount} estrategias permanentemente? Las posiciones asociadas perderán la referencia.`
+          : "¿Eliminar esta estrategia? Las posiciones asociadas perderán la referencia."}
+        onConfirm={() => {
+          if (confirmDelete === "bulk") doBulkDelete();
+          else if (confirmDelete) doDelete(confirmDelete);
+        }}
         onCancel={() => setConfirmDelete(null)}
       />
 

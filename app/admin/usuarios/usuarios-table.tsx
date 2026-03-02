@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import type { Profile } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
-import { setUserRole, deleteUser } from "./actions";
+import { setUserRole, deleteUser, deleteUsers } from "./actions";
+import { useRowSelection } from "../use-row-selection";
 import ConfirmModal from "@/components/confirm-modal";
 import styles from "../crud.module.css";
 
@@ -54,6 +55,7 @@ export default function UsuariosTable({
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | Profile["role"]>("all");
+  const { selected, count: selCount, isSelected, toggle, toggleAll, clear } = useRowSelection();
 
   // Summary stats
   const roleCounts = { free: 0, member: 0, admin: 0 };
@@ -103,6 +105,17 @@ export default function UsuariosTable({
     });
   }
 
+  function confirmBulkDelete() {
+    setConfirmDelete(null);
+    setError(null);
+    startTransition(async () => {
+      const ids = [...selected].filter((id) => id !== currentUserId);
+      const res = await deleteUsers(ids);
+      if (res.error) { setError(res.error); toast(res.error, "error"); }
+      else { toast(`${res.count} usuarios eliminados`, "success"); clear(); }
+    });
+  }
+
   return (
     <>
       {/* Summary badges */}
@@ -142,7 +155,7 @@ export default function UsuariosTable({
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); clear(); }}
             placeholder="Buscar email o nombre..."
             className={styles.input}
             style={{ width: 200, padding: "6px 10px", fontSize: 12 }}
@@ -150,7 +163,7 @@ export default function UsuariosTable({
           {(["all", "free", "member", "admin"] as const).map((r) => (
             <button
               key={r}
-              onClick={() => setRoleFilter(r)}
+              onClick={() => { setRoleFilter(r); clear(); }}
               className={`${styles.btnSecondary}`}
               style={roleFilter === r ? { borderColor: "var(--steel-blue)", color: "var(--steel-blue)" } : undefined}
             >
@@ -180,10 +193,28 @@ export default function UsuariosTable({
           {search || roleFilter !== "all" ? "No se encontraron resultados." : "No hay usuarios registrados."}
         </div>
       ) : (
+        <>
+        {selCount > 0 && (
+          <div className={styles.bulkBar}>
+            <span className={styles.bulkCount}>{selCount} seleccionado{selCount !== 1 ? "s" : ""}</span>
+            <button onClick={() => setConfirmDelete("bulk")} disabled={pending} className={`${styles.btnSecondary} ${styles.bulkBtnDanger}`}>
+              Eliminar
+            </button>
+            <button onClick={clear} className={styles.btnSecondary}>Deseleccionar</button>
+          </div>
+        )}
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
+                <th className={styles.checkboxCell}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={selCount === filtered.length && selCount > 0}
+                    onChange={() => toggleAll(filtered.map((p) => p.id))}
+                  />
+                </th>
                 <th>Email</th>
                 <th>Nombre</th>
                 <th>Rol</th>
@@ -196,6 +227,14 @@ export default function UsuariosTable({
                 const isSelf = profile.id === currentUserId;
                 return (
                   <tr key={profile.id}>
+                    <td className={styles.checkboxCell}>
+                      <input
+                        type="checkbox"
+                        className={styles.checkbox}
+                        checked={isSelected(profile.id)}
+                        onChange={() => toggle(profile.id)}
+                      />
+                    </td>
                     <td>
                       <span className={styles.bold}>{profile.email}</span>
                     </td>
@@ -256,13 +295,19 @@ export default function UsuariosTable({
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <ConfirmModal
         open={!!confirmDelete}
-        title="Eliminar usuario"
-        message="Esta acción es irreversible. Se eliminará la cuenta y todos sus datos."
-        onConfirm={() => confirmDelete && confirmDoDelete(confirmDelete)}
+        title={confirmDelete === "bulk" ? `Eliminar ${selCount} usuarios` : "Eliminar usuario"}
+        message={confirmDelete === "bulk"
+          ? `¿Eliminar ${selCount} usuarios permanentemente? Esta acción es irreversible.`
+          : "Esta acción es irreversible. Se eliminará la cuenta y todos sus datos."}
+        onConfirm={() => {
+          if (confirmDelete === "bulk") confirmBulkDelete();
+          else if (confirmDelete) confirmDoDelete(confirmDelete);
+        }}
         onCancel={() => setConfirmDelete(null)}
         loading={pending}
       />

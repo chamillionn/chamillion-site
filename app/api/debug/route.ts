@@ -33,6 +33,9 @@ export async function GET() {
   return NextResponse.json({
     tables,
     views,
-    env: { supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "—" },
+    env: {
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "—",
+      isDev: !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("hpyyuftotmpnzogaykgh"),
+    },
   });
 }

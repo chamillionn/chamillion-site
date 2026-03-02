@@ -3,7 +3,8 @@
 import { useState } from "react";
 import type { Snapshot, SnapshotPosition } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
-import { deleteSnapshot } from "./actions";
+import { deleteSnapshot, deleteSnapshots } from "./actions";
+import { useRowSelection } from "../use-row-selection";
 import ConfirmModal from "@/components/confirm-modal";
 import SnapshotChart from "./snapshot-chart";
 import styles from "../crud.module.css";
@@ -45,6 +46,7 @@ export default function SnapshotsTable({ snapshots }: Props) {
   const { toast } = useToast();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const { selected, count: selCount, isSelected, toggle, toggleAll, clear } = useRowSelection();
 
   async function doDelete(id: string) {
     setDeleteLoading(true);
@@ -53,6 +55,15 @@ export default function SnapshotsTable({ snapshots }: Props) {
     setConfirmDelete(null);
     if (res.error) toast(res.error, "error");
     else toast("Snapshot eliminado", "success");
+  }
+
+  async function doBulkDelete() {
+    setConfirmDelete(null);
+    setDeleteLoading(true);
+    const res = await deleteSnapshots([...selected]);
+    setDeleteLoading(false);
+    if (res.error) toast(res.error, "error");
+    else { toast(`${res.count} snapshots eliminados`, "success"); clear(); }
   }
 
   const filtered = dateFilter
@@ -99,12 +110,12 @@ export default function SnapshotsTable({ snapshots }: Props) {
           <input
             type="date"
             value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
+            onChange={(e) => { setDateFilter(e.target.value); clear(); }}
             className={styles.input}
             style={{ width: 160, padding: "6px 10px", fontSize: 12 }}
           />
           {dateFilter && (
-            <button onClick={() => setDateFilter("")} className={styles.btnSecondary}>
+            <button onClick={() => { setDateFilter(""); clear(); }} className={styles.btnSecondary}>
               Todos
             </button>
           )}
@@ -117,10 +128,28 @@ export default function SnapshotsTable({ snapshots }: Props) {
       {filtered.length === 0 ? (
         <div className={styles.empty}>No hay snapshots{dateFilter ? ` para ${dateFilter}` : ""}.</div>
       ) : (
+        <>
+        {selCount > 0 && (
+          <div className={styles.bulkBar}>
+            <span className={styles.bulkCount}>{selCount} seleccionado{selCount !== 1 ? "s" : ""}</span>
+            <button onClick={() => setConfirmDelete("bulk")} disabled={deleteLoading} className={`${styles.btnSecondary} ${styles.bulkBtnDanger}`}>
+              Eliminar
+            </button>
+            <button onClick={clear} className={styles.btnSecondary}>Deseleccionar</button>
+          </div>
+        )}
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
+                <th className={styles.checkboxCell}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={selCount === filtered.length && selCount > 0}
+                    onChange={() => toggleAll(filtered.map((s) => s.id))}
+                  />
+                </th>
                 <th></th>
                 <th>Fecha</th>
                 <th>Valor</th>
@@ -144,6 +173,8 @@ export default function SnapshotsTable({ snapshots }: Props) {
                     pnl={pnl}
                     posCount={posCount}
                     isExpanded={isExpanded}
+                    isChecked={isSelected(s.id)}
+                    onCheck={() => toggle(s.id)}
                     onToggle={() => toggleRow(s.id)}
                     onRequestDelete={(id) => setConfirmDelete(id)}
                   />
@@ -152,13 +183,19 @@ export default function SnapshotsTable({ snapshots }: Props) {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <ConfirmModal
         open={!!confirmDelete}
-        title="Eliminar snapshot"
-        message="¿Eliminar este snapshot? Esta acción no se puede deshacer."
-        onConfirm={() => confirmDelete && doDelete(confirmDelete)}
+        title={confirmDelete === "bulk" ? `Eliminar ${selCount} snapshots` : "Eliminar snapshot"}
+        message={confirmDelete === "bulk"
+          ? `¿Eliminar ${selCount} snapshots permanentemente? Esta acción no se puede deshacer.`
+          : "¿Eliminar este snapshot? Esta acción no se puede deshacer."}
+        onConfirm={() => {
+          if (confirmDelete === "bulk") doBulkDelete();
+          else if (confirmDelete) doDelete(confirmDelete);
+        }}
         onCancel={() => setConfirmDelete(null)}
         loading={deleteLoading}
       />
@@ -171,6 +208,8 @@ function SnapshotRow({
   pnl,
   posCount,
   isExpanded,
+  isChecked,
+  onCheck,
   onToggle,
   onRequestDelete,
 }: {
@@ -178,6 +217,8 @@ function SnapshotRow({
   pnl: number;
   posCount: number;
   isExpanded: boolean;
+  isChecked: boolean;
+  onCheck: () => void;
   onToggle: () => void;
   onRequestDelete: (id: string) => void;
 }) {
@@ -188,6 +229,14 @@ function SnapshotRow({
         onClick={onToggle}
         style={{ cursor: posCount > 0 ? "pointer" : "default" }}
       >
+        <td className={styles.checkboxCell} onClick={(e) => e.stopPropagation()}>
+          <input
+            type="checkbox"
+            className={styles.checkbox}
+            checked={isChecked}
+            onChange={onCheck}
+          />
+        </td>
         <td style={{ width: 28, textAlign: "center" }}>
           {posCount > 0 && (
             <svg
@@ -233,7 +282,7 @@ function SnapshotRow({
 
       {isExpanded && s.positions_data && s.positions_data.length > 0 && (
         <tr>
-          <td colSpan={8} style={{ padding: 0 }}>
+          <td colSpan={9} style={{ padding: 0 }}>
             <PositionsSubTable positions={s.positions_data} />
           </td>
         </tr>

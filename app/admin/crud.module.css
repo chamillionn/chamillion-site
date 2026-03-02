@@ -294,6 +294,51 @@
   animation: spin 1s linear infinite;
 }
 
+/* ===== MULTI-SELECT ===== */
+
+.checkboxCell {
+  width: 36px;
+  text-align: center;
+  padding-left: 10px;
+  padding-right: 4px;
+}
+
+.checkbox {
+  accent-color: var(--steel-blue);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.bulkBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: rgba(var(--steel-blue-rgb), 0.06);
+  border: 1px solid rgba(var(--steel-blue-rgb), 0.18);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.bulkCount {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--steel-blue);
+  white-space: nowrap;
+}
+
+.bulkBtnDanger {
+  color: var(--red);
+  border-color: rgba(199, 85, 90, 0.3);
+}
+
+.bulkBtnDanger:hover {
+  background: rgba(199, 85, 90, 0.08);
+  color: var(--red);
+}
+
 /* ===== RESPONSIVE ===== */
 
 .hideMobile {}
