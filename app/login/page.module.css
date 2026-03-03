@@ -54,7 +54,7 @@
   padding: 10px 14px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   outline: none;
   transition: border-color 0.2s;
@@ -76,7 +76,7 @@
   background: var(--steel-blue);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: opacity 0.2s;
 }
@@ -102,7 +102,7 @@
   padding: 14px;
   background: rgba(var(--steel-blue-rgb), 0.08);
   border: 1px solid rgba(var(--steel-blue-rgb), 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;

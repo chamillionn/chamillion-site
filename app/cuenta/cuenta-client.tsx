@@ -65,6 +65,26 @@ export default function CuentaClient({
   const [priceError, setPriceError] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [checkoutMsg, setCheckoutMsg] = useState<{
+    type: "success" | "muted";
+    text: string;
+  } | null>(null);
+
+  // Read checkout result from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get("checkout");
+    if (checkout === "success") {
+      setCheckoutMsg({ type: "success", text: "Suscripcion activada. Bienvenido." });
+    } else if (checkout === "cancel") {
+      setCheckoutMsg({ type: "muted", text: "Proceso de pago cancelado." });
+    }
+    if (checkout) {
+      window.history.replaceState({}, "", window.location.pathname);
+      const timer = setTimeout(() => setCheckoutMsg(null), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   function fetchPrices() {
     setPriceError(false);
@@ -169,6 +189,18 @@ export default function CuentaClient({
 
         <h1 className={styles.title}>Mi cuenta</h1>
 
+        {checkoutMsg && (
+          <p
+            style={{
+              fontSize: 13,
+              color: checkoutMsg.type === "success" ? "var(--green)" : "var(--text-muted)",
+              fontFamily: "var(--font-dm-mono), monospace",
+            }}
+          >
+            {checkoutMsg.text}
+          </p>
+        )}
+
         {/* Email */}
         <div className={styles.field}>
           <span className={styles.label}>Email</span>
@@ -245,7 +277,7 @@ export default function CuentaClient({
                 </button>
               </div>
             ) : prices.length > 0 ? (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div className={styles.priceButtons}>
                 {prices.map((p) => (
                   <button
                     key={p.id}
@@ -263,15 +295,20 @@ export default function CuentaClient({
                 ))}
               </div>
             ) : (
-              <span
-                style={{
-                  fontFamily: "var(--font-dm-mono), monospace",
-                  fontSize: 12,
-                  color: "var(--text-muted)",
-                }}
-              >
-                Cargando planes...
-              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[140, 160].map((w) => (
+                  <div
+                    key={w}
+                    style={{
+                      width: w,
+                      height: 38,
+                      borderRadius: "var(--radius-sm)",
+                      background: "rgba(var(--steel-blue-rgb), 0.08)",
+                      animation: "shimmer 1.5s ease-in-out infinite",
+                    }}
+                  />
+                ))}
+              </div>
             )}
           </div>
         )}

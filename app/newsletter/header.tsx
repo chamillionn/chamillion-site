@@ -63,6 +63,7 @@ export default function Header() {
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Abrir menu"
+            aria-expanded={menuOpen}
             className={styles.hamburger}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">

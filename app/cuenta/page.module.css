@@ -67,7 +67,7 @@
   padding: 10px 14px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   outline: none;
   transition: border-color 0.2s;
@@ -120,7 +120,7 @@
   background: var(--steel-blue);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: opacity 0.2s;
 }
@@ -216,4 +216,18 @@
 
 .adminLink:hover {
   opacity: 0.75;
+}
+
+/* ── Pricing buttons ── */
+
+.priceButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 400px) {
+  .priceButtons {
+    flex-direction: column;
+  }
 }

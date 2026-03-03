@@ -52,6 +52,10 @@
   --gold-rgb: 201, 168, 76;
   --shadow-dropdown: rgba(0, 0, 0, 0.3);
 
+  /* ── Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+
   /* ── Newsletter / posts ── */
   --divider: rgba(255, 255, 255, 0.05);
   --accent-strong: #7A9BB5;
@@ -116,7 +120,12 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth theme transitions for interactive elements */
+input, button, select, textarea, table th, table td {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 ::selection {
@@ -133,6 +142,11 @@ button:focus-visible,
 [role="button"]:focus-visible {
   outline: 2px solid var(--steel-blue);
   outline-offset: 2px;
+}
+
+/* Subtle background shift on input focus */
+input:focus, textarea:focus, select:focus {
+  background-color: rgba(var(--steel-blue-rgb), 0.03);
 }
 
 /* ── Keyframes ── */
