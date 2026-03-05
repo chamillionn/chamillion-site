@@ -30,7 +30,14 @@ export async function getActivePrices(): Promise<
         getStripe().prices.list({ product: productId, active: true }),
         getStripe().products.retrieve(productId),
       ]);
-      return prices.data.map((p) => ({
+      const defaultPriceId = typeof product.default_price === "string"
+        ? product.default_price
+        : product.default_price?.id;
+      // If a default price is set, only return that one
+      const filtered = defaultPriceId
+        ? prices.data.filter((p) => p.id === defaultPriceId)
+        : prices.data;
+      return (filtered.length > 0 ? filtered : prices.data).map((p) => ({
         ...p,
         product_name: product.name,
       }));
