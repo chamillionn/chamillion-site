@@ -20,3 +20,7 @@ Haz mejoras esteticas y de experiencia de usuario de toda la admin page.
 - Grafico y mejor presentacion
 
 ---
+
+Acceder a cuenta fuera de hamburguer en movil. Y mas visual
+
+Tema light arreglar o quitar. O dark por defecto

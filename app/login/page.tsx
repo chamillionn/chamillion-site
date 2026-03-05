@@ -4,10 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { ensureProfile } from "./actions";
 import styles from "./page.module.css";
-
-const isProd = process.env.NEXT_PUBLIC_SITE_URL?.includes("chamillion.site");
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -16,17 +13,9 @@ function LoginForm() {
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const isAdmin = next.startsWith("/admin");
   const authError = searchParams.get("error");
-  const showPassword = !isProd;
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
-  const [error, setError] = useState(
-    authError === "auth_failed"
-      ? "El enlace de autenticacion ha expirado o no es valido. Intentalo de nuevo."
-      : ""
-  );
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -44,31 +33,6 @@ function LoginForm() {
   const [magicLoading, setMagicLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
   const [magicError, setMagicError] = useState("");
-
-  async function handlePasswordLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (authError) {
-      setLoading(false);
-      setError(
-        authError.message === "Invalid login credentials"
-          ? "Email o contrasena incorrectos"
-          : authError.message,
-      );
-      return;
-    }
-
-    await ensureProfile();
-    window.location.href = next;
-  }
 
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();
@@ -130,7 +94,7 @@ function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tu@email.com"
               required
-              disabled={loading || magicLoading}
+              disabled={magicLoading}
               className={styles.input}
               autoComplete="email"
               autoFocus
@@ -169,41 +133,10 @@ function LoginForm() {
               {magicLoading ? "Enviando..." : "Enviar magic link"}
             </button>
             {magicError && <p className={styles.error} role="alert">{magicError}</p>}
+            {authError === "auth_failed" && <p className={styles.error} role="alert">El enlace ha expirado o no es valido. Intentalo de nuevo.</p>}
           </form>
         )}
 
-        {/* ── Password login (dev only) ── */}
-        {showPassword && (
-          <>
-            <div className={styles.separator}>o</div>
-            <form onSubmit={handlePasswordLogin} className={styles.form}>
-              <div>
-                <label htmlFor="login-password" className="sr-only">Contrasena</label>
-                <input
-                  id="login-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Contrasena"
-                  required
-                  disabled={loading}
-                  className={styles.input}
-                  autoComplete="current-password"
-                  aria-invalid={!!error}
-                  aria-describedby={error ? "login-error" : undefined}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading || !email || !password}
-                className={styles.buttonSecondary}
-              >
-                {loading ? "Entrando..." : "Entrar con contrasena"}
-              </button>
-              {error && <p id="login-error" className={styles.error} role="alert">{error}</p>}
-            </form>
-          </>
-        )}
       </div>
     </div>
   );
