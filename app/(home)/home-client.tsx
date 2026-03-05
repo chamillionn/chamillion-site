@@ -202,6 +202,8 @@ function DonutChart({ platforms, total, hoveredPlatform, onHover }: { platforms:
         height={size}
         viewBox={`0 0 ${size} ${size}`}
         overflow="visible"
+        role="img"
+        aria-label={`Distribucion del portfolio: ${platforms.map(p => `${p.name} ${((p.value / total) * 100).toFixed(0)}%`).join(", ")}. Total: ${total.toFixed(0)}€`}
         style={{ transform: "rotate(-90deg)", cursor: "pointer" }}
         onMouseLeave={() => onHover(null)}
       >

@@ -78,6 +78,10 @@
   opacity: 0.85;
 }
 
+.primaryBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
 .primaryBtnDisabled {
   composes: primaryBtn;
   opacity: 0.5;

@@ -45,6 +45,7 @@ function formatPrice(cents: number, currency: string): string {
   return new Intl.NumberFormat("es-ES", {
     style: "currency",
     currency,
+    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
   }).format(cents / 100);
 }
 
@@ -65,6 +66,7 @@ export default function CuentaClient({
   const [priceError, setPriceError] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [expandedTier, setExpandedTier] = useState<string | null>(null);
   const [checkoutMsg, setCheckoutMsg] = useState<{
     type: "success" | "muted";
     text: string;
@@ -119,6 +121,8 @@ export default function CuentaClient({
       setFeedback({ type: "error", msg: result.error });
     } else {
       setFeedback({ type: "success", msg: "Guardado" });
+      const timer = setTimeout(() => setFeedback(null), 4000);
+      return () => clearTimeout(timer);
     }
   }
 
@@ -191,6 +195,7 @@ export default function CuentaClient({
 
         {checkoutMsg && (
           <p
+            role="status"
             style={{
               fontSize: 13,
               color: checkoutMsg.type === "success" ? "var(--green)" : "var(--text-muted)",
@@ -229,14 +234,17 @@ export default function CuentaClient({
 
         {/* Display name */}
         <div className={styles.field}>
-          <span className={styles.label}>Nombre</span>
+          <label htmlFor="cuenta-name" className={styles.label}>Nombre</label>
           <input
+            id="cuenta-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Tu nombre (opcional)"
             maxLength={50}
             className={styles.input}
+            autoComplete="name"
+            aria-describedby={feedback?.type === "error" ? "cuenta-feedback" : undefined}
           />
         </div>
 
@@ -250,6 +258,8 @@ export default function CuentaClient({
 
         {feedback && (
           <p
+            id="cuenta-feedback"
+            role="status"
             className={
               feedback.type === "success" ? styles.success : styles.error
             }
@@ -264,8 +274,7 @@ export default function CuentaClient({
         {role === "free" && (
           <div className={styles.cta}>
             <p className={styles.ctaText}>
-              Suscribete para acceder al Hub y al contenido premium de la
-              newsletter.
+              Acceso al Hub, analisis premium y contenido exclusivo.
             </p>
             {priceError ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
@@ -277,34 +286,72 @@ export default function CuentaClient({
                 </button>
               </div>
             ) : prices.length > 0 ? (
-              <div className={styles.priceButtons}>
-                {prices.map((p) => (
-                  <button
-                    key={p.id}
-                    className={styles.button}
-                    onClick={() => handleCheckout(p.id)}
-                    disabled={checkoutLoading !== null}
-                    style={
-                      checkoutLoading === p.id ? { opacity: 0.6 } : undefined
-                    }
-                  >
-                    {checkoutLoading === p.id
-                      ? "Redirigiendo..."
-                      : `${p.name} · ${formatPrice(p.unitAmount, p.currency)}/${INTERVAL_LABELS[p.interval ?? ""] ?? p.interval}`}
-                  </button>
-                ))}
+              <div className={styles.tierList}>
+                {[...prices]
+                  .sort((a, b) => a.unitAmount - b.unitAmount)
+                  .map((p) => {
+                    const isOpen = expandedTier === p.id;
+                    const isLoading = checkoutLoading === p.id;
+                    return (
+                      <div
+                        key={p.id}
+                        className={`${styles.tierCard} ${isOpen ? styles.tierCardOpen : ""}`}
+                      >
+                        <button
+                          className={styles.tierToggle}
+                          onClick={() => setExpandedTier(isOpen ? null : p.id)}
+                          aria-expanded={isOpen}
+                        >
+                          <span className={styles.tierName}>{p.name}</span>
+                          <span className={styles.tierMeta}>
+                            {formatPrice(p.unitAmount, p.currency)}
+                            <span className={styles.tierMetaInterval}>
+                              /{INTERVAL_LABELS[p.interval ?? ""] ?? p.interval}
+                            </span>
+                          </span>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={styles.tierChevron}
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </button>
+                        <div className={`${styles.tierBody} ${isOpen ? styles.tierBodyOpen : ""}`}>
+                          <div className={styles.tierBodyInner}>
+                            <div className={styles.tierContent}>
+                              <button
+                                className={styles.tierCta}
+                                onClick={() => handleCheckout(p.id)}
+                                disabled={checkoutLoading !== null}
+                              >
+                                {isLoading ? "..." : "Elegir"}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             ) : (
-              <div style={{ display: "flex", gap: 8 }}>
-                {[140, 160].map((w) => (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[0, 1, 2].map((i) => (
                   <div
-                    key={w}
+                    key={i}
                     style={{
-                      width: w,
-                      height: 38,
-                      borderRadius: "var(--radius-sm)",
-                      background: "rgba(var(--steel-blue-rgb), 0.08)",
+                      height: 48,
+                      borderRadius: "var(--radius-md)",
+                      background: "rgba(var(--steel-blue-rgb), 0.06)",
+                      border: "1px solid var(--border)",
                       animation: "shimmer 1.5s ease-in-out infinite",
+                      animationDelay: `${i * 0.15}s`,
                     }}
                   />
                 ))}

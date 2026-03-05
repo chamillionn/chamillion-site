@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
@@ -24,14 +24,57 @@ function useMediaQuery(maxWidth: number) {
 export default function Header() {
   const mobile = useMediaQuery(600);
   const [menuOpen, setMenuOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef<Element | null>(null);
+
+  const handleDrawerKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        return;
+      }
+      if (e.key === "Tab") {
+        const drawer = drawerRef.current;
+        if (!drawer) return;
+        const focusable = drawer.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!menuOpen) return;
-    function handleKey(e: KeyboardEvent) { if (e.key === "Escape") setMenuOpen(false); }
-    document.addEventListener("keydown", handleKey);
+    previousFocus.current = document.activeElement;
     document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", handleKey); document.body.style.overflow = ""; };
-  }, [menuOpen]);
+    document.addEventListener("keydown", handleDrawerKeyDown);
+
+    // Focus first focusable element in drawer
+    requestAnimationFrame(() => {
+      const drawer = drawerRef.current;
+      if (drawer) {
+        const firstBtn = drawer.querySelector<HTMLElement>("button:not([disabled])");
+        firstBtn?.focus();
+      }
+    });
+
+    return () => {
+      document.removeEventListener("keydown", handleDrawerKeyDown);
+      document.body.style.overflow = "";
+      if (previousFocus.current instanceof HTMLElement) {
+        previousFocus.current.focus();
+      }
+    };
+  }, [menuOpen, handleDrawerKeyDown]);
 
   return (
     <header className={styles.header}>
@@ -88,6 +131,10 @@ export default function Header() {
           onClick={() => setMenuOpen(false)}
         >
           <div
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu de navegacion"
             style={{
               position: "absolute",
               top: 0,

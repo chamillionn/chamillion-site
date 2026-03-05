@@ -87,7 +87,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning className={`${dmMono.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${outfit.variable}`}>
+    <html lang="es" data-scroll-behavior="smooth" suppressHydrationWarning className={`${dmMono.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${outfit.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("chamillion-theme")}catch(e){t=null}if(!t)t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)})()` }} />
       </head>
