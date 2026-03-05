@@ -8,7 +8,7 @@ export async function togglePostPremium(id: string, premium: boolean) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("posts")
     .update({ premium })
     .eq("id", id);
@@ -25,7 +25,7 @@ export async function togglePostPublished(id: string, published: boolean) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("posts")
     .update({ published })
     .eq("id", id);

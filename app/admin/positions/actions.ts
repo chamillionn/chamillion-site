@@ -14,7 +14,7 @@ export async function createPosition(formData: FormData) {
     const cost_basis = requireNumber(formData, "cost_basis");
     const current_value = requireNumber(formData, "current_value");
 
-    const { error } = await admin.supabase.from("positions").insert({
+    const { error } = await admin.dataClient.from("positions").insert({
       asset: formData.get("asset") as string,
       size,
       cost_basis,
@@ -46,7 +46,7 @@ export async function updatePosition(id: string, formData: FormData) {
     const cost_basis = requireNumber(formData, "cost_basis");
     const current_value = requireNumber(formData, "current_value");
 
-    const { error } = await admin.supabase
+    const { error } = await admin.dataClient
       .from("positions")
       .update({
         asset: formData.get("asset") as string,
@@ -75,7 +75,7 @@ export async function closePosition(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("positions")
     .update({ is_active: false, closed_at: new Date().toISOString() })
     .eq("id", id);
@@ -92,7 +92,7 @@ export async function reopenPosition(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("positions")
     .update({ is_active: true, closed_at: null })
     .eq("id", id);
@@ -109,7 +109,7 @@ export async function closePositions(ids: string[]) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("positions")
     .update({ is_active: false, closed_at: new Date().toISOString() })
     .in("id", ids);
@@ -126,7 +126,7 @@ export async function deletePositions(ids: string[]) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("positions").delete().in("id", ids);
+  const { error } = await admin.dataClient.from("positions").delete().in("id", ids);
 
   if (error) return { error: error.message };
 
@@ -140,7 +140,7 @@ export async function deletePosition(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("positions").delete().eq("id", id);
+  const { error } = await admin.dataClient.from("positions").delete().eq("id", id);
 
   if (error) return { error: error.message };
 

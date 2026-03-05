@@ -22,7 +22,7 @@ export async function createCapitalFlow(formData: FormData) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("capital_flows").insert({
+  const { error } = await admin.dataClient.from("capital_flows").insert({
     date: (formData.get("date") as string) || new Date().toISOString(),
     type: type as CapitalFlowType,
     amount_eur,
@@ -55,7 +55,7 @@ export async function updateCapitalFlow(id: string, formData: FormData) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("capital_flows")
     .update({
       date: (formData.get("date") as string) || new Date().toISOString(),
@@ -81,7 +81,7 @@ export async function deleteCapitalFlows(ids: string[]) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("capital_flows").delete().in("id", ids);
+  const { error } = await admin.dataClient.from("capital_flows").delete().in("id", ids);
 
   if (error) return { error: error.message };
 
@@ -95,7 +95,7 @@ export async function deleteCapitalFlow(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("capital_flows").delete().eq("id", id);
+  const { error } = await admin.dataClient.from("capital_flows").delete().eq("id", id);
 
   if (error) return { error: error.message };
 

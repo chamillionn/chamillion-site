@@ -14,7 +14,7 @@ export async function createPlatformFromPreset(slug: string, walletAddress: stri
 
   const wallet = walletAddress || preset.autoWallet?.() || null;
 
-  const { error } = await admin.supabase.from("platforms").insert({
+  const { error } = await admin.dataClient.from("platforms").insert({
     name: preset.name,
     type: preset.type,
     url: preset.url,
@@ -32,7 +32,7 @@ export async function updatePlatformWallet(id: string, walletAddress: string | n
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("platforms")
     .update({ wallet_address: walletAddress })
     .eq("id", id);
@@ -48,7 +48,7 @@ export async function deletePlatform(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("platforms").delete().eq("id", id);
+  const { error } = await admin.dataClient.from("platforms").delete().eq("id", id);
 
   if (error) return { error: error.message };
 

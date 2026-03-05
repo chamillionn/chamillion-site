@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function updateDisplayName(formData: FormData) {
@@ -10,6 +10,8 @@ export async function updateDisplayName(formData: FormData) {
     return { error: "Nombre demasiado largo (max 50 caracteres)" };
   }
 
+  // Authenticate via anon client, then write via service role to enforce
+  // that only display_name is updated — prevents direct-API role escalation.
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,7 +19,8 @@ export async function updateDisplayName(formData: FormData) {
 
   if (!user) return { error: "No autenticado" };
 
-  const { error } = await supabase
+  const service = createServiceClient();
+  const { error } = await service
     .from("profiles")
     .update({ display_name: displayName })
     .eq("id", user.id);

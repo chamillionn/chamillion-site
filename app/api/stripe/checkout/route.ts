@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe, getOrCreateCustomer } from "@/lib/stripe";
+import { getStripe, getOrCreateCustomer, getActivePrices } from "@/lib/stripe";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 /**
@@ -40,6 +40,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "priceId requerido" }, { status: 400 });
   }
 
+  // Validate priceId against configured products — prevents use of arbitrary Stripe prices
+  const activePrices = await getActivePrices();
+  const allowedPriceIds = new Set(activePrices.map((p) => p.id));
+  if (!allowedPriceIds.has(priceId)) {
+    return NextResponse.json({ error: "Precio no válido" }, { status: 400 });
+  }
+
   // Get or create Stripe customer
   const customerId = await getOrCreateCustomer(
     user.id,
@@ -60,7 +67,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Create Checkout Session
-  const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   try {
     const session = await getStripe().checkout.sessions.create({

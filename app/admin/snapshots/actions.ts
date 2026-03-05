@@ -8,7 +8,7 @@ export async function deleteSnapshots(ids: string[]) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("snapshots").delete().in("id", ids);
+  const { error } = await admin.dataClient.from("snapshots").delete().in("id", ids);
 
   if (error) return { error: error.message };
 
@@ -22,7 +22,7 @@ export async function deleteSnapshot(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("snapshots").delete().eq("id", id);
+  const { error } = await admin.dataClient.from("snapshots").delete().eq("id", id);
 
   if (error) return { error: error.message };
 

@@ -9,7 +9,7 @@ export async function setUserRole(id: string, role: "free" | "member" | "admin")
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("profiles")
     .update({ role })
     .eq("id", id);

@@ -11,7 +11,7 @@ export async function createStrategy(formData: FormData) {
   const name = (formData.get("name") as string)?.trim();
   if (!name) return { error: "El nombre es obligatorio" };
 
-  const { error } = await admin.supabase.from("strategies").insert({
+  const { error } = await admin.dataClient.from("strategies").insert({
     name,
     status: formData.get("status") as string,
     description: (formData.get("description") as string) || null,
@@ -31,7 +31,7 @@ export async function updateStrategy(id: string, formData: FormData) {
   const name = (formData.get("name") as string)?.trim();
   if (!name) return { error: "El nombre es obligatorio" };
 
-  const { error } = await admin.supabase
+  const { error } = await admin.dataClient
     .from("strategies")
     .update({
       name,
@@ -51,7 +51,7 @@ export async function deleteStrategies(ids: string[]) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("strategies").delete().in("id", ids);
+  const { error } = await admin.dataClient.from("strategies").delete().in("id", ids);
 
   if (error) return { error: error.message };
 
@@ -64,7 +64,7 @@ export async function deleteStrategy(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const { error } = await admin.supabase.from("strategies").delete().eq("id", id);
+  const { error } = await admin.dataClient.from("strategies").delete().eq("id", id);
 
   if (error) return { error: error.message };
 

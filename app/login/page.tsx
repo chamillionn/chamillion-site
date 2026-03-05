@@ -4,11 +4,14 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { ensureProfile } from "./actions";
 import styles from "./page.module.css";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/";
+  const rawNext = searchParams.get("next") || "/";
+  // Only allow relative paths to prevent open redirect
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const isAdmin = next.startsWith("/admin");
   const authError = searchParams.get("error");
 
@@ -38,29 +41,6 @@ function LoginForm() {
   const [magicLoading, setMagicLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
   const [magicError, setMagicError] = useState("");
-
-  async function ensureProfile() {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return;
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile) {
-      await supabase.from("profiles").insert({
-        id: user.id,
-        email: user.email!,
-        role: "free",
-      });
-    }
-  }
 
   async function handlePasswordLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -138,25 +118,39 @@ function LoginForm() {
 
         {/* ── Password login ── */}
         <form onSubmit={handlePasswordLogin} className={styles.form}>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="tu@email.com"
-            required
-            disabled={loading || magicLoading}
-            className={styles.input}
-            autoFocus
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Contrasena"
-            required
-            disabled={loading}
-            className={styles.input}
-          />
+          <div>
+            <label htmlFor="login-email" className="sr-only">Email</label>
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@email.com"
+              required
+              disabled={loading || magicLoading}
+              className={styles.input}
+              autoComplete="email"
+              autoFocus
+              aria-invalid={!!error}
+              aria-describedby={error ? "login-error" : undefined}
+            />
+          </div>
+          <div>
+            <label htmlFor="login-password" className="sr-only">Contrasena</label>
+            <input
+              id="login-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Contrasena"
+              required
+              disabled={loading}
+              className={styles.input}
+              autoComplete="current-password"
+              aria-invalid={!!error}
+              aria-describedby={error ? "login-error" : undefined}
+            />
+          </div>
           <button
             type="submit"
             disabled={loading || !email || !password}
@@ -164,7 +158,7 @@ function LoginForm() {
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>
-          {error && <p className={styles.error}>{error}</p>}
+          {error && <p id="login-error" className={styles.error} role="alert">{error}</p>}
         </form>
 
         {/* ── Separator ── */}
@@ -196,11 +190,11 @@ function LoginForm() {
             <button
               type="submit"
               disabled={magicLoading || !email}
-              className={styles.button}
+              className={styles.buttonSecondary}
             >
               {magicLoading ? "Enviando..." : "Enviar magic link"}
             </button>
-            {magicError && <p className={styles.error}>{magicError}</p>}
+            {magicError && <p className={styles.error} role="alert">{magicError}</p>}
           </form>
         )}
       </div>
