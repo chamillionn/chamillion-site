@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { ensureProfile } from "./actions";
 import styles from "./page.module.css";
 
+const isProd = process.env.NEXT_PUBLIC_SITE_URL?.includes("chamillion.site");
+
 function LoginForm() {
   const searchParams = useSearchParams();
   const rawNext = searchParams.get("next") || "/";
@@ -14,6 +16,7 @@ function LoginForm() {
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const isAdmin = next.startsWith("/admin");
   const authError = searchParams.get("error");
+  const showPassword = !isProd;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -113,11 +116,11 @@ function LoginForm() {
         <p className={styles.subtitle}>
           {isAdmin
             ? "Acceso restringido."
-            : "Introduce tus credenciales para acceder."}
+            : "Introduce tu email para acceder."}
         </p>
 
-        {/* ── Password login ── */}
-        <form onSubmit={handlePasswordLogin} className={styles.form}>
+        {/* ── Email input (shared) ── */}
+        <div className={styles.form}>
           <div>
             <label htmlFor="login-email" className="sr-only">Email</label>
             <input
@@ -131,40 +134,11 @@ function LoginForm() {
               className={styles.input}
               autoComplete="email"
               autoFocus
-              aria-invalid={!!error}
-              aria-describedby={error ? "login-error" : undefined}
             />
           </div>
-          <div>
-            <label htmlFor="login-password" className="sr-only">Contrasena</label>
-            <input
-              id="login-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Contrasena"
-              required
-              disabled={loading}
-              className={styles.input}
-              autoComplete="current-password"
-              aria-invalid={!!error}
-              aria-describedby={error ? "login-error" : undefined}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading || !email || !password}
-            className={styles.button}
-          >
-            {loading ? "Entrando..." : "Entrar"}
-          </button>
-          {error && <p id="login-error" className={styles.error} role="alert">{error}</p>}
-        </form>
+        </div>
 
-        {/* ── Separator ── */}
-        <div className={styles.separator}>o</div>
-
-        {/* ── Magic link ── */}
+        {/* ── Magic link (primary) ── */}
         {magicSent ? (
           <div className={styles.success}>
             <svg
@@ -190,12 +164,45 @@ function LoginForm() {
             <button
               type="submit"
               disabled={magicLoading || !email}
-              className={styles.buttonSecondary}
+              className={styles.button}
             >
               {magicLoading ? "Enviando..." : "Enviar magic link"}
             </button>
             {magicError && <p className={styles.error} role="alert">{magicError}</p>}
           </form>
+        )}
+
+        {/* ── Password login (dev only) ── */}
+        {showPassword && (
+          <>
+            <div className={styles.separator}>o</div>
+            <form onSubmit={handlePasswordLogin} className={styles.form}>
+              <div>
+                <label htmlFor="login-password" className="sr-only">Contrasena</label>
+                <input
+                  id="login-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Contrasena"
+                  required
+                  disabled={loading}
+                  className={styles.input}
+                  autoComplete="current-password"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? "login-error" : undefined}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !email || !password}
+                className={styles.buttonSecondary}
+              >
+                {loading ? "Entrando..." : "Entrar con contrasena"}
+              </button>
+              {error && <p id="login-error" className={styles.error} role="alert">{error}</p>}
+            </form>
+          </>
         )}
       </div>
     </div>
