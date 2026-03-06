@@ -34,11 +34,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Parse priceId from body
-  const { priceId } = await req.json();
+  // Parse priceId and optional returnTo from body
+  const { priceId, returnTo } = await req.json();
   if (!priceId || typeof priceId !== "string") {
     return NextResponse.json({ error: "priceId requerido" }, { status: 400 });
   }
+  // Validate returnTo is a safe relative path
+  const safeReturnTo =
+    typeof returnTo === "string" && returnTo.startsWith("/") && !returnTo.startsWith("//")
+      ? returnTo
+      : null;
 
   // Validate priceId against configured products — prevents use of arbitrary Stripe prices
   const activePrices = await getActivePrices();
@@ -74,8 +79,12 @@ export async function POST(req: NextRequest) {
       customer: customerId,
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/cuenta?checkout=success`,
-      cancel_url: `${origin}/cuenta?checkout=cancel`,
+      success_url: safeReturnTo
+        ? `${origin}${safeReturnTo}?checkout=success`
+        : `${origin}/cuenta?checkout=success`,
+      cancel_url: safeReturnTo
+        ? `${origin}${safeReturnTo}?checkout=cancel`
+        : `${origin}/cuenta?checkout=cancel`,
       locale: "es",
       metadata: { supabase_user_id: user.id },
       subscription_data: {

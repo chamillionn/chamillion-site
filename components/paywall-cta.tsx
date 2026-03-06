@@ -29,6 +29,10 @@ function formatPrice(cents: number, currency: string): string {
   }).format(cents / 100);
 }
 
+function priceLabel(p: Price): string {
+  return `${formatPrice(p.unitAmount, p.currency)}/${INTERVAL_LABELS[p.interval ?? ""] ?? p.interval}`;
+}
+
 export default function PaywallCTA({ isLoggedIn }: Props) {
   const pathname = usePathname();
   const [prices, setPrices] = useState<Price[]>([]);
@@ -43,10 +47,10 @@ export default function PaywallCTA({ isLoggedIn }: Props) {
       .catch(() => setPriceError(true));
   }
 
+  // Always fetch prices — show to everyone, not just logged-in users
   useEffect(() => {
-    if (!isLoggedIn) return;
     fetchPrices();
-  }, [isLoggedIn]);
+  }, []);
 
   async function handleCheckout(priceId: string) {
     setLoading(priceId);
@@ -54,7 +58,7 @@ export default function PaywallCTA({ isLoggedIn }: Props) {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ priceId, returnTo: pathname }),
       });
       const data = await res.json();
       if (data.url) {
@@ -86,13 +90,14 @@ export default function PaywallCTA({ isLoggedIn }: Props) {
 
         <h3 className={styles.heading}>Contenido premium</h3>
 
-        {isLoggedIn ? (
-          <>
-            <p className={styles.text}>
-              Suscribete para acceder al articulo completo y todo el contenido
-              premium de Chamillion.
-            </p>
-            <div className={styles.actions}>
+        <p className={styles.text}>
+          Accede al articulo completo, el portfolio verificable en tiempo real
+          y todos los analisis de Chamillion.
+        </p>
+
+        <div className={styles.actions}>
+          {isLoggedIn ? (
+            <>
               {priceError ? (
                 <button className={styles.secondaryBtn} onClick={fetchPrices}>
                   Error al cargar planes. Reintentar
@@ -107,36 +112,25 @@ export default function PaywallCTA({ isLoggedIn }: Props) {
                     style={loading === p.id ? { opacity: 0.6 } : undefined}
                   >
                     {loading === p.id
-                      ? "Redirigiendo..."
-                      : `${p.name} · ${formatPrice(p.unitAmount, p.currency)}/${INTERVAL_LABELS[p.interval ?? ""] ?? p.interval}`}
+                      ? "Redirigiendo a checkout..."
+                      : `Suscribirme · ${priceLabel(p)}`}
                   </button>
                 ))
               ) : (
-                <span className={styles.secondaryBtn}>Cargando planes...</span>
+                <span className={styles.secondaryBtn}>Cargando...</span>
               )}
-            </div>
-          </>
-        ) : (
-          <>
-            <p className={styles.text}>
-              Inicia sesion o suscribete para leer el articulo completo.
-            </p>
-            <div className={styles.actions}>
-              <Link
-                href={`/login?next=${encodeURIComponent(pathname)}`}
-                className={styles.primaryBtn}
-              >
-                Acceder
-              </Link>
-              <Link
-                href={`/login?next=${encodeURIComponent(pathname)}`}
-                className={styles.secondaryBtn}
-              >
-                Ver planes
-              </Link>
-            </div>
-          </>
-        )}
+            </>
+          ) : (
+            <Link
+              href={`/login?next=${encodeURIComponent(pathname)}`}
+              className={styles.primaryBtn}
+            >
+              {prices.length > 0
+                ? `Acceder · ${priceLabel(prices[0])}`
+                : "Acceder"}
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );

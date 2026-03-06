@@ -210,11 +210,30 @@ function PostCard({ post, delay }: { post: Post; delay: number }) {
 }
 
 // ── Newsletter index ──
+interface Price {
+  id: string;
+  name: string;
+  unitAmount: number;
+  currency: string;
+  interval: string | null;
+}
+
+const INTERVAL_LABELS: Record<string, string> = { month: "mes", year: "año" };
+
+function formatPrice(cents: number, currency: string): string {
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency }).format(cents / 100);
+}
+
 export default function NewsletterClient({ posts, error }: { posts: Post[]; error?: boolean }) {
   const [loaded, setLoaded] = useState(false);
+  const [prices, setPrices] = useState<Price[]>([]);
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100);
+    fetch("/api/stripe/prices")
+      .then((r) => r.json())
+      .then((data) => setPrices(data))
+      .catch(() => {});
     return () => clearTimeout(t);
   }, []);
 
@@ -279,6 +298,39 @@ export default function NewsletterClient({ posts, error }: { posts: Post[]; erro
         Un viaje con dinero real por la vanguardia de los mercados financieros.
         Documentado, y verificable.
       </p>
+
+      {/* Premium CTA */}
+      {prices.length > 0 && (
+        <Link
+          href="/login?next=/cuenta"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            fontFamily: "var(--font-dm-mono), monospace",
+            fontSize: 11,
+            color: V.steel,
+            letterSpacing: "0.03em",
+            margin: "0 0 24px",
+            padding: "8px 14px",
+            borderRadius: 8,
+            border: `1px solid ${steelA(0.15)}`,
+            background: steelA(0.05),
+            textDecoration: "none",
+            transition: "all 0.25s ease",
+            opacity: loaded ? 1 : 0,
+            transform: loaded ? "translateY(0)" : "translateY(12px)",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = steelA(0.1); e.currentTarget.style.borderColor = steelA(0.25); }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = steelA(0.05); e.currentTarget.style.borderColor = steelA(0.15); }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          Articulos <span style={{ padding: "1px 5px", borderRadius: 3, background: steelA(0.1) }}>Premium</span> desde {formatPrice(prices[0].unitAmount, prices[0].currency)}/{INTERVAL_LABELS[prices[0].interval ?? ""] ?? prices[0].interval} →
+        </Link>
+      )}
 
       {/* Gradient divider */}
       <div
