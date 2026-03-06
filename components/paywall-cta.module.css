@@ -1,13 +1,23 @@
-/* ── Gradient fade over last visible content ── */
+/* ── Blurred fake content behind paywall ── */
+.blurredPreview {
+  position: relative;
+  max-height: 120px;
+  overflow: hidden;
+  filter: blur(5px);
+  user-select: none;
+  pointer-events: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.7;
+  mask-image: linear-gradient(to bottom, black 10%, transparent 95%);
+  -webkit-mask-image: linear-gradient(to bottom, black 10%, transparent 95%);
+}
+
+/* ── Gradient fade over blurred content into CTA ── */
 .fadeOverlay {
   position: relative;
-  margin-top: -120px;
-  padding-top: 120px;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    var(--bg-dark) 85%
-  );
+  margin-top: -40px;
+  padding-top: 40px;
   pointer-events: none;
 }
 
@@ -63,19 +73,20 @@
   font-family: var(--font-dm-mono), monospace;
   font-size: 13px;
   letter-spacing: 0.3px;
-  padding: 10px 24px;
+  padding: 12px 28px;
   background: var(--steel-blue);
-  color: #fff;
+  color: #fff !important;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  text-decoration: none;
+  text-decoration: none !important;
   transition: opacity 0.2s;
   display: inline-block;
 }
 
 .primaryBtn:hover {
   opacity: 0.85;
+  color: #fff !important;
 }
 
 .primaryBtn:active:not(:disabled) {

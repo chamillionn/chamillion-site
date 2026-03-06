@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { updateDisplayName } from "./actions";
+import { updateDisplayName, deleteOwnAccount } from "./actions";
 import styles from "./page.module.css";
 
 interface Price {
@@ -66,6 +66,10 @@ export default function CuentaClient({
   const [priceError, setPriceError] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteEmail, setDeleteEmail] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [expandedTier, setExpandedTier] = useState<string | null>(null);
   const [checkoutMsg, setCheckoutMsg] = useState<{
     type: "success" | "muted";
@@ -170,6 +174,21 @@ export default function CuentaClient({
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = "/";
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    setDeleteError(null);
+    const result = await deleteOwnAccount(deleteEmail);
+    if (result.error) {
+      setDeleteError(result.error);
+      setDeleting(false);
+    } else {
+      // Account deleted — sign out locally and redirect
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      window.location.href = "/?deleted=1";
+    }
   }
 
   const badgeClass =
@@ -376,6 +395,66 @@ export default function CuentaClient({
           <Link href="/admin" className={styles.adminLink}>
             Panel de administracion &rarr;
           </Link>
+        )}
+
+        {/* Danger zone */}
+        {role !== "admin" && (
+          <>
+            <div className={styles.divider} />
+            <div className={styles.dangerZone}>
+              <span className={styles.dangerLabel}>Zona de peligro</span>
+              {!showDeleteConfirm ? (
+                <button
+                  className={styles.buttonDanger}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Eliminar mi cuenta
+                </button>
+              ) : (
+                <div className={styles.deleteConfirm}>
+                  <p className={styles.deleteWarning}>
+                    Esta accion es irreversible. Se eliminaran tu cuenta y todos tus datos.
+                    Si tienes una suscripcion activa, sera cancelada.
+                  </p>
+                  <label htmlFor="delete-confirm-email" className={styles.label}>
+                    Escribe tu email para confirmar
+                  </label>
+                  <input
+                    id="delete-confirm-email"
+                    type="email"
+                    value={deleteEmail}
+                    onChange={(e) => setDeleteEmail(e.target.value)}
+                    placeholder={email}
+                    className={styles.input}
+                    autoComplete="off"
+                  />
+                  {deleteError && (
+                    <p className={styles.error}>{deleteError}</p>
+                  )}
+                  <div className={styles.deleteActions}>
+                    <button
+                      className={styles.buttonDeleteConfirm}
+                      onClick={handleDeleteAccount}
+                      disabled={deleting || deleteEmail !== email}
+                    >
+                      {deleting ? "Eliminando..." : "Confirmar eliminacion"}
+                    </button>
+                    <button
+                      className={styles.buttonSecondary}
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        setDeleteEmail("");
+                        setDeleteError(null);
+                      }}
+                      disabled={deleting}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         {/* Logout */}

@@ -111,13 +111,17 @@
 }
 
 .hamburger {
-  display: none;
+  display: flex;
   background: none;
   border: none;
   cursor: pointer;
   padding: 4px;
   color: var(--text-secondary);
   align-items: center;
+}
+
+.headerMobileActions {
+  display: none;
 }
 
 @media (max-width: 600px) {
@@ -129,7 +133,9 @@
     display: none;
   }
 
-  .hamburger {
+  .headerMobileActions {
     display: flex;
+    align-items: center;
+    gap: 14px;
   }
 }

@@ -1580,25 +1580,28 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
               </Link>
             )}
             {mobile ? (
-              <button
-                onClick={() => setMobileMenuOpen(true)}
-                aria-label="Abrir menu"
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 4,
-                  color: V.textSecondary,
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <line x1="4" y1="7" x2="20" y2="7" />
-                  <line x1="4" y1="12" x2="20" y2="12" />
-                  <line x1="4" y1="17" x2="20" y2="17" />
-                </svg>
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <UserMenu variant="pill" />
+                <button
+                  onClick={() => setMobileMenuOpen(true)}
+                  aria-label="Abrir menu"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 4,
+                    color: V.textSecondary,
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                    <line x1="4" y1="7" x2="20" y2="7" />
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <line x1="4" y1="17" x2="20" y2="17" />
+                  </svg>
+                </button>
+              </div>
             ) : (
               <>
                 <UserMenu />

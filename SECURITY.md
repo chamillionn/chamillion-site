@@ -1,6 +1,8 @@
-# Security Template
+# Security
 
 This repository handles production user data and privileged database access. Treat security requirements as **non-optional**.
+
+---
 
 ## Agent Rules (MUST FOLLOW)
 
@@ -14,7 +16,7 @@ This repository handles production user data and privileged database access. Tre
 
 - **Service role usage**
   - Service role keys may only be used in:
-    - Next.js Route Handlers (`src/app/api/**`)
+    - Next.js Route Handlers (`app/api/**`)
     - Edge Functions or serverless functions
     - Trusted backend workers
   - Never expose service role keys to the browser.
@@ -24,117 +26,142 @@ This repository handles production user data and privileged database access. Tre
   - Avoid permissive write policies like `WITH CHECK (true)` for `INSERT/UPDATE/DELETE`.
 
 - **Prefer server endpoints for public write actions**
-  - Any endpoint that records analytics/clicks must:
-    - Validate input (e.g. `zod`)
+  - Any endpoint that records data must:
+    - Validate input
     - Apply rate limits
     - Use service-role DB writes on the server
   - Client components must not call write RPCs directly. Use a server route.
 
 - **Function hardening**
-  - All security definer functions must have a fixed `search_path`:
+  - All SECURITY DEFINER functions must have a fixed `search_path`:
     ```sql
     SET search_path = public, extensions
     ```
-  - Restrict function execution grants:
-    - Only grant `EXECUTE` to roles that need it (often `service_role` only).
+  - Restrict function execution grants: only grant `EXECUTE` to roles that need it.
 
 - **Do not increase attack surface**
-  - Do not attach privileged objects to `window` unless strictly required.
-  - Avoid broad CORS (`*`) except where explicitly intended and reviewed.
+  - Do not attach privileged objects to `window`.
+  - Avoid broad CORS (`*`).
+  - Validate all redirect URLs (relative paths only, block `//`).
 
 ## Required Checks Before Merge
 
-- **Repository scan**
-  - Search for leaked keys:
-    - Service role keys
-    - JWTs (`eyJ...`)
-    - Any secret keys or tokens
-
-- **Database advisors** (required after any DB/RLS/function change)
-  - Run:
-    - Security advisor
-    - Performance advisor
-
-- **Verify public write paths**
-  - Confirm no public tables allow anonymous inserts without validation/rate limiting.
-  - Confirm any public write action is routed through a server endpoint.
-
-## Patterns To Use
-
-- **Server-side click tracking**
-  - Use a Next API route with rate limiting and service-role DB writes.
-  - Example endpoints:
-    - `/api/ad-click` -> calls `record_ad_click(...)` via service role
-    - `/api/affiliate-click` -> calls `record_affiliate_movie_click(...)` via service role
-
-- **Restrict click-tracking RPC execution**
-  - Click tracking functions must be `service_role`-only.
-  - Never grant these functions to `anon` or `authenticated`.
-
-- **Public analytics**
-  - Prefer a server endpoint that accepts sanitized payloads and enforces bot checks.
-
-- **Admin-only RPC actions**
-  - Admin endpoints must use service role client and proper authorization.
-  - Avoid using the anon client inside admin routes.
-
-## Enforced Architecture
-
-### Option A (Enforced): Server routes for any privileged writes
-
-- Direct writes to protected tables from client code are not allowed.
-- All privileged writes must go through Next.js Route Handlers under `src/app/api/**`.
-- Server routes must:
-  - Validate input (e.g. `zod`)
-  - Rate limit
-  - Authenticate via `Authorization: Bearer <JWT>` (enterprise/stateless)
-  - Use service role for DB writes
-
-### Option B (Enforced): Anonymous activity is local-only
-
-- Anonymous activity must remain local until login.
-- Cloud state for user data is **authenticated-only**:
-  - User watchlists
-  - Recently viewed items
-  - Watch progress
-  - Any user-specific data
-
-## Key Implementation Points
-
-- **Authorization header helpers**
-  - Use `authFetch` for user-authenticated endpoints.
-  - Use `apiFetch` for management portal calls.
-
-- **Admin endpoints**
-  - All `/api/admin/**` endpoints must use proper authorization and service role client.
-
-- **Management interfaces**
-  - Management UI must use server endpoints for all privileged operations.
-
-## Database Hardening Rules (Enforced)
-
-- **Protected tables** (examples):
-  - Admin tables
-  - Push tokens
-  - User data tables
-  - Any sensitive business data
-
-- **RLS and grants**
-  - Admin tables are service-role only (no `anon`/`authenticated` table privileges).
-  - Public tables allow read-only access where appropriate.
-  - Table writes are service-role only (via server endpoints).
-
-- **Function grants + hardening**
-  - Sensitive RPCs are `service_role` execute only:
-    - User registration functions
-    - Click tracking functions
-    - Admin functions
-    - User data retrieval functions
-  - SECURITY DEFINER functions must have fixed `search_path`.
+- Search for leaked keys: service role keys, JWTs (`eyJ...`), tokens
+- Run Supabase security advisor + performance advisor after any DB/RLS/function change
+- Confirm no public tables allow anonymous inserts without validation
 
 ## Incident Response (If a key is exposed)
 
-- Rotate impacted keys immediately.
-- Audit RLS policies and function grants.
-- Review logs for unusual access patterns.
-- Add a regression test/checklist entry to prevent recurrence.
+- Rotate impacted keys immediately
+- Audit RLS policies and function grants
+- Review logs for unusual access patterns
+- Add a regression test/checklist entry to prevent recurrence
+
+---
+
+## Audit Checklist (30 Rules)
+
+Source: @Hartdrawss — 30 security rules for AI vibe coding.
+Each rule includes the audit result for this project.
+
+Status: `[OK]` pass | `[PENDING]` needs work | `[N/A]` not applicable
+
+### Auth & Sessions
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 1 | Set session expiration (JWT max 7 days + refresh rotation) | OK | JWT expiry 3600s (Supabase default). Refresh rotation active via middleware `getUser()`. Compromised token detection ON. Reuse interval 10s. |
+| 2 | Never use AI-built auth. Use Clerk, Supabase Auth, or Auth0 | OK | Supabase Auth with magic link (OTP email). No custom auth. |
+| 16 | Password reset routes: strict limit (3 per email/hour) | N/A | Password login removed entirely. Magic link only — rate limited by Supabase. |
+
+### Secrets & Environment
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 3 | Never paste API keys into AI chats. Use process.env | OK | Zero hardcoded secrets. All keys via `process.env`. Tests use fake values. |
+| 4 | .gitignore is your first file in every project | OK | `.env*.local`, `node_modules/`, `.next/`, `.vercel` excluded. |
+| 5 | Rotate secrets every 90 days minimum | OK | JWT key rotated to ECC P-256. Action: calendar reminder every 90 days for JWT key + Stripe webhook secret. |
+
+### Dependencies
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 6 | Verify every package the AI suggests actually exists | OK | `npm audit`: 0 vulnerabilities. Always verify on npmjs.com before installing. |
+| 7 | Always ask for newer, more secure package versions | OK | Up to date within major versions (Next 15, ESLint 9). |
+| 8 | Run npm audit fix right after building | OK | 0 vulnerabilities. |
+
+### Input & Queries
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 9 | Sanitize every input. Use parameterized queries always | OK | All DB queries via Supabase client (auto-parameterized). Zero raw SQL. `dangerouslySetInnerHTML` only with static data. |
+
+### Database
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 10 | Enable Row-Level Security from day one | OK | RLS enabled on `profiles`, `positions`, `platforms`, `strategies`. Verify with: `SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public'`. |
+
+### Logging
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 11 | Remove all console.log statements before shipping | OK | Zero `console.log/debug/info`. Only `console.error` in server-side route handlers (acceptable). |
+
+### CORS & Redirects
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 12 | CORS should only allow your production domain. Never wildcard | OK | No custom CORS headers. Next.js same-origin default. Verify Supabase Auth > URL Configuration has no wildcards. |
+| 13 | Validate all redirect URLs against an allow-list | OK | Auth callback: `safeRedirectPath()` blocks `//`. Stripe checkout: `returnTo` validated. Middleware: uses internal `pathname`. |
+
+### Rate Limiting
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 14 | Apply auth + rate limits to every endpoint | PENDING | Auth: all endpoints verified. Rate limiting: not implemented on API routes. Low risk at current scale. Options: Vercel edge (paid), or `next-rate-limit`. |
+| 15 | Rate limit everything from day one. 100 req/hour per IP | PENDING | Same as 14. Supabase Auth has its own rate limits. API routes have none. |
+
+### AI / Costs
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 17 | Cap AI API costs in your dashboard AND in your code | N/A | No AI API usage in the project. |
+
+### Infrastructure
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 18 | Add DDoS protection via Cloudflare or Vercel edge config | OK | Vercel Edge Network includes DDoS protection by default on all plans. |
+| 19 | Lock down storage buckets. Users should only access their own files | N/A | No Supabase Storage usage. Images served as static assets from `/public/` via Vercel. |
+| 20 | Limit upload sizes and validate file type by signature | N/A | No file upload functionality. |
+
+### Payments
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 21 | Verify webhook signatures before processing any payment data | OK | `constructEvent(body, sig, STRIPE_WEBHOOK_SECRET)` in `app/api/stripe/webhook/route.ts`. Returns 400 on missing/invalid signature. |
+| 22 | Use Resend or SendGrid with proper SPF/DKIM records | PENDING | Using Supabase default email (sends from Supabase domain). Improvement: configure Resend as custom SMTP + add SPF/DKIM to `chamillion.site` DNS for better deliverability and branding. |
+
+### Authorization
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 23 | Check permissions server-side. UI-level checks are not security | OK | All admin actions use `requireAdmin()` server-side. Paywall is a Server Component (HTML never sent without access). Stripe routes use `getUser()`. Sync routes use `authCheck()`. |
+
+### Security Testing
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 24 | Ask the AI to act as a security engineer and review your code | OK | Completed — this audit (2026-03-06). |
+| 25 | Ask the AI to try and hack your app | PENDING | To be done after audit. |
+
+### Compliance & Operations
+
+| # | Rule | Status | Notes |
+|---|------|--------|-------|
+| 26 | Log critical actions: deletions, role changes, payments, exports | PENDING | Stripe Dashboard logs payments. Supabase Audit Logs covers auth. Missing: explicit log when webhook changes user role. Low priority at current scale. |
+| 27 | Build a real account deletion flow. GDPR fines are not fun | OK | Self-service deletion in `/cuenta` via `deleteOwnAccount()`. Requires email confirmation, cancels Stripe subscription, deletes auth user (cascades to profile). Admins blocked from self-deletion. |
+| 28 | Automate backups and test restoration | PENDING | Supabase daily backups (7-day retention on free plan). Action: test restoration at least once to verify it works. |
+| 29 | Keep test and production environments completely separate | OK | Separate Supabase projects: dev (`mdkej...`) and prod (`hpyyu...`). Separate `.env.local` / `.env.production.local`. |
+| 30 | Never let test webhooks touch real systems | OK | Verify in Stripe Dashboard that test-mode webhook does not point to `chamillion.site`. |

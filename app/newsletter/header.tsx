@@ -9,21 +9,17 @@ import PremiumBadge from "@/components/premium-badge";
 import { V } from "@/lib/theme";
 import styles from "./layout.module.css";
 
-function useMediaQuery(maxWidth: number) {
-  const [matches, setMatches] = useState(false);
+export default function Header() {
+  const [mobile, setMobile] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
   useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${maxWidth}px)`);
-    setMatches(mql.matches);
-    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+    const mql = window.matchMedia("(max-width: 600px)");
+    setMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setMobile(e.matches);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
-  }, [maxWidth]);
-  return matches;
-}
-
-export default function Header() {
-  const mobile = useMediaQuery(600);
-  const [menuOpen, setMenuOpen] = useState(false);
+  }, []);
   const drawerRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<Element | null>(null);
 
@@ -101,8 +97,9 @@ export default function Header() {
           <ThemeToggle />
         </nav>
 
-        {/* Mobile hamburger */}
-        {mobile && (
+        {/* Mobile: account + hamburger (CSS controls visibility) */}
+        <div className={styles.headerMobileActions}>
+          <UserMenu variant="pill" />
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Abrir menu"
@@ -115,7 +112,7 @@ export default function Header() {
               <line x1="4" y1="17" x2="20" y2="17" />
             </svg>
           </button>
-        )}
+        </div>
       </div>
 
       {/* Mobile drawer */}

@@ -11,7 +11,7 @@ interface UserState {
   role: "free" | "member" | "admin";
 }
 
-export default function UserMenu({ variant = "compact", onNavigate }: { variant?: "compact" | "expanded"; onNavigate?: () => void }) {
+export default function UserMenu({ variant = "compact", onNavigate }: { variant?: "compact" | "expanded" | "pill"; onNavigate?: () => void }) {
   const [user, setUser] = useState<UserState | null>(null);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -70,33 +70,61 @@ export default function UserMenu({ variant = "compact", onNavigate }: { variant?
 
   // Not logged in — show "Acceder" link
   if (!user) {
+    const pillStyle: React.CSSProperties = {
+      fontFamily: "var(--font-dm-mono), monospace",
+      fontSize: 12,
+      fontWeight: 500,
+      letterSpacing: "0.03em",
+      color: V.steel,
+      textDecoration: "none",
+      padding: "6px 14px",
+      border: `1px solid ${steelA(0.3)}`,
+      borderRadius: 6,
+      background: steelA(0.08),
+      transition: "background 0.2s, border-color 0.2s",
+    };
+
+    const expandedStyle: React.CSSProperties = {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      padding: "12px 10px",
+      fontSize: 14,
+      fontWeight: 500,
+      color: V.textPrimary,
+      textDecoration: "none",
+      borderRadius: 8,
+    };
+
+    const compactStyle: React.CSSProperties = {
+      color: V.textSecondary,
+      textDecoration: "none",
+      fontSize: 13,
+      fontWeight: 500,
+      letterSpacing: "-0.01em",
+      transition: "color 0.2s",
+    };
+
+    const style = variant === "expanded" ? expandedStyle : variant === "pill" ? pillStyle : compactStyle;
+
     return (
       <Link
         href="/login"
         onClick={onNavigate}
-        style={variant === "expanded" ? {
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "12px 10px",
-          fontSize: 14,
-          fontWeight: 500,
-          color: V.textPrimary,
-          textDecoration: "none",
-          borderRadius: 8,
-        } : {
-          color: V.textSecondary,
-          textDecoration: "none",
-          fontSize: 13,
-          fontWeight: 500,
-          letterSpacing: "-0.01em",
-          transition: "color 0.2s",
-        }}
+        style={style}
         onMouseEnter={variant === "compact" ? (e) =>
-          (e.currentTarget.style.color = "var(--text-primary)") : undefined
+          (e.currentTarget.style.color = "var(--text-primary)")
+          : variant === "pill" ? (e) => {
+            e.currentTarget.style.background = steelA(0.14);
+            e.currentTarget.style.borderColor = steelA(0.5);
+          } : undefined
         }
         onMouseLeave={variant === "compact" ? (e) =>
-          (e.currentTarget.style.color = "var(--text-secondary)") : undefined
+          (e.currentTarget.style.color = "var(--text-secondary)")
+          : variant === "pill" ? (e) => {
+            e.currentTarget.style.background = steelA(0.08);
+            e.currentTarget.style.borderColor = steelA(0.3);
+          } : undefined
         }
       >
         {variant === "expanded" && (

@@ -12,6 +12,7 @@ function LoginForm() {
   // Only allow relative paths to prevent open redirect
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const isAdmin = next.startsWith("/admin");
+  const isFromArticle = next.startsWith("/newsletter/") && next !== "/newsletter";
   const authError = searchParams.get("error");
 
   const [email, setEmail] = useState("");
@@ -75,32 +76,15 @@ function LoginForm() {
         </Link>
 
         <h1 className={styles.title}>
-          {isAdmin ? "Admin" : "Iniciar sesion"}
+          {isAdmin ? "Admin" : isFromArticle ? "Accede al contenido" : "Iniciar sesion"}
         </h1>
         <p className={styles.subtitle}>
           {isAdmin
             ? "Acceso restringido."
-            : "Introduce tu email para acceder."}
+            : isFromArticle
+              ? "Introduce tu email para continuar leyendo el articulo completo."
+              : "Introduce tu email para acceder."}
         </p>
-
-        {/* ── Email input (shared) ── */}
-        <div className={styles.form}>
-          <div>
-            <label htmlFor="login-email" className="sr-only">Email</label>
-            <input
-              id="login-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              required
-              disabled={magicLoading}
-              className={styles.input}
-              autoComplete="email"
-              autoFocus
-            />
-          </div>
-        </div>
 
         {/* ── Magic link (primary) ── */}
         {magicSent ? (
@@ -125,12 +109,27 @@ function LoginForm() {
           </div>
         ) : (
           <form onSubmit={handleMagicLink} className={styles.form}>
+            <div>
+              <label htmlFor="login-email" className="sr-only">Email</label>
+              <input
+                id="login-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                required
+                disabled={magicLoading}
+                className={styles.input}
+                autoComplete="email"
+                autoFocus
+              />
+            </div>
             <button
               type="submit"
               disabled={magicLoading || !email}
               className={styles.button}
             >
-              {magicLoading ? "Enviando..." : "Enviar magic link"}
+              {magicLoading ? "Enviando..." : "Continuar"}
             </button>
             {magicError && <p className={styles.error} role="alert">{magicError}</p>}
             {authError === "auth_failed" && <p className={styles.error} role="alert">El enlace ha expirado o no es valido. Intentalo de nuevo.</p>}

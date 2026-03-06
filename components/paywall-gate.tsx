@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/supabase/auth";
 import PaywallCTA from "./paywall-cta";
+import styles from "./paywall-cta.module.css";
 
 interface Props {
   children: React.ReactNode;
@@ -28,6 +29,10 @@ export default async function PaywallGate({
   return (
     <>
       {teaser}
+      <div className={styles.blurredPreview} aria-hidden="true">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</p>
+      </div>
       <PaywallCTA isLoggedIn={!!ctx} />
     </>
   );

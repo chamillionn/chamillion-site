@@ -329,3 +329,51 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ── Danger zone ── */
+
+.dangerZone {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dangerLabel {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--red);
+}
+
+.deleteConfirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--red);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--red) 6%, transparent);
+}
+
+.deleteWarning {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.deleteActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.buttonDeleteConfirm {
+  composes: button;
+  background: var(--red);
+  flex: 1;
+}
+
+.buttonDeleteConfirm:hover:not(:disabled) {
+  opacity: 0.85;
+}
