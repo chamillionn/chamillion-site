@@ -38,6 +38,7 @@ const TYPE_LABELS: Record<string, string> = {
   cex: "CEX",
   lending: "Lending",
   staking: "Staking",
+  wallet: "Wallet",
   other: "Other",
 };
 

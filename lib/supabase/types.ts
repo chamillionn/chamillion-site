@@ -56,6 +56,7 @@ export interface Snapshot {
   snapshot_date: string; // ISO timestamptz
   total_value: number;
   total_cost: number;
+  eurusd_rate: number | null;
   positions_data: SnapshotPosition[] | null;
   notes: string | null;
   created_at: string;
@@ -164,7 +165,7 @@ export type Database = {
       };
       snapshots: {
         Row: Flatten<Snapshot>;
-        Insert: Flatten<Omit<Snapshot, "id" | "created_at" | "notes"> & { id?: string; created_at?: string; notes?: string | null }>;
+        Insert: Flatten<Omit<Snapshot, "id" | "created_at" | "notes" | "eurusd_rate"> & { id?: string; created_at?: string; notes?: string | null; eurusd_rate?: number | null }>;
         Update: Flatten<Partial<Snapshot>>;
         Relationships: [];
       };

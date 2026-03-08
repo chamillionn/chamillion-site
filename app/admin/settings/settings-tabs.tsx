@@ -2,16 +2,19 @@
 
 import { useState } from "react";
 import DemoToggle from "./demo-toggle";
+import ForexCard from "./forex-card";
 import DebugView from "../debug/debug-view";
 import crudStyles from "../crud.module.css";
 
 interface Props {
   demoEnabled: boolean;
+  eurUsdRate: number | null;
+  eurUsdUpdatedAt: string | null;
 }
 
 type Tab = "general" | "database";
 
-export default function SettingsTabs({ demoEnabled }: Props) {
+export default function SettingsTabs({ demoEnabled, eurUsdRate, eurUsdUpdatedAt }: Props) {
   const [tab, setTab] = useState<Tab>("general");
   const [debugData, setDebugData] = useState<{
     tables: Record<string, { rows: Record<string, unknown>[]; count: number }>;
@@ -55,7 +58,12 @@ export default function SettingsTabs({ demoEnabled }: Props) {
       </div>
 
       {/* General tab */}
-      {tab === "general" && <DemoToggle initialEnabled={demoEnabled} />}
+      {tab === "general" && (
+        <>
+          <DemoToggle initialEnabled={demoEnabled} />
+          <ForexCard initialRate={eurUsdRate} initialUpdatedAt={eurUsdUpdatedAt} />
+        </>
+      )}
 
       {/* Database tab */}
       {tab === "database" && debugLoading && (

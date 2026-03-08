@@ -44,6 +44,16 @@ export const KNOWN_PLATFORMS: PlatformPreset[] = [
     profileUrl: (w) => `https://polymarket.com/profile/${w}`,
   },
   {
+    slug: "defi-wallet",
+    name: "DeFi Wallet",
+    type: "wallet",
+    url: "https://portfolio.metamask.io",
+    description: "Escaneo multi-chain de wallet EVM (ETH, Arb, Polygon, Base...)",
+    icon: "M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1M3 10h18M3 14h18M18 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+    syncable: true,
+    profileUrl: (w) => `https://debank.com/profile/${w}`,
+  },
+  {
     slug: "fakedex",
     name: "FakeDEX",
     type: "dex",

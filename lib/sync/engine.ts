@@ -1,13 +1,17 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import type { PlatformAdapter, SyncResult } from "./types";
 import { validatePositionRow } from "./validate";
+import { resolveEurUsdRate, usdToEur } from "./forex";
 
 /**
  * Sync positions for a single platform.
  * Handles all DB operations: lookup, insert/update, stale deactivation.
  * The adapter only provides fetch + transform logic.
+ *
+ * @param eurUsdRate - Optional pre-fetched rate (avoids multiple ECB calls in sync-all).
+ *                     If omitted, the rate is fetched internally.
  */
-export async function syncPlatform(adapter: PlatformAdapter): Promise<SyncResult> {
+export async function syncPlatform(adapter: PlatformAdapter, eurUsdRate?: number): Promise<SyncResult> {
   const result: SyncResult = {
     platform: adapter.platformName,
     updated: 0,
@@ -17,6 +21,13 @@ export async function syncPlatform(adapter: PlatformAdapter): Promise<SyncResult
   };
 
   const supabase = createServiceClient();
+
+  // 0. Resolve EUR/USD rate (APIs return USD, DB stores EUR)
+  let rate = eurUsdRate;
+  if (!rate) {
+    const resolved = await resolveEurUsdRate(supabase);
+    rate = resolved.rate;
+  }
 
   // 1. Get platform row + wallet from DB
   const { data: platforms } = await supabase.from("platforms")
@@ -75,8 +86,8 @@ export async function syncPlatform(adapter: PlatformAdapter): Promise<SyncResult
 
     const row = {
       size: pos.size,
-      cost_basis: pos.cost_basis,
-      current_value: pos.current_value,
+      cost_basis: usdToEur(pos.cost_basis, rate),
+      current_value: usdToEur(pos.current_value, rate),
       is_active: true,
       notes: pos.notes,
     };

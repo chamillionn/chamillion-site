@@ -81,7 +81,7 @@ export default function PositionsTable({ positions, platforms, strategies }: Pro
   }
 
   const fmt = (n: number) =>
-    `$${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+    `${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}€`;
 
   return (
     <div>

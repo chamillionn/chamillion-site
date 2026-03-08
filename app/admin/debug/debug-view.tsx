@@ -19,14 +19,28 @@ interface Props {
   env: EnvInfo;
 }
 
+function isArrayOfObjects(val: unknown): val is Record<string, unknown>[] {
+  return Array.isArray(val) && val.length > 0 && typeof val[0] === "object" && val[0] !== null;
+}
+
 function formatValue(val: unknown): string {
   if (val === null) return "null";
   if (val === undefined) return "undefined";
   if (typeof val === "boolean") return val ? "true" : "false";
   if (typeof val === "number") return String(val);
+  if (isArrayOfObjects(val)) return `[${val.length} items]`;
   if (typeof val === "object") return JSON.stringify(val);
   const s = String(val);
   return s.length > 80 ? s.slice(0, 77) + "..." : s;
+}
+
+function fmtSubVal(val: unknown): string {
+  if (val === null || val === undefined) return "—";
+  if (typeof val === "number") {
+    if (Number.isInteger(val) || Math.abs(val) > 1000) return val.toLocaleString("en-US", { maximumFractionDigits: 2 });
+    return val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  }
+  return String(val);
 }
 
 function valueClass(val: unknown): string {
@@ -114,16 +128,84 @@ function TableSection({
           )}
 
           {expandedRow !== null && data.rows[expandedRow] && (
-            <div className={styles.jsonBlock}>
-              <div className={styles.jsonHeader}>
-                Row {expandedRow} — raw JSON
-              </div>
-              <pre className={styles.json}>
-                {JSON.stringify(data.rows[expandedRow], null, 2)}
-              </pre>
-            </div>
+            <ExpandedRowDetail row={data.rows[expandedRow]} index={expandedRow} />
           )}
         </div>
+      )}
+    </div>
+  );
+}
+
+function ExpandedRowDetail({ row, index }: { row: Record<string, unknown>; index: number }) {
+  const [showRaw, setShowRaw] = useState(false);
+  const arrayFields = Object.entries(row).filter(([, v]) => isArrayOfObjects(v));
+  const scalarFields = Object.entries(row).filter(([, v]) => !isArrayOfObjects(v));
+
+  return (
+    <div className={styles.jsonBlock}>
+      {/* Scalar fields as key-value list */}
+      <div className={styles.jsonHeader} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span>Row {index}</span>
+        <button
+          onClick={() => setShowRaw(!showRaw)}
+          style={{
+            background: "none", border: "1px solid var(--border)", borderRadius: 4,
+            padding: "2px 8px", cursor: "pointer", fontSize: 10,
+            fontFamily: "var(--font-dm-mono), monospace", color: "var(--text-muted)",
+          }}
+        >
+          {showRaw ? "Visual" : "Raw JSON"}
+        </button>
+      </div>
+
+      {showRaw ? (
+        <pre className={styles.json}>{JSON.stringify(row, null, 2)}</pre>
+      ) : (
+        <>
+          <div style={{ padding: "4px 14px 8px", display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 12px", fontSize: 11, fontFamily: "var(--font-jetbrains), monospace" }}>
+            {scalarFields.map(([key, val]) => (
+              <div key={key} style={{ display: "contents" }}>
+                <span style={{ color: "var(--text-muted)" }}>{key}</span>
+                <span className={valueClass(val)}>{formatValue(val)}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Array-of-objects fields as sub-tables */}
+          {arrayFields.map(([key, val]) => {
+            const items = val as Record<string, unknown>[];
+            const subCols = Object.keys(items[0]);
+            return (
+              <div key={key} style={{ borderTop: "1px solid var(--border)" }}>
+                <div className={styles.jsonHeader}>
+                  {key} — {items.length} item{items.length !== 1 ? "s" : ""}
+                </div>
+                <div className={styles.tableWrap} style={{ maxHeight: 300 }}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        {subCols.map((col) => (
+                          <th key={col}>{col}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item, i) => (
+                        <tr key={i} style={{ cursor: "default" }}>
+                          {subCols.map((col) => (
+                            <td key={col} className={valueClass(item[col])}>
+                              {fmtSubVal(item[col])}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
+        </>
       )}
     </div>
   );

@@ -38,7 +38,7 @@ export default function Dashboard({ summary, positions, platforms, prevSnapshot 
   );
 
   const fmt = (n: number) =>
-    `$${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+    `${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}€`;
 
   // Group positions by platform_id
   const platformMap = new Map<string | null, PositionEnriched[]>();
@@ -389,17 +389,17 @@ function PositionsTable({ positions }: { positions: PositionEnriched[] }) {
               <td className={styles.bold}>{p.asset}</td>
               <td className={`${styles.right} ${styles.hideMobile}`}>{p.size.toLocaleString("en-US")}</td>
               <td className={styles.right}>
-                ${p.current_value.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                {p.current_value.toLocaleString("en-US", { minimumFractionDigits: 2 })}€
               </td>
               <td className={`${styles.right} ${styles.hideMobile}`}>
-                ${p.cost_basis.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                {p.cost_basis.toLocaleString("en-US", { minimumFractionDigits: 2 })}€
               </td>
               <td
                 className={styles.right}
                 style={{ color: p.pnl >= 0 ? "var(--green)" : "var(--red)" }}
               >
                 {p.pnl >= 0 ? "+" : ""}
-                ${p.pnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                {p.pnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}€
               </td>
               <td
                 className={styles.right}

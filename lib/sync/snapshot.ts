@@ -25,7 +25,7 @@ function roundTo15Min(date: Date): Date {
  * then inserts into snapshots table with a 15-min-rounded timestamp.
  * If a snapshot already exists for this slot, it's skipped (ignoreDuplicates).
  */
-export async function captureSnapshot(): Promise<SnapshotResult> {
+export async function captureSnapshot(eurUsdRate?: number): Promise<SnapshotResult> {
   const slotDate = roundTo15Min(new Date());
   const slotISO = slotDate.toISOString();
 
@@ -85,8 +85,9 @@ export async function captureSnapshot(): Promise<SnapshotResult> {
       snapshot_date: slotISO,
       total_value: s.total_value ?? 0,
       total_cost: s.total_cost ?? 0,
+      eurusd_rate: eurUsdRate ?? null,
       positions_data: positionsData,
-      notes: `Auto: ${s.total_positions ?? 0} pos, $${(s.total_value ?? 0).toFixed(2)}`,
+      notes: `Auto: ${s.total_positions ?? 0} pos, ${(s.total_value ?? 0).toFixed(2)}€`,
     },
     { onConflict: "snapshot_date", ignoreDuplicates: true },
   );
