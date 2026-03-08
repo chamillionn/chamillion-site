@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
  * POST /api/stripe/portal
  * Creates a Stripe Customer Portal session for the authenticated user.
  */
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   const supabase = await createClient();
   const {
     data: { user },

@@ -14,7 +14,7 @@ function safeRedirectPath(raw: string | null): string {
     if (url.pathname.startsWith("/") && !url.pathname.startsWith("//")) {
       return url.pathname + url.search;
     }
-  } catch {}
+  } catch { /* invalid URL — fall through to default */ }
   return "/";
 }
 
