@@ -117,6 +117,12 @@
   color: var(--text-muted);
 }
 
+.syncCol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .syncCell {
   display: flex;
   align-items: center;
@@ -168,10 +174,32 @@
   font-family: var(--font-dm-mono), monospace;
   font-size: 10px;
   color: var(--red);
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.syncErrors {
+  list-style: none;
+  padding: 6px 8px;
+  margin: 0;
+  background: rgba(var(--red-rgb, 220, 80, 80), 0.06);
+  border: 1px solid rgba(var(--red-rgb, 220, 80, 80), 0.15);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.syncErrors li {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--red);
+  line-height: 1.4;
+  padding-left: 10px;
+  text-indent: -10px;
+}
+
+.syncErrors li::before {
+  content: "× ";
+  font-weight: 700;
 }
 
 /* ===== MODAL ===== */

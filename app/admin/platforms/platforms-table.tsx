@@ -17,7 +17,8 @@ export default function PlatformsTable({ platforms, positionCounts = {} }: { pla
   const [editingWallet, setEditingWallet] = useState<Platform | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [syncState, setSyncState] = useState<Record<string, { loading: boolean; msg: string; ok: boolean }>>({});
+  const [syncState, setSyncState] = useState<Record<string, { loading: boolean; msg: string; ok: boolean; errors: string[]; deactivated: number }>>({});
+  const [expandedSync, setExpandedSync] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const addedNames = new Set(platforms.map((p) => p.name));
@@ -78,26 +79,35 @@ export default function PlatformsTable({ platforms, positionCounts = {} }: { pla
   }
 
   async function handleSync(slug: string) {
-    setSyncState((prev) => ({ ...prev, [slug]: { loading: true, msg: "", ok: false } }));
+    setSyncState((prev) => ({ ...prev, [slug]: { loading: true, msg: "", ok: false, errors: [], deactivated: 0 } }));
+    setExpandedSync(null);
     try {
       const res = await fetch(`/api/sync/${slug}`);
       const data = await res.json();
-      const errors = data.errors as string[] | undefined;
-      const errCount = errors?.length ?? 0;
+      const errors = (data.errors as string[] | undefined) ?? [];
+      const errCount = errors.length;
       const ok = errCount === 0;
+      const deactivated = (data.deactivated as number) ?? 0;
+      const parts: string[] = [];
+      if (data.updated > 0) parts.push(`${data.updated} pos.`);
+      if (deactivated > 0) parts.push(`${deactivated} cerrada${deactivated > 1 ? "s" : ""}`);
+      if (errCount > 0) parts.push(`${errCount} error${errCount > 1 ? "es" : ""}`);
       const msg = ok
-        ? `OK — ${data.updated} pos.`
-        : `${data.updated} ok, ${errCount} error${errCount > 1 ? "es" : ""}`;
+        ? `OK — ${parts.join(", ") || "sin cambios"}`
+        : parts.join(", ");
       setSyncState((prev) => ({
         ...prev,
-        [slug]: { loading: false, msg, ok },
+        [slug]: { loading: false, msg, ok, errors, deactivated },
       }));
+      if (!ok) setExpandedSync(slug);
       router.refresh();
     } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error de red";
       setSyncState((prev) => ({
         ...prev,
-        [slug]: { loading: false, msg: e instanceof Error ? e.message : "Error", ok: false },
+        [slug]: { loading: false, msg, ok: false, errors: [msg], deactivated: 0 },
       }));
+      setExpandedSync(slug);
     }
   }
 
@@ -195,32 +205,45 @@ export default function PlatformsTable({ platforms, positionCounts = {} }: { pla
                       </td>
                       <td>
                         {preset?.syncable ? (
-                          <div className={styles.syncCell}>
-                            <button
-                              onClick={() => handleSync(preset.slug)}
-                              disabled={syncState[preset.slug]?.loading}
-                              className={styles.syncBtn}
-                            >
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className={syncState[preset.slug]?.loading ? styles.syncSpin : ""}
+                          <div className={styles.syncCol}>
+                            <div className={styles.syncCell}>
+                              <button
+                                onClick={() => handleSync(preset.slug)}
+                                disabled={syncState[preset.slug]?.loading}
+                                className={styles.syncBtn}
                               >
-                                <path d="M1 4v6h6M23 20v-6h-6" />
-                                <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" />
-                              </svg>
-                              {syncState[preset.slug]?.loading ? "Syncing..." : "Sync"}
-                            </button>
-                            {syncState[preset.slug]?.msg && (
-                              <span className={syncState[preset.slug].ok ? styles.syncOk : styles.syncErr}>
-                                {syncState[preset.slug].msg}
-                              </span>
+                                <svg
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className={syncState[preset.slug]?.loading ? styles.syncSpin : ""}
+                                >
+                                  <path d="M1 4v6h6M23 20v-6h-6" />
+                                  <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" />
+                                </svg>
+                                {syncState[preset.slug]?.loading ? "Syncing..." : "Sync"}
+                              </button>
+                              {syncState[preset.slug]?.msg && (
+                                <span
+                                  className={syncState[preset.slug].ok ? styles.syncOk : styles.syncErr}
+                                  onClick={() => !syncState[preset.slug].ok && setExpandedSync(expandedSync === preset.slug ? null : preset.slug)}
+                                  style={!syncState[preset.slug].ok ? { cursor: "pointer" } : undefined}
+                                >
+                                  {syncState[preset.slug].msg}
+                                </span>
+                              )}
+                            </div>
+                            {expandedSync === preset.slug && syncState[preset.slug]?.errors.length > 0 && (
+                              <ul className={styles.syncErrors}>
+                                {syncState[preset.slug].errors.map((err, i) => (
+                                  <li key={i}>{err}</li>
+                                ))}
+                              </ul>
                             )}
                           </div>
                         ) : (
