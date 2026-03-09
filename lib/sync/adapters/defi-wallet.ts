@@ -102,7 +102,8 @@ interface AnkrResponse {
 
 async function fetchAnkr(wallet: string, signal?: AbortSignal): Promise<PositionRow[]> {
   const apiKey = process.env.ANKR_API_KEY;
-  const url = apiKey ? `${ANKR_RPC}/${apiKey}` : ANKR_RPC;
+  if (!apiKey) throw new Error("ANKR_API_KEY not configured");
+  const url = `${ANKR_RPC}/${apiKey}`;
 
   const res = await fetch(url, {
     method: "POST",
