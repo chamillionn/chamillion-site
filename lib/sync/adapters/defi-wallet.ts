@@ -76,7 +76,7 @@ function bucketsToPositions(map: Map<string, TokenBucket>): PositionRow[] {
       size: t.totalBalance,
       cost_basis: 0,
       current_value: t.totalUsd,
-      notes: `${t.name} | $${t.price.toFixed(2)}/unit | ${t.chains.join(", ")}`,
+      notes: `${t.name} | $${Number(t.price).toFixed(2)}/unit | ${t.chains.join(", ")}`,
     });
   }
   positions.sort((a, b) => b.current_value - a.current_value);
