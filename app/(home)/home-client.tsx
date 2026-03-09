@@ -1317,7 +1317,15 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
   }, [platforms, theme, platformColorsLight]);
 
   const hasSummary = summary && summary.totalValue != null;
-  const pnlPositive = hasSummary && summary.totalPnl >= 0;
+  const adjustedPnl = hasSummary
+    ? capitalInvested ? summary.totalValue - capitalInvested : summary.totalPnl
+    : 0;
+  const adjustedRoiPct = hasSummary
+    ? capitalInvested && capitalInvested > 0
+      ? ((summary.totalValue - capitalInvested) / capitalInvested) * 100
+      : summary.totalRoiPct
+    : 0;
+  const pnlPositive = adjustedPnl >= 0;
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100);
@@ -1965,7 +1973,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                   <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
                     <path d={pnlPositive ? "M5 1L9 6H1L5 1Z" : "M5 9L9 4H1L5 9Z"} fill={pnlPositive ? V.green : V.red} />
                   </svg>
-                  {pnlPositive ? "+" : ""}<AnimatedNumber target={summary.totalPnl} suffix=" €" decimals={2} duration={2000} /> ({summary.totalRoiPct.toFixed(1)}%)
+                  {pnlPositive ? "+" : ""}<AnimatedNumber target={adjustedPnl} suffix=" €" decimals={2} duration={2000} /> ({adjustedRoiPct.toFixed(1)}%)
                 </div>
               )}
 
