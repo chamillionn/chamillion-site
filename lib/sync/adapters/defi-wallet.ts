@@ -33,6 +33,14 @@ const CHAIN_LABELS: Record<string, string> = {
   bsc: "BSC",
 };
 
+// ── Safe number coercion (Ankr returns most numbers as strings) ──
+
+function toNum(v: unknown): number {
+  if (v == null) return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 // ── Aggregation helper ──
 
 interface TokenBucket {
@@ -76,7 +84,7 @@ function bucketsToPositions(map: Map<string, TokenBucket>): PositionRow[] {
       size: t.totalBalance,
       cost_basis: 0,
       current_value: t.totalUsd,
-      notes: `${t.name} | $${Number(t.price).toFixed(2)}/unit | ${t.chains.join(", ")}`,
+      notes: `${t.name} | $${t.price.toFixed(2)}/unit | ${t.chains.join(", ")}`,
     });
   }
   positions.sort((a, b) => b.current_value - a.current_value);
@@ -84,19 +92,34 @@ function bucketsToPositions(map: Map<string, TokenBucket>): PositionRow[] {
 }
 
 // ── Ankr fetch ──
+// Docs: all numeric fields (balance, balanceUsd, tokenPrice, totalBalanceUsd)
+// are returned as STRINGS. Only tokenDecimals is a true number.
 
 interface AnkrAsset {
   blockchain: string;
   tokenName: string;
   tokenSymbol: string;
-  balance: string;
-  balanceUsd: string | number;
-  tokenPrice: string | number;
   tokenType: string;
+  tokenDecimals: number;
+  contractAddress?: string;
+  holderAddress?: string;
+  balance: string;
+  balanceRawInteger: string;
+  balanceUsd: string;
+  tokenPrice: string;
+  thumbnail?: string;
+}
+
+interface AnkrResult {
+  assets?: AnkrAsset[];
+  totalBalanceUsd?: string;
+  nextPageToken?: string;
 }
 
 interface AnkrResponse {
-  result?: { assets: AnkrAsset[] };
+  jsonrpc: string;
+  id: number;
+  result?: AnkrResult;
   error?: { code: number; message: string };
 }
 
@@ -105,36 +128,46 @@ async function fetchAnkr(wallet: string, signal?: AbortSignal): Promise<Position
   if (!apiKey) throw new Error("ANKR_API_KEY not configured");
   const url = `${ANKR_RPC}/${apiKey}`;
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      method: "ankr_getAccountBalance",
-      params: {
-        walletAddress: wallet,
-        blockchain: [...ANKR_CHAINS],
-        onlyWhitelisted: true,
-      },
-      id: 1,
-    }),
-    signal,
-  });
+  const allAssets: AnkrAsset[] = [];
+  let pageToken: string | undefined;
 
-  assertOk(res, "Ankr multichain balance");
-  const data: AnkrResponse = await res.json();
+  // Paginated fetch — Ankr may split large wallets across pages
+  do {
+    const params: Record<string, unknown> = {
+      walletAddress: wallet,
+      blockchain: [...ANKR_CHAINS],
+      onlyWhitelisted: true,
+    };
+    if (pageToken) params.pageToken = pageToken;
 
-  if (data.error) {
-    throw new Error(`Ankr API: ${data.error.message} (code ${data.error.code})`);
-  }
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", method: "ankr_getAccountBalance", params, id: 1 }),
+      signal,
+    });
 
-  if (!data.result?.assets?.length) return [];
+    assertOk(res, "Ankr multichain balance");
+    const data: AnkrResponse = await res.json();
+
+    if (data.error) {
+      throw new Error(`Ankr API: ${data.error.message} (code ${data.error.code})`);
+    }
+
+    if (data.result?.assets) {
+      allAssets.push(...data.result.assets);
+    }
+
+    pageToken = data.result?.nextPageToken || undefined;
+  } while (pageToken);
+
+  if (allAssets.length === 0) return [];
 
   const map = new Map<string, TokenBucket>();
-  for (const a of data.result.assets) {
+  for (const a of allAssets) {
     const balance = safeFloat(a.balance);
-    const usd = Number(a.balanceUsd) || 0;
-    const price = Number(a.tokenPrice) || 0;
+    const usd = toNum(a.balanceUsd);
+    const price = toNum(a.tokenPrice);
     if (balance == null || balance === 0) continue;
     if (usd < 0.01) continue;
     aggregateToken(map, a.tokenSymbol, a.tokenName, balance, usd, a.blockchain, price);
@@ -160,23 +193,23 @@ async function fetchMoralis(wallet: string, signal?: AbortSignal): Promise<Posit
   const map = new Map<string, TokenBucket>();
 
   for (const [ankrChain, moralisChain] of Object.entries(MORALIS_CHAINS)) {
-    const url = `${MORALIS_API}/${wallet}/tokens?chain=${moralisChain}`;
-    const res = await fetch(url, {
+    const reqUrl = `${MORALIS_API}/${wallet}/tokens?chain=${moralisChain}`;
+    const res = await fetch(reqUrl, {
       headers: { accept: "application/json", "X-API-Key": apiKey },
       signal,
     });
 
     if (!res.ok) continue; // skip failed chains, try the rest
 
-    const data: { result: MoralisToken[] } = await res.json();
+    const data: { result?: MoralisToken[] } = await res.json();
     if (!data.result) continue;
 
     for (const t of data.result) {
       const balance = safeFloat(t.balance_formatted);
       if (balance == null || balance === 0) continue;
-      const usd = t.usd_value ?? 0;
+      const usd = toNum(t.usd_value);
       if (usd < 0.01) continue;
-      aggregateToken(map, t.symbol, t.name, balance, usd, ankrChain, t.usd_price ?? 0);
+      aggregateToken(map, t.symbol, t.name, balance, usd, ankrChain, toNum(t.usd_price));
     }
   }
 
