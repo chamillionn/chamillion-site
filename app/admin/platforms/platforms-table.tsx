@@ -10,7 +10,7 @@ import ConfirmModal from "@/components/confirm-modal";
 import styles from "./platforms.module.css";
 import crudStyles from "../crud.module.css";
 
-export default function PlatformsTable({ platforms }: { platforms: Platform[] }) {
+export default function PlatformsTable({ platforms, positionCounts = {} }: { platforms: Platform[]; positionCounts?: Record<string, number> }) {
   const router = useRouter();
   const { toast } = useToast();
   const [addingPreset, setAddingPreset] = useState<PlatformPreset | null>(null);
@@ -266,7 +266,11 @@ export default function PlatformsTable({ platforms }: { platforms: Platform[] })
       <ConfirmModal
         open={!!confirmDelete}
         title="Eliminar plataforma"
-        message="¿Eliminar esta plataforma? Las posiciones asociadas perderán la referencia."
+        message={
+          confirmDelete && positionCounts[confirmDelete]
+            ? `Esta plataforma tiene ${positionCounts[confirmDelete]} posicion${positionCounts[confirmDelete] === 1 ? "" : "es"} activa${positionCounts[confirmDelete] === 1 ? "" : "s"}. Se eliminarán junto con la plataforma.`
+            : "¿Eliminar esta plataforma?"
+        }
         onConfirm={() => confirmDelete && doDelete(confirmDelete)}
         onCancel={() => setConfirmDelete(null)}
       />

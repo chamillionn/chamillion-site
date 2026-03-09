@@ -48,6 +48,14 @@ export async function deletePlatform(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
+  // Delete associated positions first (FK has no CASCADE)
+  const { error: posErr } = await admin.dataClient
+    .from("positions")
+    .delete()
+    .eq("platform_id", id);
+
+  if (posErr) return { error: posErr.message };
+
   const { error } = await admin.dataClient.from("platforms").delete().eq("id", id);
 
   if (error) return { error: error.message };
