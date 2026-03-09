@@ -90,8 +90,8 @@ interface AnkrAsset {
   tokenName: string;
   tokenSymbol: string;
   balance: string;
-  balanceUsd: number;
-  tokenPrice: number;
+  balanceUsd: string | number;
+  tokenPrice: string | number;
   tokenType: string;
 }
 
@@ -133,9 +133,11 @@ async function fetchAnkr(wallet: string, signal?: AbortSignal): Promise<Position
   const map = new Map<string, TokenBucket>();
   for (const a of data.result.assets) {
     const balance = safeFloat(a.balance);
+    const usd = Number(a.balanceUsd) || 0;
+    const price = Number(a.tokenPrice) || 0;
     if (balance == null || balance === 0) continue;
-    if (a.balanceUsd < 0.01) continue;
-    aggregateToken(map, a.tokenSymbol, a.tokenName, balance, a.balanceUsd, a.blockchain, a.tokenPrice);
+    if (usd < 0.01) continue;
+    aggregateToken(map, a.tokenSymbol, a.tokenName, balance, usd, a.blockchain, price);
   }
 
   return bucketsToPositions(map);
