@@ -1,0 +1,157 @@
+/* ── Badges ── */
+.onChainBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--green);
+  background: rgba(91, 170, 124, 0.08);
+  border: 1px solid rgba(91, 170, 124, 0.15);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.offChainBadge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  background: rgba(var(--border-rgb), 0.2);
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* ── Platform cards (expandable) ── */
+.platformCard {
+  padding: 12px 0 12px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.platformCard:last-child {
+  border-bottom: none;
+}
+
+.platformCard:hover {
+  background: rgba(var(--steel-blue-rgb), 0.03);
+}
+
+.expandPanel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s ease 0.05s;
+}
+
+.expandPanelOpen {
+  max-height: 140px;
+  opacity: 1;
+}
+
+.chevron {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-muted);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.copyButton {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.copyButton:hover {
+  color: var(--text-secondary);
+  border-color: rgba(var(--steel-blue-rgb), 0.3);
+}
+
+/* ── Explorer pills ── */
+.explorerPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--steel-blue);
+  border: 1px solid rgba(var(--steel-blue-rgb), 0.15);
+  border-radius: 6px;
+  padding: 6px 12px;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.explorerPill:hover {
+  border-color: rgba(var(--steel-blue-rgb), 0.35);
+  background: rgba(var(--steel-blue-rgb), 0.03);
+}
+
+.explorerPillArrow {
+  transition: transform 0.2s ease;
+}
+
+.explorerPill:hover .explorerPillArrow {
+  transform: translateX(2px);
+}
+
+/* ── Newsletter closer ── */
+.newsletterCloser {
+  padding: 48px 0 64px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.newsletterLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--steel-blue);
+  border: 1px solid rgba(var(--steel-blue-rgb), 0.2);
+  border-radius: 6px;
+  padding: 10px 18px;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  margin-top: 12px;
+}
+
+.newsletterLink:hover {
+  border-color: rgba(var(--steel-blue-rgb), 0.4);
+  background: rgba(var(--steel-blue-rgb), 0.04);
+}
+
+.newsletterArrow {
+  transition: transform 0.2s ease;
+}
+
+.newsletterLink:hover .newsletterArrow {
+  transform: translateX(3px);
+}
+
+@media (max-width: 768px) {
+  .platformCard {
+    padding: 10px 0 10px 12px;
+  }
+
+  .newsletterCloser {
+    flex-direction: column;
+    text-align: center;
+  }
+}
