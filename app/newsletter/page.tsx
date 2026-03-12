@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getOptionalUser } from "@/lib/supabase/auth";
 import type { Post } from "@/lib/supabase/types";
 import NewsletterClient from "./newsletter-client";
 
@@ -20,5 +21,8 @@ export default async function NewsletterIndex() {
     fetchError = true;
   }
 
-  return <NewsletterClient posts={posts} error={fetchError} />;
+  const ctx = await getOptionalUser();
+  const hideUpgrade = ctx?.profile.role === "member" || ctx?.profile.role === "admin";
+
+  return <NewsletterClient posts={posts} error={fetchError} hideUpgrade={hideUpgrade} />;
 }

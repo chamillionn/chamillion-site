@@ -224,7 +224,7 @@ function formatPrice(cents: number, currency: string): string {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency }).format(cents / 100);
 }
 
-export default function NewsletterClient({ posts, error }: { posts: Post[]; error?: boolean }) {
+export default function NewsletterClient({ posts, error, hideUpgrade }: { posts: Post[]; error?: boolean; hideUpgrade?: boolean }) {
   const [loaded, setLoaded] = useState(false);
   const [prices, setPrices] = useState<Price[]>([]);
 
@@ -299,8 +299,8 @@ export default function NewsletterClient({ posts, error }: { posts: Post[]; erro
         Documentado, y verificable.
       </p>
 
-      {/* Premium CTA */}
-      {prices.length > 0 && (
+      {/* Premium CTA — hidden for members/admins */}
+      {!hideUpgrade && prices.length > 0 && (
         <Link
           href="/login?next=/cuenta"
           style={{
