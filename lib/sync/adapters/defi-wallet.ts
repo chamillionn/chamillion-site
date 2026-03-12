@@ -61,15 +61,15 @@ function aggregateToken(
   chain: string,
   price: number,
 ) {
-  const key = symbol.toUpperCase();
-  const existing = map.get(key);
+  // Key per symbol+chain so each chain shows as a separate position
   const label = CHAIN_LABELS[chain] ?? chain;
+  const key = `${symbol.toUpperCase()}:${label}`;
+  const existing = map.get(key);
 
   if (existing) {
     existing.totalBalance += balance;
     existing.totalUsd += usd;
-    if (!existing.chains.includes(label)) existing.chains.push(label);
-    if (price > 0) existing.price = price; // keep latest non-zero price
+    if (price > 0) existing.price = price;
   } else {
     map.set(key, { symbol, name, totalBalance: balance, totalUsd: usd, chains: [label], price });
   }
@@ -79,8 +79,13 @@ function bucketsToPositions(map: Map<string, TokenBucket>): PositionRow[] {
   const positions: PositionRow[] = [];
   for (const [, t] of map) {
     if (t.totalUsd < 0.01) continue; // skip dust
+    const chainSuffix = t.chains.length === 1 && t.chains[0] !== "Ethereum"
+      ? ` (${t.chains[0]})`
+      : t.chains.length > 1
+        ? ` (${t.chains.join(", ")})`
+        : "";
     positions.push({
-      asset: t.symbol,
+      asset: `${t.symbol}${chainSuffix}`,
       size: t.totalBalance,
       cost_basis: 0,
       current_value: t.totalUsd,
@@ -219,7 +224,7 @@ async function fetchMoralis(wallet: string, signal?: AbortSignal): Promise<Posit
 // ── Adapter ──
 
 export const DefiWalletAdapter: PlatformAdapter = {
-  platformName: "DeFi Wallet",
+  platformName: "Wallet",
 
   async fetchPositions(wallet: string, signal?: AbortSignal) {
     const warnings: string[] = [];

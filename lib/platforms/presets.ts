@@ -45,7 +45,7 @@ export const KNOWN_PLATFORMS: PlatformPreset[] = [
   },
   {
     slug: "defi-wallet",
-    name: "DeFi Wallet",
+    name: "Wallet",
     type: "wallet",
     url: "https://portfolio.metamask.io",
     description: "Escaneo multi-chain de wallet EVM (ETH, Arb, Polygon, Base...)",

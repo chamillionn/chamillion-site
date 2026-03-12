@@ -15,6 +15,18 @@ async function resolve(client?: DataClient) {
   return client ?? (await createClient());
 }
 
+/**
+ * In development, honours the admin-db-target cookie so public pages
+ * can preview prod data. In production, returns the normal anon client.
+ */
+export async function resolvePublicClient(): Promise<DataClient> {
+  if (process.env.NODE_ENV === "development") {
+    const { createTargetClient } = await import("./admin-db");
+    return createTargetClient() as Promise<DataClient>;
+  }
+  return createClient();
+}
+
 /* ── Portfolio (public reads — no auth needed) ── */
 
 export async function getPortfolioSummary(client?: DataClient): Promise<PortfolioSummary | null> {

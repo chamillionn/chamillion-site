@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Platform, PositionEnriched, PortfolioSummary, Snapshot } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
 import { KNOWN_PLATFORMS } from "@/lib/platforms/presets";
+import { findChain } from "@/lib/chains/presets";
 import styles from "./page.module.css";
 
 interface SyncResult {
@@ -133,8 +134,13 @@ export default function Dashboard({ summary, positions, platforms, prevSnapshot,
         }
         setSyncState(newState);
 
-        if (totalErrors > 0) toast(`Sync: ${totalUpdated} ok, ${totalErrors} errores`, "error");
-        else toast(`Sync completo: ${totalUpdated} posiciones actualizadas`, "success");
+        if (totalErrors > 0) {
+          const errorDetails = (data.results as SyncResult[])
+            .filter((r) => r.errors.length > 0)
+            .map((r) => `${r.platform}: ${r.errors[0]}`)
+            .join(" | ");
+          toast(`Sync: ${totalUpdated} ok, ${totalErrors} errores — ${errorDetails}`, "error");
+        } else toast(`Sync completo: ${totalUpdated} posiciones actualizadas`, "success");
       }
 
       router.refresh();
@@ -379,6 +385,44 @@ export default function Dashboard({ summary, positions, platforms, prevSnapshot,
   );
 }
 
+/** Extract blockchain/network from asset name "(Chain)" suffix or notes last segment */
+function extractChain(p: PositionEnriched): string {
+  // Try asset name: "ETH (Arbitrum)" → "Arbitrum"
+  const m = p.asset.match(/\(([^)]+)\)$/);
+  if (m) return m[1];
+  // Try notes: "... | Arbitrum" (wallet adapter format)
+  if (p.notes) {
+    const parts = p.notes.split("|").map((s) => s.trim());
+    const last = parts[parts.length - 1];
+    if (last && !last.startsWith("$") && !last.startsWith("PnL") && !last.startsWith("uPnL") && !last.startsWith("Margin") && !last.startsWith("Hold") && !last.startsWith("Avg")) {
+      return last;
+    }
+  }
+  return "—";
+}
+
+function ChainIcon({ name }: { name: string }) {
+  const chain = findChain(name);
+  if (!chain) return <span style={{ opacity: 0.5 }}>{name}</span>;
+  const paths = Array.isArray(chain.icon) ? chain.icon : [chain.icon];
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }} title={chain.name}>
+      <svg
+        width="14"
+        height="14"
+        viewBox={chain.iconViewBox}
+        fill={chain.color}
+        fillRule={chain.iconFillRule}
+      >
+        {paths.map((d, i) => (
+          <path key={i} d={d} />
+        ))}
+      </svg>
+      <span style={{ opacity: 0.7, fontSize: "0.85em" }}>{chain.name}</span>
+    </span>
+  );
+}
+
 function PositionsTable({ positions }: { positions: PositionEnriched[] }) {
   return (
     <div className={styles.tableWrap}>
@@ -386,6 +430,7 @@ function PositionsTable({ positions }: { positions: PositionEnriched[] }) {
         <thead>
           <tr>
             <th>Asset</th>
+            <th className={styles.hideMobile}>Red</th>
             <th className={`${styles.right} ${styles.hideMobile}`}>Size</th>
             <th className={styles.right}>Valor</th>
             <th className={`${styles.right} ${styles.hideMobile}`}>Coste</th>
@@ -397,6 +442,7 @@ function PositionsTable({ positions }: { positions: PositionEnriched[] }) {
           {positions.map((p) => (
             <tr key={p.id}>
               <td className={styles.bold}>{p.asset}</td>
+              <td className={styles.hideMobile}><ChainIcon name={extractChain(p)} /></td>
               <td className={`${styles.right} ${styles.hideMobile}`}>{p.size.toLocaleString("en-US")}</td>
               <td className={styles.right}>
                 {p.current_value.toLocaleString("en-US", { minimumFractionDigits: 2 })}€

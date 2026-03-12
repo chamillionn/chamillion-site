@@ -11,12 +11,14 @@ export async function switchAdminDb(target: DbTarget) {
 
   const store = await cookies();
   store.set("admin-db-target", target, {
-    path: "/admin",
+    path: "/",
     httpOnly: true,
     sameSite: "lax",
     maxAge: 60 * 60 * 24,
   });
 
   revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath("/v");
   return { success: true };
 }

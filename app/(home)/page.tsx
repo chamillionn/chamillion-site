@@ -5,6 +5,7 @@ import {
   getDailySnapshots,
   getCostBasis,
   isDemoMode,
+  resolvePublicClient,
 } from "@/lib/supabase/queries";
 import HomeClient from "./home-client";
 import { DEMO_DATA } from "@/lib/dummy-data";
@@ -59,7 +60,8 @@ const jsonLd = {
 };
 
 export default async function HomePage() {
-  const demo = await isDemoMode();
+  const dc = await resolvePublicClient();
+  const demo = await isDemoMode(dc);
 
   if (demo) {
     return (
@@ -76,11 +78,11 @@ export default async function HomePage() {
   let summary, positions, allPlatforms, snapshots, costBasis;
   try {
     [summary, positions, allPlatforms, snapshots, costBasis] = await Promise.all([
-      getPortfolioSummary(),
-      getPositions(),
-      getPlatforms(),
-      getDailySnapshots(30),
-      getCostBasis(),
+      getPortfolioSummary(dc),
+      getPositions(dc),
+      getPlatforms(dc),
+      getDailySnapshots(30, dc),
+      getCostBasis(dc),
     ]);
   } catch (e) {
     console.error("Homepage data fetch failed:", e);
