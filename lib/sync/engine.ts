@@ -98,7 +98,10 @@ export async function syncPlatform(adapter: PlatformAdapter, eurUsdRate?: number
           .update(row)
           .eq("id", existingId)
       : await supabase.from("positions")
-          .insert({ ...row, asset: pos.asset, platform_id: platformId, opened_at: new Date().toISOString() });
+          .upsert(
+            { ...row, asset: pos.asset, platform_id: platformId, is_active: true, opened_at: new Date().toISOString() },
+            { onConflict: "asset,platform_id" },
+          );
 
     if (error) {
       result.errors.push(`${pos.asset}: ${error.message}`);
