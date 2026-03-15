@@ -46,6 +46,16 @@ const widgets = [
       "interes compuesto calculadora ahorro inversion rentabilidad volatilidad simulacion cartera",
     icon: '<svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#0d0d0d"/><path d="M6 24C10 23 16 20 20 14 24 6 26 4" stroke="#6b9ebb" stroke-width="2.5" stroke-linecap="round" fill="none"/><line x1="6" y1="6" x2="6" y2="25" stroke="#555" stroke-width="1"/><line x1="5" y1="25" x2="26" y2="25" stroke="#555" stroke-width="1"/></svg>',
   },
+  {
+    slug: "daily-compounder",
+    path: "daily-compounder",
+    tag: "Finanzas · Cripto",
+    title: "Compounder Diario",
+    desc: "Calculadora de compounding diario. Introduce un % de beneficio diario y visualiza el crecimiento exponencial.",
+    keywords:
+      "compounding diario calculadora beneficio rendimiento exponencial cripto trading daily",
+    icon: '<svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#0d0d0d"/><path d="M6 26C8 25 12 24 16 20 20 14 23 8 26 4" stroke="#82c4a0" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M6 26C8 25 12 24 16 20 20 14 23 8 26 4L26 26Z" fill="#82c4a0" opacity="0.15"/><line x1="6" y1="6" x2="6" y2="26" stroke="#555" stroke-width="1"/><line x1="5" y1="26" x2="26" y2="26" stroke="#555" stroke-width="1"/></svg>',
+  },
 ];
 
 export default function WidgetsPage() {

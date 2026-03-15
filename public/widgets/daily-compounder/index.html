@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compounder Diario</title>
+  <link rel="stylesheet" href="../widget-common.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="toggle-bar">
+    <a id="btn-widgets" class="bar-btn" href="/widgets" aria-label="Widgets">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </a>
+    <button id="theme-toggle" aria-label="Cambiar tema"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+  </div>
+  <div id="ctx-menu" class="ctx-menu" hidden>
+    <button id="ctx-capture">Modo captura</button>
+    <div id="ctx-bg" class="ctx-bg" hidden>
+      <div class="ctx-bg-row">
+        <input id="ctx-bg-input" type="text" placeholder="#ffffff" spellcheck="false" autocomplete="off">
+        <button id="ctx-bg-clear" class="ctx-bg-clear" title="Reset">&times;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Compounder Diario</h1>
+    <p class="subtitle">Si ganas un X% diario y reinviertes cada dia, cuanto tendras al final.</p>
+
+    <!-- Form -->
+    <div class="form" id="form">
+      <!-- Capital -->
+      <div class="form-group">
+        <label for="input-capital">Capital inicial</label>
+        <div class="input-wrap">
+          <input id="input-capital" type="number" min="1" step="100" value="10000">
+          <span class="input-unit">€</span>
+        </div>
+      </div>
+
+      <!-- Rate -->
+      <div class="form-group">
+        <div class="slider-header">
+          <label>Beneficio diario</label>
+          <span class="slider-value" id="rate-display">0,5%</span>
+        </div>
+        <div class="slider-wrap" id="rate-slider-wrap">
+          <input id="input-rate" type="range" min="0" max="10" step="1" value="5">
+          <div class="slider-stops" id="rate-stops"></div>
+        </div>
+      </div>
+
+      <!-- Days -->
+      <div class="form-group">
+        <div class="slider-header">
+          <label>Duracion</label>
+          <span class="slider-value" id="days-display">360 dias</span>
+        </div>
+        <div class="slider-wrap" id="days-slider-wrap">
+          <input id="input-days" type="range" min="0" max="4" step="1" value="4">
+          <div class="slider-stops" id="days-stops"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-wrap" id="chart-wrap">
+      <canvas id="chart"></canvas>
+      <canvas id="chart-overlay"></canvas>
+      <div class="chart-tooltip" id="chart-tooltip" hidden>
+        <div class="tip-header" id="tip-header"></div>
+        <div class="tip-rows" id="tip-rows"></div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <script src="../widget-common.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
