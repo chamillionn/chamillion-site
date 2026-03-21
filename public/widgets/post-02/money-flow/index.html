@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blockchain — Chamillion</title>
+<link rel="stylesheet" href="../../widget-common.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    background: transparent;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .toggle-bar { display: none; }
+</style>
+</head>
+<body>
+
+<div class="toggle-bar">
+  <button id="theme-toggle" aria-label="Cambiar tema"></button>
+</div>
+
+<div id="ctx-menu" class="ctx-menu" hidden>
+  <button id="ctx-capture">Modo captura</button>
+  <div id="ctx-bg" class="ctx-bg" hidden>
+    <div class="ctx-bg-row">
+      <input id="ctx-bg-input" type="text" placeholder="#hex o color">
+      <button id="ctx-bg-clear" class="ctx-bg-clear">&times;</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="chain"></canvas>
+
+<script src="../../widget-common.js"></script>
+<script>
+initWidgetCommon('blockchain-anim', {});
+</script>
+<script src="app.js"></script>
+</body>
+</html>

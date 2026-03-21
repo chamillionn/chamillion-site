@@ -21,8 +21,13 @@ export default async function NewsletterIndex() {
     fetchError = true;
   }
 
-  const ctx = await getOptionalUser();
-  const hideUpgrade = ctx?.profile.role === "member" || ctx?.profile.role === "admin";
+  let hideUpgrade = false;
+  try {
+    const ctx = await getOptionalUser();
+    hideUpgrade = ctx?.profile.role === "member" || ctx?.profile.role === "admin";
+  } catch {
+    // Supabase unreachable — default to showing upgrade CTA
+  }
 
   return <NewsletterClient posts={posts} error={fetchError} hideUpgrade={hideUpgrade} />;
 }

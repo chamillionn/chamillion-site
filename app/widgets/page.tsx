@@ -56,6 +56,16 @@ const widgets = [
       "compounding diario calculadora beneficio rendimiento exponencial cripto trading daily",
     icon: '<svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#0d0d0d"/><path d="M6 26C8 25 12 24 16 20 20 14 23 8 26 4" stroke="#82c4a0" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M6 26C8 25 12 24 16 20 20 14 23 8 26 4L26 26Z" fill="#82c4a0" opacity="0.15"/><line x1="6" y1="6" x2="6" y2="26" stroke="#555" stroke-width="1"/><line x1="5" y1="26" x2="26" y2="26" stroke="#555" stroke-width="1"/></svg>',
   },
+  {
+    slug: "blockchain-anim",
+    path: "post-02/money-flow",
+    tag: "Cripto · Blockchain",
+    title: "Blockchain en vivo",
+    desc: "Animación de una cadena de bloques formándose en tiempo real. Bloques pendientes, transacciones entrantes y confirmaciones.",
+    keywords:
+      "blockchain bloques cadena ethereum transacciones confirmacion animacion defi cripto",
+    icon: '<svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#0d0d0d"/><rect x="4" y="12" width="7" height="8" rx="2" stroke="#6b9ebb" stroke-width="1.5"/><rect x="13" y="12" width="7" height="8" rx="2" stroke="#6b9ebb" stroke-width="1.5"/><rect x="22" y="12" width="6" height="8" rx="2" stroke="#6b9ebb" stroke-width="1.5" opacity="0.4" stroke-dasharray="2 2"/><line x1="11" y1="16" x2="13" y2="16" stroke="#6b9ebb" stroke-width="1.5"/><line x1="20" y1="16" x2="22" y2="16" stroke="#6b9ebb" stroke-width="1.5" opacity="0.4"/></svg>',
+  },
 ];
 
 export default function WidgetsPage() {

@@ -178,9 +178,16 @@
   height: 420px;
 }
 
+.iframeMoneyFlow {
+  height: 240px;
+}
+
 @media (max-width: 600px) {
   .iframeStablecoins {
     height: 380px;
+  }
+  .iframeMoneyFlow {
+    height: 340px;
   }
 }
 
@@ -249,6 +256,23 @@
 .hubBox:hover .headingIcon {
   color: var(--accent-light);
   filter: drop-shadow(0 0 6px var(--shadow-glow));
+}
+
+/* ===== SUBTLE BOX ===== */
+.subtleBox {
+  margin: 28px 0;
+  padding: 16px 20px;
+  background: var(--bg-surface);
+  border-left: 3px solid var(--border);
+  border-radius: 4px;
+}
+
+.subtleBox > p {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 !important;
 }
 
 /* ===== HEADING LINK ===== */

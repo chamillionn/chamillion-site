@@ -19,14 +19,18 @@ export const metadata: Metadata = {
 };
 
 export default async function Post01() {
-  const supabase = await createClient();
-  const { data: post } = await supabase
-    .from("posts")
-    .select("premium")
-    .eq("slug", SLUG)
-    .single();
-
-  const isPremium = post?.premium ?? false;
+  let isPremium = false;
+  try {
+    const supabase = await createClient();
+    const { data: post } = await supabase
+      .from("posts")
+      .select("premium")
+      .eq("slug", SLUG)
+      .single();
+    isPremium = post?.premium ?? false;
+  } catch {
+    // Supabase unreachable — default to non-premium (show full content)
+  }
 
   /* Teaser: banner + header + first paragraphs (always visible) */
   const teaser = (

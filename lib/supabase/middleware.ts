@@ -52,18 +52,24 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Refresh the session — validates JWT and refreshes tokens if needed.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  // Protected routes — require authenticated session
-  // /admin/* (role checked in admin layout via requireAdmin), /hub/*, /cuenta
-  const PROTECTED = ["/admin", "/hub", "/cuenta"];
-  if (PROTECTED.some((p) => pathname.startsWith(p)) && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+    // Protected routes — require authenticated session
+    // /admin/* (role checked in admin layout via requireAdmin), /hub/*, /cuenta
+    const PROTECTED = ["/admin", "/hub", "/cuenta"];
+    if (PROTECTED.some((p) => pathname.startsWith(p)) && !user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("next", pathname);
+      return NextResponse.redirect(url);
+    }
+  } catch {
+    // Supabase unreachable (e.g. paused DB). Let the request through —
+    // individual pages handle their own fetch failures gracefully.
+    console.warn("[middleware] Supabase auth unreachable, skipping session refresh");
   }
 
   return supabaseResponse;
