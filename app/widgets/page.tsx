@@ -9,6 +9,8 @@ const widgets = [
   {
     slug: "orderbook-patatas",
     path: "post-01/orderbook-patatas",
+    group: "post-01",
+    groupTitle: "El augurio de una odisea",
     tag: "Mercados",
     title: "Libro de Órdenes",
     desc: "Simula cómo funciona un libro de órdenes con el mercado de patatas. Compra, vende y ve cómo se ejecutan las órdenes.",
@@ -19,6 +21,8 @@ const widgets = [
   {
     slug: "retail-vs-inst-esma",
     path: "post-01/retail-vs-inst-esma",
+    group: "post-01",
+    groupTitle: "El augurio de una odisea",
     tag: "Regulación · ESMA",
     title: "Retail vs Institucional",
     desc: "Visualización de datos ESMA sobre el coste comparado de inversores minoristas e institucionales en fondos europeos.",
@@ -29,6 +33,8 @@ const widgets = [
   {
     slug: "stablecoins-mcap",
     path: "post-01/stablecoins-mcap",
+    group: "post-01",
+    groupTitle: "El augurio de una odisea",
     tag: "Cripto · Stablecoins",
     title: "Stablecoins Market Cap",
     desc: "Gráfico de área con la evolución del market cap total de stablecoins desde 2017 hasta hoy.",
@@ -57,8 +63,43 @@ const widgets = [
     icon: '<svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#0d0d0d"/><path d="M6 26C8 25 12 24 16 20 20 14 23 8 26 4" stroke="#82c4a0" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M6 26C8 25 12 24 16 20 20 14 23 8 26 4L26 26Z" fill="#82c4a0" opacity="0.15"/><line x1="6" y1="6" x2="6" y2="26" stroke="#555" stroke-width="1"/><line x1="5" y1="26" x2="26" y2="26" stroke="#555" stroke-width="1"/></svg>',
   },
   {
+    slug: "value-axis",
+    path: "post-02/value-axis",
+    group: "post-02",
+    groupTitle: "Cómo decir adiós a tu banco",
+    tag: "Finanzas · Educación",
+    title: "Con divisa vs Sin divisa",
+    desc: "¿Por qué necesitamos dinero? Compara cómo funcionan los precios con una divisa común frente al trueque directo. Interactivo.",
+    keywords: "dinero divisa valor precio trueque intercambio euro pan corte cena referencia barter",
+    icon: '<svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#0d0d0d"/><line x1="16" y1="6" x2="16" y2="26" stroke="#6b9ebb" stroke-width="1" opacity="0.3"/><circle cx="8" cy="10" r="2.5" fill="#e8a840"/><circle cx="8" cy="18" r="2.5" fill="#6b9ebb"/><circle cx="8" cy="24" r="2.5" fill="#4ade80"/><line x1="10.5" y1="10" x2="16" y2="10" stroke="#e8a840" stroke-width="1" opacity="0.4"/><line x1="10.5" y1="18" x2="16" y2="18" stroke="#6b9ebb" stroke-width="1" opacity="0.4"/><line x1="10.5" y1="24" x2="16" y2="24" stroke="#4ade80" stroke-width="1" opacity="0.4"/><circle cx="24" cy="10" r="2" stroke="#e8a840" stroke-width="1" fill="none"/><circle cx="27" cy="18" r="2" stroke="#6b9ebb" stroke-width="1" fill="none"/><circle cx="21" cy="22" r="2" stroke="#4ade80" stroke-width="1" fill="none"/><line x1="24" y1="12" x2="27" y2="16" stroke="#555" stroke-width="0.7"/><line x1="27" y1="20" x2="21" y2="20" stroke="#555" stroke-width="0.7"/><line x1="21" y1="20" x2="24" y2="12" stroke="#555" stroke-width="0.7"/></svg>',
+  },
+  {
+    slug: "eur-value",
+    path: "post-02/eur-value",
+    group: "post-02",
+    groupTitle: "Cómo decir adiós a tu banco",
+    tag: "Finanzas · Educación",
+    title: "Valor del Euro",
+    desc: "El euro es un activo más. Su valor fluctúa, y con él el precio de todo lo demás.",
+    keywords: "euro divisa valor fluctuación precio inflación deflación cotización pan corte cena",
+    icon: '<svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#0d0d0d"/><path d="M6 20 L10 18 L14 21 L18 14 L22 16 L26 10" stroke="#4ade80" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="6" y1="16" x2="26" y2="16" stroke="#555" stroke-width="0.5" stroke-dasharray="2 2"/><text x="16" y="28" text-anchor="middle" font-size="6" fill="#6b9ebb" font-family="serif">€</text></svg>',
+  },
+  {
+    slug: "evm-chains",
+    path: "post-02/evm-chains",
+    group: "post-02",
+    groupTitle: "Cómo decir adiós a tu banco",
+    tag: "Cripto · Blockchain",
+    title: "EVM Chains",
+    desc: "Comparativa interactiva de las principales redes EVM: Ethereum, Arbitrum, Base, Polygon, Optimism y HyperEVM con TVL y protocolos DeFi.",
+    keywords: "ethereum arbitrum optimism polygon base hyperevm evm blockchain tvl defi protocolos comparativa",
+    icon: '<svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#0d0d0d"/><circle cx="10" cy="12" r="4" stroke="#627EEA" stroke-width="1.5" fill="none"/><circle cx="22" cy="12" r="4" stroke="#28A0F0" stroke-width="1.5" fill="none"/><circle cx="10" cy="22" r="4" stroke="#8247E5" stroke-width="1.5" fill="none"/><circle cx="22" cy="22" r="4" stroke="#FF0420" stroke-width="1.5" fill="none"/></svg>',
+  },
+  {
     slug: "blockchain-anim",
-    path: "post-02/money-flow",
+    path: "post-02/blockchain-anim",
+    group: "post-02",
+    groupTitle: "Cómo decir adiós a tu banco",
     tag: "Cripto · Blockchain",
     title: "Blockchain en vivo",
     desc: "Animación de una cadena de bloques formándose en tiempo real. Bloques pendientes, transacciones entrantes y confirmaciones.",
@@ -75,9 +116,42 @@ export default function WidgetsPage() {
   const filtered = widgets.filter((w) => {
     if (!q) return true;
     const haystack =
-      `${w.keywords} ${w.title} ${w.desc} ${w.tag}`.toLowerCase();
+      `${w.keywords} ${w.title} ${w.desc} ${w.tag} ${w.groupTitle ?? ""}`.toLowerCase();
     return haystack.includes(q);
   });
+
+  // Group widgets: ungrouped first, then each group in order
+  const ungrouped = filtered.filter((w) => !w.group);
+  const groupOrder: string[] = [];
+  const groups: Record<string, typeof filtered> = {};
+  filtered.forEach((w) => {
+    if (!w.group) return;
+    if (!groups[w.group]) {
+      groups[w.group] = [];
+      groupOrder.push(w.group);
+    }
+    groups[w.group].push(w);
+  });
+
+  const renderCard = (w: (typeof widgets)[number]) => (
+    <a
+      key={w.slug}
+      className={styles.card}
+      href={`/widgets/${w.path}/index.html`}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <div className={styles.cardHeader}>
+        <span
+          className={styles.cardIcon}
+          dangerouslySetInnerHTML={{ __html: w.icon }}
+        />
+        <div className={styles.cardTag}>{w.tag}</div>
+      </div>
+      <div className={styles.cardTitle}>{w.title}</div>
+      <div className={styles.cardDesc}>{w.desc}</div>
+    </a>
+  );
 
   return (
     <div className={styles.page}>
@@ -105,27 +179,23 @@ export default function WidgetsPage() {
           />
         </div>
 
-        <div className={styles.grid}>
-          {filtered.map((w) => (
-            <a
-              key={w.slug}
-              className={styles.card}
-              href={`/widgets/${w.path}/index.html`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <div className={styles.cardHeader}>
-                <span
-                  className={styles.cardIcon}
-                  dangerouslySetInnerHTML={{ __html: w.icon }}
-                />
-                <div className={styles.cardTag}>{w.tag}</div>
-              </div>
-              <div className={styles.cardTitle}>{w.title}</div>
-              <div className={styles.cardDesc}>{w.desc}</div>
-            </a>
-          ))}
-        </div>
+        {ungrouped.length > 0 && (
+          <div className={styles.grid}>
+            {ungrouped.map(renderCard)}
+          </div>
+        )}
+
+        {groupOrder.map((gid) => (
+          <div key={gid} className={styles.group}>
+            <div className={styles.groupHeader}>
+              <span className={styles.groupLabel}>Newsletter</span>
+              <span className={styles.groupTitle}>{groups[gid][0].groupTitle}</span>
+            </div>
+            <div className={styles.grid}>
+              {groups[gid].map(renderCard)}
+            </div>
+          </div>
+        ))}
 
         {filtered.length === 0 && (
           <p className={styles.noResults}>
