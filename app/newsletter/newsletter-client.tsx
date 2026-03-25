@@ -18,7 +18,7 @@ function formatDate(dateStr: string) {
 }
 
 // ── Post card ──
-function PostCard({ post, delay }: { post: Post; delay: number }) {
+function PostCard({ post, delay, isAdmin }: { post: Post; delay: number; isAdmin?: boolean }) {
   const [hovered, setHovered] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -57,7 +57,9 @@ function PostCard({ post, delay }: { post: Post; delay: number }) {
           textDecoration: "none",
           borderRadius: 12,
           overflow: "hidden",
-          border: `1px solid ${V.border}`,
+          border: isAdmin && !post.published
+            ? `1.5px dashed ${steelA(0.3)}`
+            : `1px solid ${V.border}`,
           background: V.bgCard,
           transition:
             "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease",
@@ -130,6 +132,23 @@ function PostCard({ post, delay }: { post: Post; delay: number }) {
             >
               {formatDate(post.date)}
             </span>
+            {isAdmin && !post.published && (
+              <span
+                style={{
+                  fontFamily: "var(--font-dm-mono), monospace",
+                  fontSize: 8,
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  padding: "2px 6px",
+                  borderRadius: 4,
+                  background: "rgba(232,168,64,0.15)",
+                  color: "#e8a840",
+                }}
+              >
+                Borrador
+              </span>
+            )}
             {post.premium && (
               <span
                 style={{
@@ -224,7 +243,7 @@ function formatPrice(cents: number, currency: string): string {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency }).format(cents / 100);
 }
 
-export default function NewsletterClient({ posts, error, hideUpgrade }: { posts: Post[]; error?: boolean; hideUpgrade?: boolean }) {
+export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }: { posts: Post[]; error?: boolean; hideUpgrade?: boolean; isAdmin?: boolean }) {
   const [loaded, setLoaded] = useState(false);
   const [prices, setPrices] = useState<Price[]>([]);
 
@@ -375,7 +394,7 @@ export default function NewsletterClient({ posts, error, hideUpgrade }: { posts:
           }}
         >
           {posts.map((post, i) => (
-            <PostCard key={post.slug} post={post} delay={i * 100} />
+            <PostCard key={post.slug} post={post} delay={i * 100} isAdmin={isAdmin} />
           ))}
         </div>
       )}
