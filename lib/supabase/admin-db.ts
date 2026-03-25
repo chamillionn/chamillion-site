@@ -18,7 +18,7 @@ export async function getAdminDbTarget(): Promise<DbTarget> {
   const store = await cookies();
   const raw = store.get(COOKIE_NAME)?.value;
   if (raw === "dev" || raw === "prod") return raw;
-  return nativeTarget();
+  return "prod";
 }
 
 export async function isViewingRemoteDb(): Promise<boolean> {
