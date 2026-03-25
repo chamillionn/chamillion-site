@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVM Chains — Chamillion</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="../../widget-common.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="toggle-bar">
+    <a id="btn-widgets" class="bar-btn" href="/widgets" aria-label="Widgets">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </a>
+    <button id="theme-toggle" aria-label="Cambiar tema"></button>
+  </div>
+
+<div id="ctx-menu" class="ctx-menu" hidden>
+  <button id="ctx-capture">Modo captura</button>
+  <div id="ctx-bg" class="ctx-bg" hidden>
+    <div class="ctx-bg-row">
+      <input id="ctx-bg-input" type="text" placeholder="#hex o color">
+      <button id="ctx-bg-clear" class="ctx-bg-clear">&times;</button>
+    </div>
+  </div>
+  <div id="ctx-capture-dl" class="ctx-capture-dl" hidden>
+    <div class="ctx-label">Resolución</div>
+    <div class="ctx-scale-row">
+      <button class="ctx-scale" data-scale="1">1x</button>
+      <button class="ctx-scale active" data-scale="2">2x</button>
+      <button class="ctx-scale" data-scale="3">3x</button>
+      <button class="ctx-scale" data-scale="4">4x</button>
+    </div>
+    <button id="ctx-download" class="ctx-dl-btn">Descargar PNG</button>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+<p class="caption">mar 2026</p>
+
+<script src="../../widget-common.js"></script>
+<script>
+initWidgetCommon('evm-chains', { shareUrl: '/widgets/post-02/evm-chains' });
+
+// Fallback: onclick property assignment if addEventListener didn't work
+var themeBtn = document.getElementById('theme-toggle');
+if (themeBtn && !themeBtn.onclick) {
+  console.log('Adding onclick fallback');
+  themeBtn.onclick = function() {
+    var html = document.documentElement;
+    var current = html.getAttribute('data-theme') || 'dark';
+    html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    this.innerHTML = current === 'dark' 
+      ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="5.64" y1="5.64" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="18.36" y2="18.36"/><line x1="5.64" y1="18.36" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="18.36" y2="5.64"/></svg>'
+      : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  };
+}
+</script>
+<script src="app.js"></script>
+</body>
+</html>
