@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createPostsClient } from "@/lib/supabase/posts-client";
 import PaywallGate from "@/components/paywall-gate";
+import IframeWidget from "@/components/iframe-widget";
 import styles from "../post.module.css";
 
 const SLUG = "como-decir-adios-a-tu-banco";
@@ -31,8 +32,8 @@ export const metadata: Metadata = {
 export default async function Post02() {
   let isPremium = false;
   try {
-    const supabase = await createClient();
-    const { data: post } = await supabase
+    const postsDb = createPostsClient();
+    const { data: post } = await postsDb
       .from("posts")
       .select("premium")
       .eq("slug", SLUG)
@@ -94,8 +95,6 @@ export default async function Post02() {
 
         <PaywallGate isPremium={isPremium} teaser={teaser}>
 
-        <Note>((Notas: Para los links, añadir junto al mismo el favicon del sitio del link, que parezca una mención más interactiva))</Note>
-
         <p>
           500 euros en el banco, listos para el despliegue. ¿Ahora qué?
         </p>
@@ -109,7 +108,6 @@ export default async function Post02() {
           y mejores oportunidades fuera de un banco, bróker o cartera de
           inversión tradicional.
         </p>
-        <Note>((Algo catchy que haga al lector tener ganas de meterse porque aquí es donde está el dinero))</Note>
 
         <p>
           En este primer Reporte de la Cartera, pondré el contexto para acceder
@@ -147,9 +145,9 @@ export default async function Post02() {
         </p>
 
         <iframe
-          src="/widgets/post-02/money-flow/index.html"
+          src="/widgets/post-02/blockchain-anim/index.html"
           loading="lazy"
-          className={`${styles.iframe} ${styles.iframeMoneyFlow}`}
+          className={`${styles.iframe} ${styles.iframeBlockchainAnim}`}
           title="El viaje del dinero — Del banco a los mercados descentralizados"
         />
 
@@ -165,7 +163,7 @@ export default async function Post02() {
           Esta newsletter es de finanzas, así que no voy a indagar mucho a
           nivel técnico.
         </p>
-        <Note>((Crear un artículo premium en el futuro hub de chamillion.site hablando de la blockchain a nivel técnico y referenciarlo aquí))</Note>
+        <Note>((3. Crear un artículo premium en el futuro hub de chamillion.site hablando de la blockchain a nivel técnico y referenciarlo aquí))</Note>
 
         <p>
           Basta con saber que hay cientos de <em>redes</em> (blockchains).
@@ -178,17 +176,12 @@ export default async function Post02() {
           Son:
         </p>
 
-        <ul className={styles.hubList}>
-          <li>Ethereum</li>
-          <li>Polygon</li>
-          <li>Arbitrum</li>
-          <li>HyperEVM</li>
-          <li>Optimism</li>
-          <li>Plasma</li>
-          <li>Y un largo etc</li>
-        </ul>
-
-        <Note>((Para la versión Premium, cambiar esta enumeración por una tabla interactiva con logos/iconos de las blockchains. Para cada blockchain al hacer hover se verán datos comparativos: nº txs/segundo, y otras métricas relevantes. Para substack una imagen estática del mismo))</Note>
+        <IframeWidget
+          src="/widgets/post-02/evm-chains/index.html"
+          widgetId="evm-chains"
+          className={`${styles.iframe} ${styles.iframeEvmChains}`}
+          title="Redes EVM — Comparativa de blockchains"
+        />
 
         <div className={styles.pullquote}>
           <p>
@@ -223,13 +216,13 @@ export default async function Post02() {
         {/* === DEL BANCO A LA WALLET === */}
         <h2>Del banco a la wallet</h2>
 
-        <p>
+        <p className={styles.skipNote}>
           <em>
             Si ya sabes cómo montar una wallet (o ya tienes una) puedes
             ignorar esta sección.
-          </em>
+          </em>{" "}
+          <a href="#la-otra-cara-de-la-moneda">Saltar →</a>
         </p>
-        <Note>((Salto a la siguiente sección))</Note>
 
         <h3>Paso 1: La cuenta</h3>
 
@@ -361,7 +354,7 @@ export default async function Post02() {
           <li>
             Conviertes los euros a la criptomoneda que desees. En mi caso he
             elegido ETH como punto de partida.
-            <Note>((Añadir logo ETH))</Note>
+            <Note>((5. Añadir logo ETH))</Note>
           </li>
           <li>Retiras dicha criptomoneda a tu wallet.</li>
         </ul>
@@ -380,7 +373,7 @@ export default async function Post02() {
           En mi caso es{" "}
           <code>0x32a0CAD9E987F82be1173f3b38a415853898a480</code>.
         </p>
-        <Note>((Hacer la dirección interactiva: al hovearla sale opción de abrir chamillion.site/v donde verificar los saldos))</Note>
+        <Note>((6. Hacer la dirección interactiva: al hovearla sale opción de abrir chamillion.site/v donde verificar los saldos))</Note>
 
         <p>
           Cualquiera puede explorar la blockchain (como he mencionado antes, es
@@ -396,7 +389,7 @@ export default async function Post02() {
         <hr className={styles.divider} />
 
         {/* === LA OTRA CARA DE LA MONEDA === */}
-        <h2><em>La otra cara de la moneda</em></h2>
+        <h2 id="la-otra-cara-de-la-moneda"><em>La otra cara de la moneda</em></h2>
 
         <p>
           Algo que aprendes a interiorizar a medida que te adentras en el mundo
@@ -411,7 +404,12 @@ export default async function Post02() {
           10 000 EUR.
         </p>
 
-        <Note>((Infográfico interactivo HTML que visualice que la divisa es la referencia sobre productos/servicios para mostrar su valor. En substack, versión estática/imagen))</Note>
+        <IframeWidget
+          src="/widgets/post-02/value-axis/index.html"
+          widgetId="value-axis"
+          className={`${styles.iframe} ${styles.iframeValueAxis}`}
+          title="Con divisa vs Sin divisa — Por qué necesitamos dinero"
+        />
 
         <p>
           Todos entendemos la utilidad de una divisa. Permite saltarse el
@@ -427,7 +425,7 @@ export default async function Post02() {
           tratan de hacer lo mismo que el euro.
         </p>
 
-        <Note>((Foto del gráfico del Euro index en substack. Para la versión premium un gráfico propio con los mismos datos))</Note>
+        <Note>((8. Foto del gráfico del Euro index en substack. Para la versión premium un gráfico propio con los mismos datos))</Note>
 
         <p>
           El sistema está configurado para que, en un principio, el euro sea tu
