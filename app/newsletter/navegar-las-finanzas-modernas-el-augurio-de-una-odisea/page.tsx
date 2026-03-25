@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createPostsClient } from "@/lib/supabase/posts-client";
 import PaywallGate from "@/components/paywall-gate";
 import styles from "../post.module.css";
 
@@ -21,8 +21,8 @@ export const metadata: Metadata = {
 export default async function Post01() {
   let isPremium = false;
   try {
-    const supabase = await createClient();
-    const { data: post } = await supabase
+    const postsDb = createPostsClient();
+    const { data: post } = await postsDb
       .from("posts")
       .select("premium")
       .eq("slug", SLUG)
