@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valor del Euro — Chamillion</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="../../widget-common.css">
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0e11;
+  --text: #e8e6e1;
+  --text-dim: #888;
+  --text-muted: #555;
+  --accent: #6b9ebb;
+  --eur: #a78bfa;
+  --panel-bg: rgba(255,255,255,0.02);
+  --panel-border: #1e2228;
+  --axis-color: #2a3038;
+  --bread: #e8a840;
+  --scissors: #6b9ebb;
+  --dinner: #4ade80;
+  --marker-shadow: rgba(0,0,0,0.4);
+  --up: #4ade80;
+  --down: #ef4444;
+  --baseline: #555;
+  --chart-fill-up: rgba(74,222,128,0.06);
+  --chart-fill-down: rgba(239,68,68,0.06);
+  --btn-bg: rgba(255,255,255,0.04);
+  --btn-border: #1e2228;
+  --btn-hover: rgba(255,255,255,0.08);
+  --link-color: rgba(255,255,255,0.08);
+  --ratio-bg: rgba(18,21,26,0.85);
+  --ratio-border: #1e2228;
+  --eur-pill-bg: rgba(167,139,250,0.12);
+  --eur-pill-border: rgba(167,139,250,0.3);
+}
+
+[data-theme="light"] {
+  --bg: #f5ede0;
+  --text: #1a1208;
+  --text-dim: #706050;
+  --text-muted: #a89080;
+  --accent: #4a7a9a;
+  --eur: #7c5cbf;
+  --panel-bg: rgba(0,0,0,0.02);
+  --panel-border: #d4c4b0;
+  --axis-color: #c8b8a0;
+  --bread: #c88a20;
+  --scissors: #4a7a9a;
+  --dinner: #16863a;
+  --marker-shadow: rgba(0,0,0,0.12);
+  --up: #16863a;
+  --down: #c0392b;
+  --baseline: #a89080;
+  --chart-fill-up: rgba(22,134,58,0.05);
+  --chart-fill-down: rgba(192,57,43,0.05);
+  --btn-bg: rgba(0,0,0,0.03);
+  --btn-border: #d4c4b0;
+  --btn-hover: rgba(0,0,0,0.06);
+  --link-color: rgba(0,0,0,0.06);
+  --ratio-bg: rgba(237,227,214,0.9);
+  --ratio-border: #d4c4b0;
+  --eur-pill-bg: rgba(124,92,191,0.1);
+  --eur-pill-border: rgba(124,92,191,0.25);
+}
+
+html, body {
+  width: 100%;
+  background: transparent;
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+}
+html:not(.embedded) { background: var(--bg); }
+html { overflow: hidden; }
+
+/* ── Embedded: hide title/desc ── */
+html.embedded .widget-title,
+html.embedded .widget-desc { display: none; }
+html.embedded .container { padding-top: 16px; }
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 52px 16px 16px;
+}
+
+.widget-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 17px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.widget-desc {
+  text-align: center;
+  font-size: 10.5px; line-height: 1.55;
+  color: var(--text-dim);
+  padding: 0 6px 12px;
+}
+
+.panels {
+  display: flex;
+  gap: 10px;
+}
+
+.panel {
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel-bg);
+  padding: 12px 10px 8px;
+  position: relative;
+}
+
+.panel-chart { flex: 0.8; min-width: 0; display: flex; flex-direction: column; }
+.panel-right { flex: 1.2; min-width: 0; min-height: 320px; display: flex; flex-direction: column; gap: 0; }
+
+/* ── Chart ── */
+.chart-canvas-wrap {
+  position: relative;
+  width: 100%;
+  flex: 1; min-height: 100px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.chart-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+
+.chart-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chart-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 0;
+  border: 1px solid var(--btn-border);
+  border-radius: 8px;
+  background: var(--btn-bg);
+  color: var(--text-dim);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  user-select: none;
+}
+.chart-btn:hover { background: var(--btn-hover); color: var(--text); }
+.chart-btn:active { transform: scale(0.96); }
+.chart-btn.down:active { color: var(--down); }
+.chart-btn.up:active { color: var(--up); }
+.chart-btn svg {
+  width: 11px; height: 11px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ── Chart message (overlay inside canvas) ── */
+.chart-message {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'DM Serif Display', serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  padding: 16px;
+}
+.chart-message.visible {
+  opacity: 0.7;
+}
+
+/* ── Right panel: graph + axis combined ── */
+.right-inner {
+  display: flex;
+  height: 100%;
+}
+
+.graph-area {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.graph-svg { width: 100%; height: 100%; overflow: visible; }
+
+.graph-link { fill: none; stroke: var(--link-color); stroke-width: 1; stroke-dasharray: 4 3; }
+.graph-link-eur { fill: none; stroke-width: 1.8; stroke-dasharray: none; }
+
+.graph-pill rect { rx: 6; }
+.graph-pill text {
+  font-family: 'DM Mono', monospace;
+  font-size: 6.5px;
+  fill: var(--text-dim);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.graph-pill-eur rect {
+  fill: var(--eur-pill-bg);
+  stroke: var(--eur-pill-border);
+  stroke-width: 0.7;
+  rx: 7;
+}
+.graph-pill-eur text {
+  font-family: 'DM Serif Display', serif;
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+}
+
+.graph-node {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.graph-node:active { cursor: grabbing; }
+.graph-node-circle {
+  stroke-width: 1.5;
+  fill: none;
+  transition: stroke-width 0.25s ease, filter 0.25s ease;
+}
+.graph-node.hover .graph-node-circle {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+.graph-node.dragging .graph-node-circle {
+  stroke-width: 3;
+  filter: drop-shadow(0 0 10px currentColor);
+}
+.graph-node-bg {
+  fill: var(--bg);
+  opacity: 0.7;
+}
+.graph-node-label {
+  font-family: 'DM Serif Display', serif;
+  font-size: 7.5px;
+  fill: var(--text-dim);
+  text-anchor: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* EUR node special */
+.eur-node-ring {
+  fill: none;
+  stroke-width: 1;
+  opacity: 0.3;
+}
+.eur-node-fill {
+  opacity: 0.08;
+}
+.eur-node-symbol {
+  font-family: 'DM Serif Display', serif;
+  fill: var(--eur);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* ── EUR highlight pulse ── */
+.eur-node-ring { transition: opacity 0.3s ease; }
+.eur-highlight .eur-node-ring { opacity: 0.7; }
+.eur-highlight .eur-node-fill { opacity: 0.2; }
+.eur-node-fill { transition: opacity 0.3s ease; }
+
+.axis-line {
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.axis-highlight .axis-line {
+  background: var(--eur);
+  box-shadow: 0 0 8px var(--eur);
+}
+
+/* ── Axis (inside right panel) ── */
+.axis-area {
+  position: relative;
+  width: 90px;
+  flex-shrink: 0;
+}
+.axis-line {
+  position: absolute;
+  left: 20px;
+  top: 16px; bottom: 14px;
+  width: 1.5px;
+  background: var(--axis-color);
+  border-radius: 1px;
+}
+.axis-symbol {
+  position: absolute;
+  top: -14px; left: 21px;
+  transform: translateX(-50%);
+  font-family: 'DM Serif Display', serif;
+  font-size: 11px;
+  color: var(--accent);
+  line-height: 1;
+}
+.axis-marker-wrap {
+  position: absolute;
+  left: 0; right: 0;
+  height: 0;
+  z-index: 10;
+  transition: top 0.35s ease-out;
+}
+.axis-tick {
+  position: absolute;
+  left: 17px;
+  width: 8px; height: 1px;
+  background: var(--axis-color);
+  opacity: 0.35;
+  transition: background 0.3s ease, opacity 0.3s ease;
+}
+.axis-tick.major {
+  left: 15px;
+  width: 12px;
+  opacity: 0.55;
+}
+.axis-tick-label {
+  position: absolute;
+  left: 30px;
+  transform: translateY(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 6.5px;
+  color: var(--text-muted);
+  opacity: 0.4;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+.axis-highlight .axis-tick {
+  background: var(--eur);
+  opacity: 0.6;
+}
+.axis-highlight .axis-tick.major { opacity: 0.8; }
+.axis-highlight .axis-tick-label {
+  color: var(--eur);
+  opacity: 0.7;
+}
+.axis-marker {
+  position: absolute;
+  left: 21px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 6px var(--marker-shadow);
+  cursor: grab;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  touch-action: none;
+}
+.axis-marker:active { cursor: grabbing; }
+.axis-marker-wrap.dragging .axis-marker {
+  transform: translate(-50%, -50%) scale(1.5);
+  box-shadow: 0 0 0 5px var(--marker-shadow), 0 2px 10px var(--marker-shadow);
+}
+.axis-marker-wrap.hover .axis-marker {
+  transform: translate(-50%, -50%) scale(1.25);
+  box-shadow: 0 0 0 3px var(--marker-shadow), 0 2px 8px var(--marker-shadow);
+}
+.axis-marker-wrap.dimmed .axis-marker-icon,
+.axis-marker-wrap.dimmed .axis-marker-price { opacity: 0.15; }
+.axis-marker-wrap.dimmed .axis-marker { opacity: 0.2; }
+.axis-marker-icon {
+  position: absolute;
+  left: 28px;
+  width: 11px; height: 11px;
+  transform: translateY(-50%);
+  top: 0;
+  pointer-events: none;
+}
+.axis-marker-icon svg { width: 100%; height: 100%; }
+.axis-marker-price {
+  position: absolute;
+  left: 46px;
+  transform: translateY(-50%);
+  top: 0;
+  font-family: 'DM Serif Display', serif;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Static / Capture ── */
+html.capture .widget-title,
+html.capture .widget-desc { display: none; }
+html.static .chart-buttons,
+html.capture .chart-buttons { display: none; }
+html.static .chart-message { display: none; }
+html.static .axis-marker,
+html.capture .axis-marker { cursor: default; }
+html.static .graph-node,
+html.capture .graph-node { cursor: default; }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .panels { flex-wrap: wrap; }
+  .panel-chart { flex: 1 1 100%; }
+  .panel-right { flex: 1 1 100%; }
+  .chart-canvas-wrap { height: 150px; }
+}
+  </style>
+</head>
+<body>
+
+  <div class="toggle-bar">
+    <a id="btn-widgets" class="bar-btn" href="/widgets" aria-label="Widgets">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </a>
+    <button id="theme-toggle" aria-label="Cambiar tema"></button>
+  </div>
+
+  <div id="ctx-menu" class="ctx-menu" hidden>
+    <button id="ctx-capture">Modo captura</button>
+    <div id="ctx-bg" class="ctx-bg" hidden>
+      <div class="ctx-bg-row">
+        <input id="ctx-bg-input" type="text" placeholder="#hex o color">
+        <button id="ctx-bg-clear" class="ctx-bg-clear">&times;</button>
+      </div>
+    </div>
+    <div id="ctx-capture-dl" class="ctx-capture-dl" hidden>
+      <div class="ctx-label">Resolución</div>
+      <div class="ctx-scale-row">
+        <button class="ctx-scale" data-scale="1">1x</button>
+        <button class="ctx-scale active" data-scale="2">2x</button>
+        <button class="ctx-scale" data-scale="3">3x</button>
+        <button class="ctx-scale" data-scale="4">4x</button>
+      </div>
+      <button id="ctx-download" class="ctx-dl-btn">Descargar PNG</button>
+      <button id="ctx-record" class="ctx-record-btn">Grabar video</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="widget-title">Valor del Euro</div>
+    <div class="widget-desc">El euro es un activo más. Su valor fluctúa, y con él el precio de todo lo demás.</div>
+
+    <div class="panels">
+      <!-- Chart -->
+      <div class="panel panel-chart">
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-canvas"></canvas>
+          <div class="chart-message" id="chart-message"></div>
+        </div>
+        <div class="chart-buttons">
+          <button class="chart-btn down" id="btn-down">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            Devaluar
+          </button>
+          <button class="chart-btn up" id="btn-up">
+            <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            Revalorizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Graph + Axis combined -->
+      <div class="panel panel-right">
+        <div class="right-inner">
+          <div class="graph-area" id="graph-area">
+            <svg class="graph-svg" id="graph-svg"></svg>
+          </div>
+          <div class="axis-area" id="axis-area">
+            <div class="axis-line" id="axis-line">
+              <span class="axis-symbol">€</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="../../widget-common.js"></script>
+<script>initWidgetCommon('eur-value', { shareUrl: '/widgets/post-02/eur-value', recordTarget: document.querySelector('.container') });</script>
+<script>
+(function () {
+  var isStatic = /[?&]static=1/.test(location.search);
+  if (isStatic) document.documentElement.classList.add('static');
+  var frozen = isStatic || document.documentElement.classList.contains('capture');
+
+  /* ══ Items ══ */
+  var items = [
+    {
+      id: 'bread', name: 'Pan', basePrice: 1, price: 1, colorVar: '--bread',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.2 18H4.774a1.5 1.5 0 0 1-1.352-.97 11 11 0 0 1 .132-6.487"/><path d="M18 10.2V4.774a1.5 1.5 0 0 0-.97-1.352 11 11 0 0 0-6.486.132"/><path d="M18 5a4 3 0 0 1 4 3 2 2 0 0 1-2 2 10 10 0 0 0-5.139 1.42"/><path d="M5 18a3 4 0 0 0 3 4 2 2 0 0 0 2-2 10 10 0 0 1 1.42-5.14"/><path d="M8.709 2.554a10 10 0 0 0-6.155 6.155 1.5 1.5 0 0 0 .676 1.626l9.807 5.42a2 2 0 0 0 2.718-2.718l-5.42-9.807a1.5 1.5 0 0 0-1.626-.676"/></svg>'
+    },
+    {
+      id: 'scissors', name: 'Corte', basePrice: 20, price: 20, colorVar: '--scissors',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>'
+    },
+    {
+      id: 'dinner', name: 'Cena', basePrice: 80, price: 80, colorVar: '--dinner',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/></svg>'
+    }
+  ];
+
+  /* ══ EUR simulation — smooth sine waves ══ */
+  var BASELINE = 1.00;
+  var level = BASELINE;
+  var t = 0;
+  var MAX_POINTS = 250;
+  var history = [];
+
+  var W1 = 0.035, A1 = 0.012;
+  var W2 = 0.089, A2 = 0.007;
+  var W3 = 0.15,  A3 = 0.004;
+
+  function waveAt(time) {
+    return A1 * Math.sin(W1 * time)
+         + A2 * Math.sin(W2 * time + 1.3)
+         + A3 * Math.sin(W3 * time + 2.7);
+  }
+
+  // Pre-fill history
+  for (var p = 0; p < MAX_POINTS; p++) {
+    history.push(BASELINE + waveAt(p - MAX_POINTS));
+  }
+  var eurValue = history[history.length - 1];
+
+  function tick() {
+    t++;
+    eurValue = level + waveAt(t);
+    history.push(eurValue);
+    if (history.length > MAX_POINTS) history.shift();
+  }
+
+  function nominalPrice(item) { return item.price / eurValue; }
+
+  function formatEUR(v) {
+    if (v >= 1000) return '€' + Math.round(v).toLocaleString('es-ES');
+    if (v < 10) return '€' + (Math.round(v * 10) / 10);
+    return '€' + Math.round(v);
+  }
+
+  function getC(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+
+  /* ══ CHART ══ */
+  var canvas = document.getElementById('chart-canvas');
+  var ctx = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    var wrap = canvas.parentElement;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = wrap.offsetWidth * dpr;
+    canvas.height = wrap.offsetHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function drawSmoothLine(pts, tension) {
+    if (pts.length < 2) return;
+    tension = tension || 0.25;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[Math.max(0, i - 1)];
+      var p1 = pts[i], p2 = pts[i + 1];
+      var p3 = pts[Math.min(pts.length - 1, i + 2)];
+      ctx.bezierCurveTo(
+        p1.x + (p2.x - p0.x) * tension, p1.y + (p2.y - p0.y) * tension,
+        p2.x - (p3.x - p1.x) * tension, p2.y - (p3.y - p1.y) * tension,
+        p2.x, p2.y
+      );
+    }
+  }
+
+  function drawChart() {
+    var w = canvas.parentElement.offsetWidth;
+    var h = canvas.parentElement.offsetHeight;
+    ctx.clearRect(0, 0, w, h);
+    if (history.length < 2) return;
+
+    var min = Infinity, max = -Infinity;
+    for (var i = 0; i < history.length; i++) {
+      if (history[i] < min) min = history[i];
+      if (history[i] > max) max = history[i];
+    }
+    var range = max - min;
+    if (range < 0.04) { var mid = (max + min) / 2; min = mid - 0.02; max = mid + 0.02; range = 0.04; }
+    var pad = range * 0.25; min -= pad; max += pad; range = max - min;
+
+    var baseY = h - ((BASELINE - min) / range) * h;
+
+    // Baseline
+    ctx.save();
+    ctx.setLineDash([3, 5]);
+    ctx.strokeStyle = getC('--baseline');
+    ctx.lineWidth = 0.7;
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath(); ctx.moveTo(0, baseY); ctx.lineTo(w, baseY); ctx.stroke();
+    ctx.restore();
+
+    var step = w / (MAX_POINTS - 1);
+    var off = MAX_POINTS - history.length;
+    var pts = [];
+    for (var j = 0; j < history.length; j++) {
+      pts.push({ x: (j + off) * step, y: h - ((history[j] - min) / range) * h });
+    }
+    var last = pts[pts.length - 1];
+    var isUp = eurValue >= BASELINE;
+    var color = isUp ? getC('--up') : getC('--down');
+
+    // Fill
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, baseY);
+    for (var k = 0; k < pts.length; k++) ctx.lineTo(pts[k].x, pts[k].y);
+    ctx.lineTo(last.x, baseY); ctx.closePath();
+    ctx.fillStyle = isUp ? getC('--chart-fill-up') : getC('--chart-fill-down');
+    ctx.fill(); ctx.restore();
+
+    // Line
+    ctx.save();
+    drawSmoothLine(pts, 0.25);
+    ctx.strokeStyle = color; ctx.lineWidth = 1.8; ctx.stroke();
+    ctx.restore();
+
+    // Dot
+    ctx.save();
+    ctx.beginPath(); ctx.arc(last.x, last.y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 8; ctx.fill();
+    ctx.restore();
+
+  }
+
+  /* ══ CHART MESSAGE ══ */
+  var msgEl = document.getElementById('chart-message');
+  var msgTimer = null;
+
+  function showMessage(text) {
+    clearTimeout(msgTimer);
+    msgEl.classList.remove('visible');
+    void msgEl.offsetHeight;
+    msgEl.textContent = text;
+    msgEl.classList.add('visible');
+    msgTimer = setTimeout(function () {
+      msgEl.classList.remove('visible');
+    }, 3500);
+  }
+
+  /* ══ GRAPH (SVG) ══ */
+  var graphSvg = document.getElementById('graph-svg');
+  var graphArea = document.getElementById('graph-area');
+
+  var itemAngles = [-Math.PI / 2, Math.PI * 5 / 6, Math.PI / 6];
+  var GRAPH_RADIUS = 0.34;
+  var EUR_R = 22;
+  var ITEM_R = 14;
+
+  function getGC() {
+    var w = graphArea.offsetWidth, h = graphArea.offsetHeight;
+    return { cx: w / 2, cy: h / 2 + 6 };
+  }
+
+  function itemNodePos(i) {
+    var c = getGC();
+    var ext = Math.min(graphArea.offsetWidth, graphArea.offsetHeight);
+    var r = ext * GRAPH_RADIUS;
+    return { x: c.cx + Math.cos(itemAngles[i]) * r, y: c.cy + Math.sin(itemAngles[i]) * r };
+  }
+
+  function ratioLabel(a, b) {
+    var expensive = a > b ? a : b;
+    var cheap = a > b ? b : a;
+    var n = expensive / cheap;
+    return (n >= 10 ? Math.round(n) : Math.round(n * 10) / 10) + ':1';
+  }
+
+  function parseSvgIcon(svgStr, ns, color, size, cx, cy) {
+    var g = document.createElementNS(ns, 'g');
+    var sc = size / 24;
+    g.setAttribute('transform', 'translate(' + (cx - size / 2) + ',' + (cy - size / 2) + ') scale(' + sc + ')');
+    var parser = new DOMParser();
+    var withNs = svgStr.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    var doc = parser.parseFromString(withNs, 'image/svg+xml');
+    var svgEl = doc.documentElement;
+    Array.from(svgEl.childNodes).forEach(function(node) {
+      if (node.nodeType === 1) {
+        var imported = document.importNode(node, true);
+        imported.setAttribute('stroke', color);
+        imported.setAttribute('fill', 'none');
+        imported.setAttribute('stroke-width', '1.5');
+        imported.setAttribute('stroke-linecap', 'round');
+        imported.setAttribute('stroke-linejoin', 'round');
+        g.appendChild(imported);
+      }
+    });
+    return g;
+  }
+
+  var graphEls = { links: [], eurLinks: [], pills: [], eurPills: [], nodes: [], itemNodeEls: [] };
+  var eurNodeEls = null;
+
+  function buildGraph() {
+    graphSvg.innerHTML = '';
+    graphEls = { links: [], eurLinks: [], pills: [], eurPills: [], nodes: [], itemNodeEls: [] };
+    eurNodeEls = null;
+    var c = getGC();
+    var ns = 'http://www.w3.org/2000/svg';
+
+    // --- Links between products (dashed, subtle, constant ratios) ---
+    var pairs = [[0,1],[1,2],[0,2]];
+    pairs.forEach(function(pair) {
+      var pa = itemNodePos(pair[0]), pb = itemNodePos(pair[1]);
+      var dx = pb.x - pa.x, dy = pb.y - pa.y;
+      var d = Math.sqrt(dx * dx + dy * dy) || 1;
+      var ux = dx / d, uy = dy / d;
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('class', 'graph-link');
+      line.setAttribute('x1', pa.x + ux * ITEM_R); line.setAttribute('y1', pa.y + uy * ITEM_R);
+      line.setAttribute('x2', pb.x - ux * ITEM_R); line.setAttribute('y2', pb.y - uy * ITEM_R);
+      graphSvg.appendChild(line);
+
+      var pill = document.createElementNS(ns, 'g');
+      pill.setAttribute('class', 'graph-pill');
+      var bg = document.createElementNS(ns, 'rect');
+      bg.setAttribute('fill', 'var(--ratio-bg)'); bg.setAttribute('stroke', 'var(--ratio-border)'); bg.setAttribute('stroke-width', '0.5');
+      pill.appendChild(bg);
+      var txt = document.createElementNS(ns, 'text');
+      var mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
+      txt.setAttribute('x', mx); txt.setAttribute('y', my);
+      txt.textContent = ratioLabel(items[pair[0]].price, items[pair[1]].price);
+      pill.appendChild(txt);
+      graphSvg.appendChild(pill);
+      graphEls.links.push(line);
+      graphEls.pills.push({ g: pill, bg: bg, txt: txt, pair: pair });
+    });
+
+    // --- Links EUR → each product (solid, prominent) ---
+    items.forEach(function(item, i) {
+      var ip = itemNodePos(i);
+      // Offset start/end to node borders so lines don't overlap circles
+      var dx = ip.x - c.cx, dy = ip.y - c.cy;
+      var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      var ux = dx / dist, uy = dy / dist;
+      var eurR = EUR_R + 4; // outer ring
+      var x1 = c.cx + ux * eurR, y1 = c.cy + uy * eurR;
+      var x2 = ip.x - ux * ITEM_R, y2 = ip.y - uy * ITEM_R;
+
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('class', 'graph-link-eur');
+      line.setAttribute('stroke', 'var(' + item.colorVar + ')');
+      line.setAttribute('opacity', '0.4');
+      line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+      graphSvg.appendChild(line);
+      graphEls.eurLinks.push(line);
+
+      var pill = document.createElementNS(ns, 'g');
+      pill.setAttribute('class', 'graph-pill-eur');
+      var bg = document.createElementNS(ns, 'rect');
+      pill.appendChild(bg);
+      var txt = document.createElementNS(ns, 'text');
+      txt.setAttribute('fill', 'var(' + item.colorVar + ')');
+      // Place pill outside each product node: Pan=right, Corte=left, Cena=right
+      var pillOffsets = [
+        { dx: ITEM_R + 6, dy: -ITEM_R + 2, anchor: 'start' },
+        { dx: -(ITEM_R + 6), dy: -ITEM_R + 2, anchor: 'end' },
+        { dx: ITEM_R + 6, dy: -ITEM_R + 2, anchor: 'start' }
+      ];
+      var po = pillOffsets[i];
+      var mx = ip.x + po.dx;
+      var my = ip.y + po.dy;
+      txt.setAttribute('x', mx); txt.setAttribute('y', my);
+      txt.setAttribute('text-anchor', po.anchor);
+      txt.textContent = formatEUR(nominalPrice(item));
+      pill.appendChild(txt);
+      graphSvg.appendChild(pill);
+      graphEls.eurPills.push({ g: pill, bg: bg, txt: txt, item: item });
+    });
+
+    // --- Product nodes (draggable, native SVG icons) ---
+    items.forEach(function(item, i) {
+      var p = itemNodePos(i);
+      var g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'graph-node');
+      g.dataset.index = i;
+
+      var bgC = document.createElementNS(ns, 'circle');
+      bgC.setAttribute('class', 'graph-node-bg');
+      bgC.setAttribute('cx', p.x); bgC.setAttribute('cy', p.y); bgC.setAttribute('r', ITEM_R);
+      g.appendChild(bgC);
+
+      var circle = document.createElementNS(ns, 'circle');
+      circle.setAttribute('class', 'graph-node-circle');
+      circle.setAttribute('cx', p.x); circle.setAttribute('cy', p.y); circle.setAttribute('r', ITEM_R);
+      circle.setAttribute('stroke', 'var(' + item.colorVar + ')');
+      g.appendChild(circle);
+
+      var iconG = parseSvgIcon(item.svg, ns, 'var(' + item.colorVar + ')', 14, p.x, p.y);
+      g.appendChild(iconG);
+
+      var label = document.createElementNS(ns, 'text');
+      label.setAttribute('class', 'graph-node-label');
+      label.setAttribute('x', p.x); label.setAttribute('y', p.y + ITEM_R + 11);
+      label.textContent = item.name;
+      g.appendChild(label);
+
+      graphSvg.appendChild(g);
+      graphEls.nodes.push(g);
+      graphEls.itemNodeEls.push({ bgC: bgC, circle: circle, iconG: iconG, label: label, cx: p.x, cy: p.y, item: item });
+    });
+
+    // --- EUR node (center, distinctive, dynamic size) ---
+    var eurG = document.createElementNS(ns, 'g');
+
+    var outerRing = document.createElementNS(ns, 'circle');
+    outerRing.setAttribute('class', 'eur-node-ring');
+    outerRing.setAttribute('cx', c.cx); outerRing.setAttribute('cy', c.cy);
+    outerRing.setAttribute('r', EUR_R + 4);
+    outerRing.setAttribute('stroke', 'var(--eur)');
+    eurG.appendChild(outerRing);
+
+    var fillC = document.createElementNS(ns, 'circle');
+    fillC.setAttribute('class', 'eur-node-fill');
+    fillC.setAttribute('cx', c.cx); fillC.setAttribute('cy', c.cy);
+    fillC.setAttribute('r', EUR_R);
+    fillC.setAttribute('fill', 'var(--eur)');
+    eurG.appendChild(fillC);
+
+    var mainRing = document.createElementNS(ns, 'circle');
+    mainRing.setAttribute('cx', c.cx); mainRing.setAttribute('cy', c.cy);
+    mainRing.setAttribute('r', EUR_R);
+    mainRing.setAttribute('stroke', 'var(--eur)');
+    mainRing.setAttribute('stroke-width', '2');
+    mainRing.setAttribute('fill', 'none');
+    eurG.appendChild(mainRing);
+
+    var sym = document.createElementNS(ns, 'text');
+    sym.setAttribute('class', 'eur-node-symbol');
+    sym.setAttribute('x', c.cx); sym.setAttribute('y', c.cy);
+    sym.setAttribute('font-size', '16');
+    sym.textContent = '€';
+    eurG.appendChild(sym);
+
+    graphSvg.appendChild(eurG);
+
+    eurNodeEls = {
+      outerRing: outerRing,
+      fillC: fillC,
+      mainRing: mainRing,
+      sym: sym,
+      cx: c.cx,
+      cy: c.cy
+    };
+
+    updateGraphPills();
+    updateProductPills();
+    updateEurNodeSize();
+    updateProductNodeSizes();
+  }
+
+  function updateGraphPills() {
+    graphEls.eurPills.forEach(function(ep) {
+      var price = nominalPrice(ep.item);
+      ep.txt.textContent = formatEUR(price);
+      try {
+        var bbox = ep.txt.getBBox();
+        ep.bg.setAttribute('x', bbox.x - 7);
+        ep.bg.setAttribute('y', bbox.y - 3);
+        ep.bg.setAttribute('width', bbox.width + 14);
+        ep.bg.setAttribute('height', bbox.height + 6);
+      } catch(e) {}
+    });
+  }
+
+  function updateProductPills() {
+    graphEls.pills.forEach(function(p) {
+      p.txt.textContent = ratioLabel(items[p.pair[0]].price, items[p.pair[1]].price);
+      try {
+        var bbox = p.txt.getBBox();
+        p.bg.setAttribute('x', bbox.x - 6);
+        p.bg.setAttribute('y', bbox.y - 2.5);
+        p.bg.setAttribute('width', bbox.width + 12);
+        p.bg.setAttribute('height', bbox.height + 5);
+      } catch(e) {}
+    });
+  }
+
+  /* ══ EUR node dynamic size ══ */
+  function updateEurNodeSize() {
+    if (!eurNodeEls) return;
+    var scale = 0.6 + 0.4 * (level / BASELINE);
+    var r = EUR_R * scale;
+    var e = eurNodeEls;
+    e.outerRing.setAttribute('r', r + 4 * scale);
+    e.fillC.setAttribute('r', r);
+    e.mainRing.setAttribute('r', r);
+    e.sym.setAttribute('font-size', 16 * scale);
+  }
+
+  function updateProductNodeSizes() {
+    graphEls.itemNodeEls.forEach(function(el) {
+      var scale = 0.7 + 0.3 * (el.item.price / el.item.basePrice);
+      scale = Math.max(0.5, Math.min(1.6, scale));
+      var r = ITEM_R * scale;
+      el.bgC.setAttribute('r', r);
+      el.circle.setAttribute('r', r);
+      var iconSize = 14 * scale;
+      var sc = iconSize / 24;
+      el.iconG.setAttribute('transform', 'translate(' + (el.cx - iconSize / 2) + ',' + (el.cy - iconSize / 2) + ') scale(' + sc + ')');
+      el.label.setAttribute('y', el.cy + r + 11);
+    });
+  }
+
+  function getItemRadius(idx) {
+    var item = items[idx];
+    var scale = 0.7 + 0.3 * (item.price / item.basePrice);
+    return ITEM_R * Math.max(0.5, Math.min(1.6, scale));
+  }
+
+  function getEurOuterRadius() {
+    var scale = 0.6 + 0.4 * (level / BASELINE);
+    return (EUR_R + 4) * scale;
+  }
+
+  var linkPairs = [[0,1],[1,2],[0,2]];
+
+  function updateLinks() {
+    var c = getGC();
+    // Product-product links
+    linkPairs.forEach(function(pair, pi) {
+      var pa = itemNodePos(pair[0]), pb = itemNodePos(pair[1]);
+      var rA = getItemRadius(pair[0]), rB = getItemRadius(pair[1]);
+      var dx = pb.x - pa.x, dy = pb.y - pa.y;
+      var d = Math.sqrt(dx * dx + dy * dy) || 1;
+      var ux = dx / d, uy = dy / d;
+      var line = graphEls.links[pi];
+      if (!line) return;
+      line.setAttribute('x1', pa.x + ux * rA);
+      line.setAttribute('y1', pa.y + uy * rA);
+      line.setAttribute('x2', pb.x - ux * rB);
+      line.setAttribute('y2', pb.y - uy * rB);
+    });
+    // EUR-product links
+    items.forEach(function(item, i) {
+      var ip = itemNodePos(i);
+      var dx = ip.x - c.cx, dy = ip.y - c.cy;
+      var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      var ux = dx / dist, uy = dy / dist;
+      var eurR = getEurOuterRadius();
+      var itemR = getItemRadius(i);
+      var line = graphEls.eurLinks[i];
+      if (!line) return;
+      line.setAttribute('x1', c.cx + ux * eurR);
+      line.setAttribute('y1', c.cy + uy * eurR);
+      line.setAttribute('x2', ip.x - ux * itemR);
+      line.setAttribute('y2', ip.y - uy * itemR);
+    });
+  }
+
+  buildGraph();
+
+  /* ══ AXIS ══ */
+  var axisArea = document.getElementById('axis-area');
+  var axisEls = [];
+  // Log scale — spreads €1, €20, €80 evenly
+  var LOG_MIN = Math.log10(0.5);
+  var LOG_MAX = Math.log10(250);
+  var AXIS_PAD_TOP = 22;
+  var AXIS_PAD_BOT = 16;
+
+  function getAxisH() { return axisArea.offsetHeight - AXIS_PAD_TOP - AXIS_PAD_BOT; }
+  function priceToY(p) {
+    var frac = 1 - (Math.log10(Math.max(p, 0.5)) - LOG_MIN) / (LOG_MAX - LOG_MIN);
+    return AXIS_PAD_TOP + frac * getAxisH();
+  }
+  function yToPrice(y) {
+    var frac = (y - AXIS_PAD_TOP) / getAxisH();
+    return Math.pow(10, LOG_MIN + (1 - frac) * (LOG_MAX - LOG_MIN));
+  }
+
+  // Dynamic ruler ticks — log-spaced 1-2-5 sequence, infinite range
+  var tickContainer = document.createElement('div');
+  tickContainer.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden;';
+  axisArea.appendChild(tickContainer);
+
+  function formatTickVal(v) {
+    if (v >= 1000000) return '€' + (v / 1000000) + 'M';
+    if (v >= 1000) return '€' + (v / 1000) + 'k';
+    if (v >= 100) return '€' + Math.round(v);
+    if (v >= 1) return '€' + v;
+    if (v >= 0.01) return '€' + (Math.round(v * 100) / 100);
+    return '€' + v.toExponential(0);
+  }
+
+  function updateAxisTicks() {
+    tickContainer.innerHTML = '';
+    var yTop = AXIS_PAD_TOP;
+    var yBot = axisArea.offsetHeight - AXIS_PAD_BOT;
+    if (yBot <= yTop) return;
+
+    // What EUR-denominated values are visible?
+    // A tick at €V sits at priceToY(V * eurValue).
+    // Visible range: V_top = yToPrice(yTop) / eurValue, V_bot = yToPrice(yBot) / eurValue
+    var safeEur = Math.max(eurValue, 0.0001);
+    var vTop = yToPrice(yTop) / safeEur;   // highest € value visible (top of axis)
+    var vBot = yToPrice(yBot) / safeEur;    // lowest € value visible (bottom of axis)
+    if (vBot > vTop) { var tmp = vBot; vBot = vTop; vTop = tmp; }
+    vBot = Math.max(vBot, 1e-6);
+    vTop = Math.max(vTop, vBot * 2);
+
+    // Generate 1-2-5 ticks across visible range
+    var steps = [1, 2, 5];
+    var startExp = Math.floor(Math.log10(vBot)) - 1;
+    var endExp = Math.ceil(Math.log10(vTop)) + 1;
+    var count = 0;
+
+    for (var e = startExp; e <= endExp && count < 60; e++) {
+      var mag = Math.pow(10, e);
+      for (var s = 0; s < steps.length && count < 60; s++) {
+        var v = mag * steps[s];
+        if (v < vBot * 0.5 || v > vTop * 2) continue;
+
+        var y = priceToY(v * safeEur);
+        if (y < yTop - 2 || y > yBot + 2) continue;
+
+        var tick = document.createElement('div');
+        var isPow10 = (s === 0); // steps[0] = 1 → power of 10
+        tick.className = 'axis-tick' + (isPow10 ? ' major' : '');
+        tick.style.top = y + 'px';
+        tickContainer.appendChild(tick);
+        count++;
+
+        if (isPow10) {
+          var label = document.createElement('div');
+          label.className = 'axis-tick-label';
+          label.style.top = y + 'px';
+          label.textContent = formatTickVal(v);
+          tickContainer.appendChild(label);
+        }
+      }
+    }
+  }
+
+  updateAxisTicks();
+
+  function buildAxisMarkers() {
+    axisEls.forEach(function(ae) { ae.wrap.remove(); });
+    axisEls = [];
+    items.forEach(function(item) {
+      var y = priceToY(item.price);
+      var color = 'var(' + item.colorVar + ')';
+
+      var wrap = document.createElement('div');
+      wrap.className = 'axis-marker-wrap';
+      wrap.style.top = y + 'px';
+
+      var marker = document.createElement('div');
+      marker.className = 'axis-marker';
+      marker.style.background = color;
+      wrap.appendChild(marker);
+
+      var icon = document.createElement('div');
+      icon.className = 'axis-marker-icon';
+      icon.style.color = color;
+      icon.innerHTML = item.svg;
+      wrap.appendChild(icon);
+
+      var priceEl = document.createElement('div');
+      priceEl.className = 'axis-marker-price';
+      priceEl.style.color = color;
+      priceEl.textContent = formatEUR(nominalPrice(item));
+      wrap.appendChild(priceEl);
+
+      axisArea.appendChild(wrap);
+      axisEls.push({ wrap: wrap, marker: marker, priceEl: priceEl, item: item });
+    });
+  }
+
+  function updateAxis() {
+    axisEls.forEach(function(ae) {
+      // Marker position = intrinsic value (fixed unless user drags)
+      ae.wrap.style.top = priceToY(ae.item.price) + 'px';
+      // Label = nominal price in EUR (changes with eurValue)
+      ae.priceEl.textContent = formatEUR(nominalPrice(ae.item));
+    });
+    updateAxisTicks();
+  }
+
+  buildAxisMarkers();
+  updateAxis();
+
+  /* ══ Buttons with GSAP animation ══ */
+  var LEVEL_STEP = 1.0;
+  var levelAnim = { val: level };
+
+  function animateLevel(newLevel) {
+    newLevel = Math.max(0.01, newLevel);
+    gsap.to(levelAnim, {
+      val: newLevel,
+      duration: 5,
+      ease: 'sine.inOut',
+      onUpdate: function () {
+        level = levelAnim.val;
+      }
+    });
+  }
+
+  var highlightTimer = null;
+  function pulseHighlight() {
+    clearTimeout(highlightTimer);
+    graphSvg.classList.add('eur-highlight');
+    axisArea.classList.add('axis-highlight');
+    highlightTimer = setTimeout(function() {
+      graphSvg.classList.remove('eur-highlight');
+      axisArea.classList.remove('axis-highlight');
+    }, 1800);
+  }
+
+  document.getElementById('btn-down').addEventListener('click', function () {
+    animateLevel(level - LEVEL_STEP);
+    showMessage('Cuando el EUR pierde valor, los precios de los productos suben');
+    pulseHighlight();
+  });
+
+  document.getElementById('btn-up').addEventListener('click', function () {
+    animateLevel(level + LEVEL_STEP);
+    showMessage('Cuando el EUR gana valor, los precios de los productos bajan');
+    pulseHighlight();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === '-' || e.key === 'ArrowDown') {
+      animateLevel(level - LEVEL_STEP);
+      showMessage('Cuando el EUR pierde valor, los precios de los productos suben');
+      pulseHighlight();
+    } else if (e.key === '+' || e.key === '=' || e.key === 'ArrowUp') {
+      animateLevel(level + LEVEL_STEP);
+      showMessage('Cuando el EUR gana valor, los precios de los productos bajan');
+      pulseHighlight();
+    }
+  });
+
+  /* ══ Interaction setup (called on build and resize) ══ */
+  function setupInteractions() {
+    // Hover cross-highlighting — axis markers
+    axisEls.forEach(function(ae, i) {
+      ae.wrap.addEventListener('mouseenter', function() {
+        ae.wrap.classList.add('hover');
+        axisEls.forEach(function(other) { if (other !== ae) other.wrap.classList.add('dimmed'); });
+        graphEls.itemNodeEls.forEach(function(el, gi) {
+          if (gi !== i) gsap.to(el.bgC.parentNode, { opacity: 0.2, duration: 0.2 });
+        });
+      });
+      ae.wrap.addEventListener('mouseleave', function() {
+        ae.wrap.classList.remove('hover');
+        axisEls.forEach(function(other) { other.wrap.classList.remove('dimmed'); });
+        graphEls.itemNodeEls.forEach(function(el) {
+          gsap.to(el.bgC.parentNode, { opacity: 1, duration: 0.2 });
+        });
+      });
+    });
+
+    // Hover cross-highlighting — graph nodes
+    graphEls.itemNodeEls.forEach(function(el, i) {
+      var g = el.bgC.parentNode;
+      g.addEventListener('mouseenter', function() {
+        g.classList.add('hover');
+        graphEls.itemNodeEls.forEach(function(other, oi) {
+          if (oi !== i) gsap.to(other.bgC.parentNode, { opacity: 0.2, duration: 0.2 });
+        });
+        axisEls.forEach(function(ae, ai) {
+          if (ai !== i) ae.wrap.classList.add('dimmed');
+          else ae.wrap.classList.add('hover');
+        });
+      });
+      g.addEventListener('mouseleave', function() {
+        g.classList.remove('hover');
+        graphEls.itemNodeEls.forEach(function(other) {
+          gsap.to(other.bgC.parentNode, { opacity: 1, duration: 0.2 });
+        });
+        axisEls.forEach(function(ae) { ae.wrap.classList.remove('dimmed', 'hover'); });
+      });
+    });
+
+    if (frozen) return;
+
+    // Dragging — axis markers
+    axisEls.forEach(function(ae) {
+      ae.marker.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
+        ae.wrap.classList.add('dragging');
+        ae.wrap.style.transition = 'none';
+        ae.marker.setPointerCapture(e.pointerId);
+
+        function onMove(ev) {
+          var rect = axisArea.getBoundingClientRect();
+          var localY = ev.clientY - rect.top;
+          localY = Math.max(AXIS_PAD_TOP, Math.min(axisArea.offsetHeight - AXIS_PAD_BOT, localY));
+          var rawPrice = yToPrice(localY);
+          rawPrice = Math.max(ae.item.basePrice * 0.2, Math.min(ae.item.basePrice * 5, rawPrice));
+          ae.item.price = rawPrice;
+          ae.wrap.style.top = priceToY(ae.item.price) + 'px';
+          ae.priceEl.textContent = formatEUR(nominalPrice(ae.item));
+        }
+
+        function onUp() {
+          ae.wrap.classList.remove('dragging');
+          ae.wrap.style.transition = '';
+          ae.marker.removeEventListener('pointermove', onMove);
+          ae.marker.removeEventListener('pointerup', onUp);
+          ae.marker.removeEventListener('pointercancel', onUp);
+        }
+
+        ae.marker.addEventListener('pointermove', onMove);
+        ae.marker.addEventListener('pointerup', onUp);
+        ae.marker.addEventListener('pointercancel', onUp);
+      });
+    });
+
+    // Dragging — graph nodes (radial)
+    graphEls.itemNodeEls.forEach(function(el, idx) {
+      var g = el.bgC.parentNode;
+      g.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        g.classList.add('dragging');
+
+        var gc = getGC();
+        var angle = itemAngles[idx];
+        var extent = Math.min(graphArea.offsetWidth, graphArea.offsetHeight);
+        var minDist = extent * 0.15;
+        var maxDist = extent * 0.48;
+
+        function onMove(ev) {
+          var rect = graphArea.getBoundingClientRect();
+          var mx = ev.clientX - rect.left;
+          var my = ev.clientY - rect.top;
+          var dist = (mx - gc.cx) * Math.cos(angle) + (my - gc.cy) * Math.sin(angle);
+          dist = Math.max(minDist, Math.min(maxDist, dist));
+
+          var frac = (dist - minDist) / (maxDist - minDist);
+          var newPrice = el.item.basePrice * (0.2 + frac * 4.8);
+          el.item.price = newPrice;
+        }
+
+        function onUp() {
+          g.classList.remove('dragging');
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onUp);
+        }
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
+      });
+    });
+  }
+
+  setupInteractions();
+
+  /* ══ Loop (requestAnimationFrame) ══ */
+  var running = !frozen;
+  var lastFrame = 0;
+  var FRAME_INTERVAL = 70; // ms between simulation ticks
+
+  function loop(ts) {
+    if (!running) return;
+    if (ts - lastFrame >= FRAME_INTERVAL) {
+      lastFrame = ts;
+      tick();
+    }
+    drawChart();
+    updateGraphPills();
+    updateProductPills();
+    updateAxis();
+    updateEurNodeSize();
+    updateProductNodeSizes();
+    updateLinks();
+    requestAnimationFrame(loop);
+  }
+
+  resizeCanvas();
+  drawChart();
+  if (running) requestAnimationFrame(function(ts) { lastFrame = ts; loop(ts); });
+
+  window.addEventListener('resize', function() {
+    resizeCanvas();
+    buildGraph();
+    buildAxisMarkers();
+    drawChart();
+    updateAxis();
+    setupInteractions();
+  });
+
+  // Rebuild on capture mode toggle (layout changes when buttons hide)
+  new MutationObserver(function() {
+    setTimeout(function() {
+      resizeCanvas();
+      buildGraph();
+      buildAxisMarkers();
+      drawChart();
+      updateAxis();
+      setupInteractions();
+    }, 50);
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) { running = false; }
+    else if (!frozen) { running = true; requestAnimationFrame(function(ts) { lastFrame = ts; loop(ts); }); }
+  });
+}());
+</script>
+</body>
+</html>
