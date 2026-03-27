@@ -7,6 +7,7 @@ import {
   isDemoMode,
   resolvePublicClient,
 } from "@/lib/supabase/queries";
+import { createPostsClient } from "@/lib/supabase/posts-client";
 import HomeClient from "./home-client";
 import { DEMO_DATA } from "@/lib/dummy-data";
 
@@ -63,6 +64,20 @@ export default async function HomePage() {
   const dc = await resolvePublicClient();
   const demo = await isDemoMode(dc);
 
+  // Fetch latest published post
+  let latestPost: { slug: string; title: string; subtitle: string | null; date: string; banner_path: string | null } | null = null;
+  try {
+    const postsDb = createPostsClient();
+    const { data } = await postsDb
+      .from("posts")
+      .select("slug, title, subtitle, date, banner_path")
+      .eq("published", true)
+      .order("date", { ascending: false })
+      .limit(1)
+      .single();
+    latestPost = data;
+  } catch { /* fallback: no post shown */ }
+
   if (demo) {
     return (
       <>
@@ -70,7 +85,7 @@ export default async function HomePage() {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <HomeClient {...DEMO_DATA} isDemo platformColorsLight={PLATFORM_COLORS_LIGHT} />
+        <HomeClient {...DEMO_DATA} isDemo platformColorsLight={PLATFORM_COLORS_LIGHT} latestPost={latestPost} />
       </>
     );
   }
@@ -81,7 +96,7 @@ export default async function HomePage() {
       getPortfolioSummary(dc),
       getPositions(dc),
       getPlatforms(dc),
-      getDailySnapshots(30, dc),
+      getDailySnapshots(365, dc),
       getCostBasis(dc),
     ]);
   } catch (e) {
@@ -127,6 +142,7 @@ export default async function HomePage() {
   const dailyData = snapshots
     .sort((a, b) => a.snapshot_date.localeCompare(b.snapshot_date))
     .map((s) => ({
+      date: s.snapshot_date.slice(0, 10),
       day: new Date(s.snapshot_date).toLocaleDateString("es", {
         weekday: "short",
       }),
@@ -155,6 +171,7 @@ export default async function HomePage() {
         totalValue={totalValue}
         dailyData={dailyData}
         capitalInvested={costBasis.net > 0 ? costBasis.net : null}
+        latestPost={latestPost}
       />
     </>
   );

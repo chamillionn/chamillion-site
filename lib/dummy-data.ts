@@ -8,21 +8,21 @@ import type { HomeProps } from "@/app/(home)/home-client";
 const COLORS = ["#5BAA7C", "#6B8EA0", "#C9A84C", "#8B6BBF"];
 
 const dailyData = [
-  { day: "lun", total: 8210 }, { day: "mar", total: 8340 },
-  { day: "mié", total: 8285 }, { day: "jue", total: 8420 },
-  { day: "vie", total: 8510 }, { day: "sáb", total: 8475 },
-  { day: "dom", total: 8620 }, { day: "lun", total: 8590 },
-  { day: "mar", total: 8750 }, { day: "mié", total: 8680 },
-  { day: "jue", total: 8820 }, { day: "vie", total: 8910 },
-  { day: "sáb", total: 8870 }, { day: "dom", total: 9020 },
-  { day: "lun", total: 9150 }, { day: "mar", total: 9080 },
-  { day: "mié", total: 9210 }, { day: "jue", total: 9340 },
-  { day: "vie", total: 9280 }, { day: "sáb", total: 9420 },
-  { day: "dom", total: 9510 }, { day: "lun", total: 9580 },
-  { day: "mar", total: 9650 }, { day: "mié", total: 9720 },
-  { day: "jue", total: 9810 }, { day: "vie", total: 9950 },
-  { day: "sáb", total: 10080 }, { day: "dom", total: 10150 },
-  { day: "lun", total: 10320 }, { day: "mar", total: 10450 },
+  { date: "2026-02-26", day: "lun", total: 8210 }, { date: "2026-02-27", day: "mar", total: 8340 },
+  { date: "2026-02-28", day: "mié", total: 8285 }, { date: "2026-03-01", day: "jue", total: 8420 },
+  { date: "2026-03-02", day: "vie", total: 8510 }, { date: "2026-03-03", day: "sáb", total: 8475 },
+  { date: "2026-03-04", day: "dom", total: 8620 }, { date: "2026-03-05", day: "lun", total: 8590 },
+  { date: "2026-03-06", day: "mar", total: 8750 }, { date: "2026-03-07", day: "mié", total: 8680 },
+  { date: "2026-03-08", day: "jue", total: 8820 }, { date: "2026-03-09", day: "vie", total: 8910 },
+  { date: "2026-03-10", day: "sáb", total: 8870 }, { date: "2026-03-11", day: "dom", total: 9020 },
+  { date: "2026-03-12", day: "lun", total: 9150 }, { date: "2026-03-13", day: "mar", total: 9080 },
+  { date: "2026-03-14", day: "mié", total: 9210 }, { date: "2026-03-15", day: "jue", total: 9340 },
+  { date: "2026-03-16", day: "vie", total: 9280 }, { date: "2026-03-17", day: "sáb", total: 9420 },
+  { date: "2026-03-18", day: "dom", total: 9510 }, { date: "2026-03-19", day: "lun", total: 9580 },
+  { date: "2026-03-20", day: "mar", total: 9650 }, { date: "2026-03-21", day: "mié", total: 9720 },
+  { date: "2026-03-22", day: "jue", total: 9810 }, { date: "2026-03-23", day: "vie", total: 9950 },
+  { date: "2026-03-24", day: "sáb", total: 10080 }, { date: "2026-03-25", day: "dom", total: 10150 },
+  { date: "2026-03-26", day: "lun", total: 10320 }, { date: "2026-03-27", day: "mar", total: 10450 },
 ];
 
 export const DEMO_DATA: HomeProps = {

@@ -141,6 +141,7 @@ interface Platform {
 }
 
 interface DailyData {
+  date: string;
   day: string;
   total: number;
 }
@@ -158,6 +159,13 @@ export interface HomeProps {
   capitalInvested: number | null;
   isDemo?: boolean;
   platformColorsLight?: string[];
+  latestPost?: {
+    slug: string;
+    title: string;
+    subtitle: string | null;
+    date: string;
+    banner_path: string | null;
+  } | null;
 }
 
 // Detect current theme from data-theme attribute
@@ -484,11 +492,21 @@ function SocialLink({
 }
 
 // Post preview card with drawer reveal for edition selection
-function PostCard({ loaded }: { loaded: boolean }) {
+function PostCard({ loaded, latestPost }: { loaded: boolean; latestPost?: HomeProps["latestPost"] }) {
   const [hovered, setHovered] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const mobile = useMediaQuery(768);
+
+  const post = latestPost ?? {
+    slug: "navegar-las-finanzas-modernas-el-augurio-de-una-odisea",
+    title: "Navegar las finanzas modernas: El augurio de una odisea",
+    subtitle: "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
+    date: "2026-02-21",
+    banner_path: "/assets/newsletter/banner-post-01.jpeg",
+  };
+  const postDate = new Date(post.date + "T00:00:00").toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" });
+  const postHref = `/newsletter/${post.slug}`;
 
   // Close on click outside or Escape
   useEffect(() => {
@@ -562,7 +580,7 @@ function PostCard({ loaded }: { loaded: boolean }) {
             letterSpacing: "0.08em",
           }}
         >
-          #01 — Último post
+          Último post
         </span>
       </div>
 
@@ -598,8 +616,8 @@ function PostCard({ loaded }: { loaded: boolean }) {
         >
           <div style={{ position: "relative", width: "100%", aspectRatio: "2.4/1", overflow: "hidden" }}>
             <Image
-              src="/assets/newsletter/wanderer-post-01.png"
-              alt="Navegar las finanzas modernas"
+              src={post.banner_path || "/assets/newsletter/banner-post-01.jpeg"}
+              alt={post.title}
               fill
               style={{
                 objectFit: "cover",
@@ -631,7 +649,7 @@ function PostCard({ loaded }: { loaded: boolean }) {
                 marginBottom: 6,
               }}
             >
-              21 Feb 2026
+              {postDate}
             </div>
             <div
               style={{
@@ -643,7 +661,7 @@ function PostCard({ loaded }: { loaded: boolean }) {
                 marginBottom: 4,
               }}
             >
-              Navegar las finanzas modernas: El augurio de una odisea
+              {post.title}
             </div>
             <div
               style={{
@@ -653,7 +671,7 @@ function PostCard({ loaded }: { loaded: boolean }) {
                 fontWeight: 300,
               }}
             >
-              Un viaje con dinero real por los mercados que están reemplazando al sistema.
+              {post.subtitle}
             </div>
             <div
               style={{
@@ -740,7 +758,7 @@ function PostCard({ loaded }: { loaded: boolean }) {
               </a>
               {/* Web */}
               <Link
-                href="/newsletter/navegar-las-finanzas-modernas-el-augurio-de-una-odisea"
+                href={postHref}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -1020,10 +1038,27 @@ function PlatformLegendItem({
 }
 
 // Portfolio area chart with interactive tooltip
+type ChartRange = "7d" | "30d" | "All";
+
+function filterByRange(data: DailyData[], range: ChartRange): DailyData[] {
+  if (range === "All") return data;
+  const days = range === "7d" ? 7 : 30;
+  return data.slice(-days);
+}
+
+function formatLabel(d: DailyData, range: ChartRange): string {
+  if (range === "7d") return d.day;
+  const dt = new Date(d.date);
+  return dt.toLocaleDateString("es", { day: "numeric", month: "short" });
+}
+
 function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
+  const [range, setRange] = useState<ChartRange>("7d");
   const chartRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(600);
+
+  const visibleData = filterByRange(dailyData, range);
 
   useEffect(() => {
     const el = chartRef.current;
@@ -1042,7 +1077,7 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   const chartH = H - padTop - padBottom;
 
   // Calculate Y range with 5% padding
-  const totals = dailyData.map(d => d.total);
+  const totals = visibleData.map(d => d.total);
   const minVal = Math.min(...totals);
   const maxVal = Math.max(...totals);
   const yRange = maxVal - minVal || 1;
@@ -1051,8 +1086,8 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   const yMax = maxVal + yPad;
 
   // Map data to pixel coordinates
-  const points = dailyData.map((d, i) => ({
-    x: padX + (i / (dailyData.length - 1)) * (W - padX * 2),
+  const points = visibleData.map((d, i) => ({
+    x: padX + (i / (visibleData.length - 1)) * (W - padX * 2),
     y: padTop + chartH - ((d.total - yMin) / (yMax - yMin)) * chartH,
   }));
 
@@ -1072,9 +1107,9 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   const gridValues = [yMin + (yMax - yMin) * 0.25, yMin + (yMax - yMin) * 0.5, yMin + (yMax - yMin) * 0.75];
 
   // Hover data
-  const hoveredData = hoveredDay !== null ? dailyData[hoveredDay] : null;
+  const hoveredData = hoveredDay !== null ? visibleData[hoveredDay] : null;
   const hoveredPoint = hoveredDay !== null ? points[hoveredDay] : null;
-  const prevTotal = hoveredDay !== null && hoveredDay > 0 ? dailyData[hoveredDay - 1].total : null;
+  const prevTotal = hoveredDay !== null && hoveredDay > 0 ? visibleData[hoveredDay - 1].total : null;
 
   return (
     <div style={{ marginTop: 28, paddingTop: 20, backgroundImage: `linear-gradient(to right, transparent, ${V.border}, transparent)`, backgroundSize: "100% 1px", backgroundRepeat: "no-repeat", backgroundPosition: "top" }}>
@@ -1099,25 +1134,29 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
           Rendimiento
         </div>
         <div style={{ display: "flex", gap: 2, alignItems: "center" }}>
-          {["7d", "30d", "All"].map((tab, i) => (
-            <span
-              key={tab}
-              title={i > 0 ? "Próximamente" : undefined}
-              style={{
-                fontFamily: "var(--font-jetbrains), monospace",
-                fontSize: 10,
-                color: i === 0 ? V.steel : V.textMuted,
-                background: i === 0 ? `${steelA(0.08)}` : "transparent",
-                borderRadius: 4,
-                padding: "3px 8px",
-                cursor: "default",
-                opacity: i > 0 ? 0.5 : 1,
-                transition: "color 0.2s ease",
-              }}
-            >
-              {tab}
-            </span>
-          ))}
+          {(["7d", "30d", "All"] as ChartRange[]).map((tab) => {
+            const active = tab === range;
+            const hasData = tab === "7d" || tab === "All" || (tab === "30d" ? dailyData.length > 7 : true);
+            return (
+              <span
+                key={tab}
+                onClick={hasData ? () => { setRange(tab); setHoveredDay(null); } : undefined}
+                style={{
+                  fontFamily: "var(--font-jetbrains), monospace",
+                  fontSize: 10,
+                  color: active ? V.steel : V.textMuted,
+                  background: active ? `${steelA(0.08)}` : "transparent",
+                  borderRadius: 4,
+                  padding: "3px 8px",
+                  cursor: hasData ? "pointer" : "default",
+                  opacity: hasData ? 1 : 0.35,
+                  transition: "color 0.2s ease, background 0.2s ease",
+                }}
+              >
+                {tab}
+              </span>
+            );
+          })}
         </div>
       </div>
 
@@ -1223,8 +1262,8 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
           )}
 
           {/* Invisible hover zones */}
-          {dailyData.map((_, i) => {
-            const zoneW = W / dailyData.length;
+          {visibleData.map((_, i) => {
+            const zoneW = W / visibleData.length;
             return (
               <rect
                 key={i}
@@ -1243,9 +1282,11 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
 
           {/* X-axis labels — reduce density on small screens */}
           {(() => {
-            const labelStep = W < 400 ? 7 : W < 600 ? 4 : 2;
-            return dailyData.map((d, i) => {
-              if (i % labelStep !== 0 && i !== dailyData.length - 1) return null;
+            const n = visibleData.length;
+            const defaultStep = W < 400 ? 7 : W < 600 ? 4 : 2;
+            const labelStep = range === "All" ? Math.max(1, Math.floor(n / 8)) : range === "30d" ? Math.max(1, Math.floor(n / 10)) : defaultStep;
+            return visibleData.map((d, i) => {
+              if (i % labelStep !== 0 && i !== n - 1) return null;
               return (
                 <text
                   key={i}
@@ -1257,7 +1298,7 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
                   fontFamily="var(--font-jetbrains), monospace"
                   style={{ transition: "fill 0.15s ease" }}
                 >
-                  {d.day}
+                  {formatLabel(d, range)}
                 </text>
               );
             });
@@ -1281,7 +1322,7 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
               whiteSpace: "nowrap",
             }}
           >
-            <div style={{ fontSize: 10, color: V.textMuted, marginBottom: 2 }}>{hoveredData.day}</div>
+            <div style={{ fontSize: 10, color: V.textMuted, marginBottom: 2 }}>{formatLabel(hoveredData, range)}</div>
             <div style={{ fontSize: 14, fontWeight: 600, color: V.textPrimary }}>{hoveredData.total.toFixed(2)} €</div>
             {prevTotal !== null && (
               <div style={{ fontSize: 10, color: hoveredData.total >= prevTotal ? V.green : V.red }}>
@@ -1296,7 +1337,7 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   );
 }
 
-export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, isDemo, platformColorsLight }: HomeProps) {
+export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, isDemo, platformColorsLight, latestPost }: HomeProps) {
   const [loaded, setLoaded] = useState(false);
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
   const [navDropdown, setNavDropdown] = useState(false);
@@ -1858,7 +1899,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
           </div>
 
           {/* Right: Latest post preview */}
-          <PostCard loaded={loaded} />
+          <PostCard loaded={loaded} latestPost={latestPost} />
         </div>
 
         {/* Divider */}
