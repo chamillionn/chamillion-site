@@ -9,9 +9,9 @@ import type { Database } from "./types";
  */
 export function createPostsClient() {
   const url =
-    process.env.SUPABASE_PROD_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    process.env.PROD_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const key =
-    process.env.SUPABASE_PROD_SERVICE_ROLE_KEY ||
+    process.env.PROD_SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SERVICE_ROLE_KEY!;
   return createClient<Database>(url, key, { auth: { persistSession: false } });
 }
