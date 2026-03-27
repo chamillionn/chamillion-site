@@ -85,9 +85,9 @@ function SectionCards({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 14,
-                padding: 12,
-                borderRadius: 10,
+                gap: 10,
+                padding: "8px 12px",
+                borderRadius: 8,
                 border: `1px solid ${isActive ? steelA(0.35) : steelA(0.12)}`,
                 background: isActive ? steelA(0.06) : "transparent",
                 cursor: "pointer",
@@ -112,10 +112,10 @@ function SectionCards({
                 <Image
                   src={meta.image}
                   alt=""
-                  width={52}
-                  height={52}
+                  width={36}
+                  height={36}
                   style={{
-                    borderRadius: 8,
+                    borderRadius: 6,
                     objectFit: "cover",
                     flexShrink: 0,
                     opacity: isActive ? 1 : 0.75,
@@ -123,44 +123,29 @@ function SectionCards({
                   }}
                 />
               )}
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-playfair), serif",
-                      fontSize: 15,
-                      fontWeight: 600,
-                      color: isActive ? V.textPrimary : V.textSecondary,
-                      lineHeight: 1.3,
-                      transition: "color 0.2s",
-                    }}
-                  >
-                    {section}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-dm-mono), monospace",
-                      fontSize: 9,
-                      color: V.textMuted,
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    {isEmpty ? "Próximamente" : `${count}`}
-                  </span>
-                </div>
-                {meta?.description && (
-                  <div
-                    style={{
-                      fontSize: 11,
-                      lineHeight: 1.45,
-                      color: V.textMuted,
-                      fontWeight: 300,
-                      marginTop: 3,
-                    }}
-                  >
-                    {meta.description}
-                  </div>
-                )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-playfair), serif",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: isActive ? V.textPrimary : V.textSecondary,
+                    lineHeight: 1.3,
+                    transition: "color 0.2s",
+                  }}
+                >
+                  {section}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-dm-mono), monospace",
+                    fontSize: 9,
+                    color: V.textMuted,
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  {isEmpty ? "Próximamente" : ""}
+                </span>
               </div>
             </button>
           );
@@ -531,7 +516,7 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
           color: V.textSecondary,
           fontWeight: 300,
           maxWidth: "55ch",
-          margin: "0 0 40px",
+          margin: "0 0 24px",
           opacity: loaded ? 1 : 0,
           transform: loaded ? "translateY(0)" : "translateY(12px)",
           transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
@@ -579,7 +564,7 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
         style={{
           height: 1,
           background: `linear-gradient(to right, transparent, ${V.border}, transparent)`,
-          marginBottom: 32,
+          marginBottom: 20,
         }}
       />
 
