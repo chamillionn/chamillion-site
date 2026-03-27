@@ -3,6 +3,8 @@ import { createPostsClient } from "@/lib/supabase/posts-client";
 import type { Post } from "@/lib/supabase/types";
 import NewsletterClient from "./newsletter-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewsletterIndex() {
   let posts: Post[] = [];
   let fetchError = false;

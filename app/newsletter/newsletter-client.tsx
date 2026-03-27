@@ -17,6 +17,162 @@ function formatDate(dateStr: string) {
   return `${day} ${month} ${year}`;
 }
 
+// ── Section metadata ──
+const SECTION_META: Record<string, { image: string; description: string }> = {
+  "Reporte de la Cartera": {
+    image: "/assets/newsletter/sections/reporte-de-la-cartera.jpeg",
+    description:
+      "Actualización al detalle de mis nuevas posiciones, y de cómo van las actuales. Novedades en los mercados, y cosas a esperar.",
+  },
+  "Punto de Mira": {
+    image: "/assets/newsletter/sections/punto-de-mira.png",
+    description: "La vanguardia de los mercados, al detalle.",
+  },
+};
+
+// ── Section cards ──
+function SectionCards({
+  sections,
+  active,
+  onChange,
+  loaded,
+}: {
+  sections: string[];
+  active: string | null;
+  onChange: (s: string | null) => void;
+  loaded: boolean;
+}) {
+  if (sections.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+        marginBottom: 32,
+        opacity: loaded ? 1 : 0,
+        transform: loaded ? "translateY(0)" : "translateY(8px)",
+        transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.18s",
+      }}
+    >
+      {/* Section cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
+        {sections.map((section) => {
+          const meta = SECTION_META[section];
+          const isActive = active === section;
+          return (
+            <button
+              key={section}
+              type="button"
+              onClick={() => onChange(isActive ? null : section)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                padding: 12,
+                borderRadius: 10,
+                border: `1px solid ${isActive ? steelA(0.35) : steelA(0.12)}`,
+                background: isActive ? steelA(0.06) : "transparent",
+                cursor: "pointer",
+                transition: "all 0.25s ease",
+                textAlign: "left",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.borderColor = steelA(0.25);
+                  e.currentTarget.style.background = steelA(0.03);
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.borderColor = steelA(0.12);
+                  e.currentTarget.style.background = "transparent";
+                }
+              }}
+            >
+              {meta?.image && (
+                <Image
+                  src={meta.image}
+                  alt=""
+                  width={52}
+                  height={52}
+                  style={{
+                    borderRadius: 8,
+                    objectFit: "cover",
+                    flexShrink: 0,
+                    opacity: isActive ? 1 : 0.75,
+                    transition: "opacity 0.2s",
+                  }}
+                />
+              )}
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: "var(--font-playfair), serif",
+                    fontSize: 15,
+                    fontWeight: 600,
+                    color: isActive ? V.textPrimary : V.textSecondary,
+                    lineHeight: 1.3,
+                    marginBottom: 3,
+                    transition: "color 0.2s",
+                  }}
+                >
+                  {section}
+                </div>
+                {meta?.description && (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      lineHeight: 1.45,
+                      color: V.textMuted,
+                      fontWeight: 300,
+                    }}
+                  >
+                    {meta.description}
+                  </div>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Clear filter */}
+      {active && (
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          style={{
+            alignSelf: "flex-start",
+            fontFamily: "var(--font-dm-mono), monospace",
+            fontSize: 9,
+            textTransform: "uppercase",
+            letterSpacing: "0.09em",
+            padding: "4px 10px",
+            borderRadius: 4,
+            border: `1px solid ${steelA(0.15)}`,
+            background: "transparent",
+            color: V.textMuted,
+            cursor: "pointer",
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = steelA(0.3);
+            e.currentTarget.style.color = V.textSecondary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = steelA(0.15);
+            e.currentTarget.style.color = V.textMuted;
+          }}
+        >
+          Ver todo
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ── Post card ──
 function PostCard({ post, delay, isAdmin }: { post: Post; delay: number; isAdmin?: boolean }) {
   const [hovered, setHovered] = useState(false);
@@ -119,8 +275,28 @@ function PostCard({ post, delay, isAdmin }: { post: Post; delay: number; isAdmin
               alignItems: "center",
               gap: 8,
               marginBottom: 6,
+              flexWrap: "wrap",
             }}
           >
+            {/* Section badge */}
+            {post.section && (
+              <span
+                style={{
+                  fontFamily: "var(--font-dm-mono), monospace",
+                  fontSize: 8,
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  padding: "2px 6px",
+                  borderRadius: 4,
+                  background: steelA(0.08),
+                  color: V.steel,
+                  border: `1px solid ${steelA(0.14)}`,
+                }}
+              >
+                {post.section}
+              </span>
+            )}
             <span
               style={{
                 fontFamily: "var(--font-jetbrains), monospace",
@@ -128,6 +304,7 @@ function PostCard({ post, delay, isAdmin }: { post: Post; delay: number; isAdmin
                 color: V.steel,
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
+                opacity: 0.6,
               }}
             >
               {formatDate(post.date)}
@@ -246,6 +423,7 @@ function formatPrice(cents: number, currency: string): string {
 export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }: { posts: Post[]; error?: boolean; hideUpgrade?: boolean; isAdmin?: boolean }) {
   const [loaded, setLoaded] = useState(false);
   const [prices, setPrices] = useState<Price[]>([]);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100);
@@ -255,6 +433,15 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
       .catch(() => {});
     return () => clearTimeout(t);
   }, []);
+
+  // Derive sections preserving first-seen order (posts are date desc)
+  const sections = Array.from(
+    new Set(posts.map((p) => p.section).filter((s): s is string => !!s))
+  );
+
+  const visiblePosts = activeSection
+    ? posts.filter((p) => p.section === activeSection)
+    : posts;
 
   return (
     <div
@@ -356,8 +543,16 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
         style={{
           height: 1,
           background: `linear-gradient(to right, transparent, ${V.border}, transparent)`,
-          marginBottom: 40,
+          marginBottom: 32,
         }}
+      />
+
+      {/* Section filter cards */}
+      <SectionCards
+        sections={sections}
+        active={activeSection}
+        onChange={setActiveSection}
+        loaded={loaded}
       />
 
       {/* Post grid */}
@@ -372,7 +567,7 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
             No se pudieron cargar los posts.<br />Intenta de nuevo mas tarde.
           </p>
         </div>
-      ) : posts.length === 0 ? (
+      ) : visiblePosts.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 0" }}>
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={V.textMuted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12, opacity: 0.5 }}>
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -393,7 +588,7 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
             paddingBottom: 80,
           }}
         >
-          {posts.map((post, i) => (
+          {visiblePosts.map((post, i) => (
             <PostCard key={post.slug} post={post} delay={i * 100} isAdmin={isAdmin} />
           ))}
         </div>
