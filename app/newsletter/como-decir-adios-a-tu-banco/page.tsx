@@ -161,7 +161,7 @@ export default async function Post02() {
             </span>
           </span>
         </span>
-        , el objetivo último de esta cartera es demostrar públicamente que hay
+        , el objetivo último de esta cartera es demostrar que hay
         más y mejores oportunidades fuera de un banco o una cartera de inversión
         tradicional.
       </p>
@@ -227,7 +227,7 @@ export default async function Post02() {
                 </span>
               </span>
             </span>
-            , el objetivo último de esta cartera es demostrar públicamente que
+            , el objetivo último de esta cartera es demostrar que
             hay más y mejores oportunidades fuera de un banco o una cartera de
             inversión tradicional.
           </p>
@@ -253,8 +253,7 @@ export default async function Post02() {
                   </span>
                 </span>
               </span>
-            </span>, voy a crear
-            mi cartera pública de inicio, paso a paso. Enseñaré cómo acceder a
+            </span>, voy a crearla paso a paso. Enseñaré cómo acceder a
             estos mercados de la manera más barata, cómoda y segura.
           </p>
 
@@ -298,7 +297,7 @@ export default async function Post02() {
           </p>
 
           <p>
-            Esta newsletter es de finanzas, así que no voy a indagar mucho a
+            Esta newsletter es de finanzas, así que no vamos a indagar mucho a
             nivel técnico. Basta con saber que hay cientos de <em>redes</em>{" "}
             (blockchains). Cada una almacena unos datos y tiene unas reglas.
           </p>
@@ -317,8 +316,8 @@ export default async function Post02() {
           />
 
           <p className={styles.widgetCaption}>
-            Ethereum es el estándar del sector, pero su época de comisiones
-            altas hizo que surgieran muchas nuevas.
+            Ethereum es el estandarte del sector, pero su época de comisiones
+            altas hizo que surgiesen muchas nuevas.
           </p>
 
           <div className={styles.pullquote}>
@@ -355,8 +354,8 @@ export default async function Post02() {
 
           <WalletCollapsible>
               <p>
-                Las explicaciones a continuación son las que creo estrictamente
-                necesarias. Si quieres indagar más a un nivel técnico o tienes
+                Las explicaciones a continuación son sólo las que creo
+                indispensables. Si quieres indagar más a un nivel técnico o tienes
                 dudas, estaré encantado de ayudarte.
               </p>
 
@@ -365,7 +364,7 @@ export default async function Post02() {
               <div className={styles.stepBlock}>
                 <ul className={styles.hubList}>
                   <li>
-                    Descargar una wallet — el programa para interactuar con la(s)
+                    Descargar una wallet. Es el programa para interactuar con la(s)
                     blockchain(s). Usar una u otra no supone (casi) diferencia:
 
                     <div className={styles.walletPicks}>
@@ -418,11 +417,11 @@ export default async function Post02() {
 
                 <div className={styles.warningBox}>
                   <p>
-                    <strong>Las 12 palabras secretas son cruciales.</strong>{" "}
+                    <strong>Las 12 palabras son cruciales.</strong>{" "}
                     Generan el número secreto que da acceso a la cartera.
                     <br /><br />
                     <em>
-                      En la blockchain no hay &ldquo;He olvidado mi contraseña&rdquo;.
+                      En la blockchain no hay &ldquo;He olvidé mi contraseña&rdquo;.
                       No hay mensaje de{" "}
                       <strong>Aviso: Alguien ha iniciado sesión en tu cuenta</strong>.
                     </em>
@@ -485,7 +484,7 @@ export default async function Post02() {
 
                 <ol className={styles.orderedList}>
                   <li>Creas una cuenta: email, contraseña, identificación, etc.</li>
-                  <li>Transfiere dinero del banco por tarjeta o transferencia.</li>
+                  <li>Depositas por tarjeta o transferencia.</li>
                   <li>
                     Conviertes los euros a la criptomoneda que desees.{" "}
                     (<strong>En mi caso he elegido <CryptoTag symbol="ETH" /> como punto de
@@ -553,7 +552,7 @@ export default async function Post02() {
                 </p>
 
                 <p>
-                  En mi caso Kraken permite escoger red de retiro. He elegido{" "}
+                  Kraken pedirá escoger la red concreta de retiro. He elegido{" "}
                   <EvmLink chain="arbitrum" widgetId="evm-chains">Arbitrum</EvmLink>, que es reputada, suficientemente segura y barata.
                 </p>
               </div>
@@ -589,7 +588,7 @@ export default async function Post02() {
           </p>
 
           <p>
-            Lo que mucha gente no considera es un activo más: el Euro puede,{" "}
+            Lo que mucha gente no considera es que se trata de un activo más: el Euro puede,{" "}
             <em>en sí mismo</em>, volverse más o menos valioso.
           </p>
 
@@ -613,21 +612,23 @@ export default async function Post02() {
           <p>
             Pero a la hora de <strong>ahorrar</strong> (guardar valor
             excedente) cometemos el error de olvidar que hay opciones. Escoger
-            la divisa correcta es importante. De nuevo, <em>todo es un activo</em>.
+            la divisa correcta sobre la que basar tu futura cartera de inversión
+            o sistema de ahorro es importante.
           </p>
 
           <p>
             La blockchain pone de manifiesto este fenómeno. No tiene
             jurisdicción. La línea entre dinero, divisa, token, etc se difumina.
+            De nuevo —y aquí más claro que nunca— <em><strong>todo es un activo.</strong></em>
           </p>
 
           <p>
             La fricción para convertir una criptomoneda a otra es mínima, y las
-            comisiones son prácticamente nulas. Es como pasar una foto de PNG a
+            comisiones son prácticamente nulas. Es como convertir una foto de PNG a
             JPEG.
           </p>
 
-          <p>Esto nos da mucho más poder de decisión.</p>
+          <p>Esto da mucho más poder de decisión.</p>
 
           <hr className={styles.divider} />
 
@@ -635,14 +636,14 @@ export default async function Post02() {
           <h2 id="mi-decision">Mi decisión</h2>
 
           <p>
-            Saqué los fondos en forma de <CryptoTag symbol="ETH" /> desde Kraken. Sin embargo,{" "}
-            <CryptoTag symbol="ETH" /> fluctúa demasiado como para usarla de referencia.
+            El retiro de Kraken fue en <CryptoTag symbol="ETH" />. Sin embargo,{" "}
+            <CryptoTag symbol="ETH" /> fluctúa demasiado para usarlo como divisa.
           </p>
 
           <p>
             <CryptoTag symbol="USDC" /> es una criptomoneda que replica el valor del
             dólar estadounidense. Esta será la divisa que escojo{" "}
-            (<strong>por ahora</strong>) para mi cartera.
+            (<strong>por ahora</strong>) para la cartera.
           </p>
 
           <p>
@@ -654,7 +655,7 @@ export default async function Post02() {
           </p>
 
           <p>
-            Existen otras en euros, pero la liquidez, las oportunidades y la
+            Existen otras monedas que replican el euro, pero la liquidez, las oportunidades y la
             infraestructura están construidas alrededor del dólar.
           </p>
 
