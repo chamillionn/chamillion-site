@@ -143,8 +143,8 @@ export default async function Post02() {
           <Link href="/newsletter/navegar-las-finanzas-modernas-el-augurio-de-una-odisea">
             post que presenta la newsletter
           </Link>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <span className={styles.postPreviewCard}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className={styles.postPreviewImg}
               src="/assets/newsletter/banner-post-01.jpeg"
@@ -209,8 +209,8 @@ export default async function Post02() {
               <Link href="/newsletter/navegar-las-finanzas-modernas-el-augurio-de-una-odisea">
                 post que presenta la newsletter
               </Link>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <span className={styles.postPreviewCard}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   className={styles.postPreviewImg}
                   src="/assets/newsletter/banner-post-01.jpeg"
@@ -750,8 +750,8 @@ export default async function Post02() {
               <Link href="/newsletter/navegar-las-finanzas-modernas-el-augurio-de-una-odisea">
                 post de bienvenida
               </Link>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <span className={styles.postPreviewCard}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   className={styles.postPreviewImg}
                   src="/assets/newsletter/banner-post-01.jpeg"

@@ -8,6 +8,6 @@ export default async function WidgetsPage() {
   try {
     const ctx = await getOptionalUser();
     isAdmin = ctx?.profile.role === "admin";
-  } catch {}
+  } catch { /* auth unavailable */ }
   return <WidgetsClient isAdmin={isAdmin} />;
 }
