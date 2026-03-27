@@ -47,7 +47,7 @@
     var grid = document.getElementById('grid');
     grid.innerHTML = chains.map(function (c) {
       return (
-        '<div class="card" style="--chain-color:' + c.color + '">' +
+        '<div class="card" data-chain="' + c.id + '" style="--chain-color:' + c.color + '">' +
           '<div class="card-header">' +
             '<span class="card-logo"><img src="logos/' + c.logo + '" alt="' + c.name + '"></span>' +
             '<div>' +
@@ -77,4 +77,17 @@
   }
 
   render();
+
+  // Listen for highlight requests from parent
+  window.addEventListener('message', function (e) {
+    if (e.data && e.data.type === 'highlight-chain') {
+      var cards = document.querySelectorAll('.card');
+      cards.forEach(function (card) { card.classList.remove('highlighted'); });
+      var target = document.querySelector('.card[data-chain="' + e.data.chain + '"]');
+      if (target) {
+        target.classList.add('highlighted');
+        setTimeout(function () { target.classList.remove('highlighted'); }, 3000);
+      }
+    }
+  });
 }());
