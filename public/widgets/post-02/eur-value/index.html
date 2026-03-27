@@ -82,10 +82,12 @@ html.embedded .widget-desc { display: none; }
 html.embedded .container { padding-top: 16px; }
 
 .container {
-  max-width: 900px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 52px 16px 16px;
+  padding: 28px 16px 10px;
 }
+
+html.embedded .container { max-width: 100%; }
 
 .widget-title {
   font-family: 'DM Serif Display', serif;
@@ -101,24 +103,24 @@ html.embedded .container { padding-top: 16px; }
   text-align: center;
   font-size: 10.5px; line-height: 1.55;
   color: var(--text-dim);
-  padding: 0 6px 12px;
+  padding: 0 6px 14px;
 }
 
 .panels {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .panel {
   border: 1px solid var(--panel-border);
   border-radius: 12px;
   background: var(--panel-bg);
-  padding: 12px 10px 8px;
+  padding: 16px 14px 10px;
   position: relative;
 }
 
-.panel-chart { flex: 0.8; min-width: 0; display: flex; flex-direction: column; }
-.panel-right { flex: 1.2; min-width: 0; min-height: 320px; display: flex; flex-direction: column; gap: 0; }
+.panel-chart { flex: 0.45; min-width: 0; display: flex; flex-direction: column; opacity: 0.6; }
+.panel-right { flex: 1.6; min-width: 0; min-height: 420px; display: flex; flex-direction: column; gap: 0; }
 
 /* ── Chart ── */
 .chart-canvas-wrap {
@@ -148,7 +150,7 @@ html.embedded .container { padding-top: 16px; }
   background: var(--btn-bg);
   color: var(--text-dim);
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.04em;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, transform 0.1s;
@@ -189,6 +191,8 @@ html.embedded .container { padding-top: 16px; }
 .right-inner {
   display: flex;
   height: 100%;
+  justify-content: center;
+  gap: 8px;
 }
 
 .graph-area {
@@ -198,13 +202,13 @@ html.embedded .container { padding-top: 16px; }
 }
 .graph-svg { width: 100%; height: 100%; overflow: visible; }
 
-.graph-link { fill: none; stroke: var(--link-color); stroke-width: 1; stroke-dasharray: 4 3; }
-.graph-link-eur { fill: none; stroke-width: 1.8; stroke-dasharray: none; }
+.graph-link { fill: none; stroke: var(--link-color); stroke-width: 1.8; stroke-dasharray: 5 4; }
+.graph-link-eur { fill: none; stroke-width: 2.5; stroke-dasharray: none; }
 
 .graph-pill rect { rx: 6; }
 .graph-pill text {
   font-family: 'DM Mono', monospace;
-  font-size: 6.5px;
+  font-size: 11px;
   fill: var(--text-dim);
   text-anchor: middle;
   dominant-baseline: central;
@@ -217,7 +221,7 @@ html.embedded .container { padding-top: 16px; }
 }
 .graph-pill-eur text {
   font-family: 'DM Serif Display', serif;
-  font-size: 9.5px;
+  font-size: 14px;
   letter-spacing: 0.02em;
 }
 
@@ -229,16 +233,16 @@ html.embedded .container { padding-top: 16px; }
 }
 .graph-node:active { cursor: grabbing; }
 .graph-node-circle {
-  stroke-width: 1.5;
+  stroke-width: 2.5;
   fill: none;
   transition: stroke-width 0.25s ease, filter 0.25s ease;
 }
 .graph-node.hover .graph-node-circle {
-  stroke-width: 2.5;
+  stroke-width: 3;
   filter: drop-shadow(0 0 6px currentColor);
 }
 .graph-node.dragging .graph-node-circle {
-  stroke-width: 3;
+  stroke-width: 3.5;
   filter: drop-shadow(0 0 10px currentColor);
 }
 .graph-node-bg {
@@ -247,7 +251,7 @@ html.embedded .container { padding-top: 16px; }
 }
 .graph-node-label {
   font-family: 'DM Serif Display', serif;
-  font-size: 7.5px;
+  font-size: 13px;
   fill: var(--text-dim);
   text-anchor: middle;
   text-transform: uppercase;
@@ -287,23 +291,23 @@ html.embedded .container { padding-top: 16px; }
 /* ── Axis (inside right panel) ── */
 .axis-area {
   position: relative;
-  width: 90px;
+  width: 150px;
   flex-shrink: 0;
 }
 .axis-line {
   position: absolute;
-  left: 20px;
-  top: 16px; bottom: 14px;
+  left: 24px;
+  top: 18px; bottom: 16px;
   width: 1.5px;
   background: var(--axis-color);
   border-radius: 1px;
 }
 .axis-symbol {
   position: absolute;
-  top: -14px; left: 21px;
+  top: -16px; left: 24px;
   transform: translateX(-50%);
   font-family: 'DM Serif Display', serif;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
   line-height: 1;
 }
@@ -316,14 +320,14 @@ html.embedded .container { padding-top: 16px; }
 }
 .axis-tick {
   position: absolute;
-  left: 17px;
+  left: 18px;
   width: 8px; height: 1px;
   background: var(--axis-color);
   opacity: 0.35;
   transition: background 0.3s ease, opacity 0.3s ease;
 }
 .axis-tick.major {
-  left: 15px;
+  left: 16px;
   width: 12px;
   opacity: 0.55;
 }
@@ -332,7 +336,7 @@ html.embedded .container { padding-top: 16px; }
   left: 30px;
   transform: translateY(-50%);
   font-family: 'DM Mono', monospace;
-  font-size: 6.5px;
+  font-size: 8px;
   color: var(--text-muted);
   opacity: 0.4;
   white-space: nowrap;
@@ -350,8 +354,8 @@ html.embedded .container { padding-top: 16px; }
 }
 .axis-marker {
   position: absolute;
-  left: 21px;
-  width: 10px; height: 10px;
+  left: 22px;
+  width: 14px; height: 14px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   box-shadow: 0 2px 6px var(--marker-shadow);
@@ -373,8 +377,8 @@ html.embedded .container { padding-top: 16px; }
 .axis-marker-wrap.dimmed .axis-marker { opacity: 0.2; }
 .axis-marker-icon {
   position: absolute;
-  left: 28px;
-  width: 11px; height: 11px;
+  left: 30px;
+  width: 16px; height: 16px;
   transform: translateY(-50%);
   top: 0;
   pointer-events: none;
@@ -382,11 +386,11 @@ html.embedded .container { padding-top: 16px; }
 .axis-marker-icon svg { width: 100%; height: 100%; }
 .axis-marker-price {
   position: absolute;
-  left: 46px;
+  left: 48px;
   transform: translateY(-50%);
   top: 0;
   font-family: 'DM Serif Display', serif;
-  font-size: 11px;
+  font-size: 16px;
   white-space: nowrap;
   pointer-events: none;
 }
@@ -406,8 +410,9 @@ html.capture .graph-node { cursor: default; }
 @media (max-width: 700px) {
   .panels { flex-wrap: wrap; }
   .panel-chart { flex: 1 1 100%; }
-  .panel-right { flex: 1 1 100%; }
-  .chart-canvas-wrap { height: 150px; }
+  .panel-right { flex: 1 1 100%; min-height: 300px; }
+  .chart-canvas-wrap { height: 180px; }
+  .axis-area { width: 100px; }
 }
   </style>
 </head>
@@ -485,6 +490,22 @@ html.capture .graph-node { cursor: default; }
 <script>initWidgetCommon('eur-value', { shareUrl: '/widgets/post-02/eur-value', recordTarget: document.querySelector('.container') });</script>
 <script>
 (function () {
+  // Uniform zoom: base design is 860px wide
+  if (!document.documentElement.classList.contains('embedded')) {
+    var c = document.querySelector('.container');
+    function applyZoom() {
+      var z = Math.max(1, Math.min(window.innerWidth * 0.9 / 860, 1.4));
+      c.style.zoom = z;
+    }
+    applyZoom();
+    window.addEventListener('resize', applyZoom);
+  }
+
+  function getZoom() {
+    var c = document.querySelector('.container');
+    return parseFloat(c.style.zoom) || 1;
+  }
+
   var isStatic = /[?&]static=1/.test(location.search);
   if (isStatic) document.documentElement.classList.add('static');
   var frozen = isStatic || document.documentElement.classList.contains('capture');
@@ -655,13 +676,13 @@ html.capture .graph-node { cursor: default; }
   var graphArea = document.getElementById('graph-area');
 
   var itemAngles = [-Math.PI / 2, Math.PI * 5 / 6, Math.PI / 6];
-  var GRAPH_RADIUS = 0.34;
-  var EUR_R = 22;
-  var ITEM_R = 14;
+  var GRAPH_RADIUS = 0.42;
+  var EUR_R = 42;
+  var ITEM_R = 28;
 
   function getGC() {
     var w = graphArea.offsetWidth, h = graphArea.offsetHeight;
-    return { cx: w / 2, cy: h / 2 + 6 };
+    return { cx: w / 2, cy: h / 2 + 16 };
   }
 
   function itemNodePos(i) {
@@ -799,12 +820,12 @@ html.capture .graph-node { cursor: default; }
       circle.setAttribute('stroke', 'var(' + item.colorVar + ')');
       g.appendChild(circle);
 
-      var iconG = parseSvgIcon(item.svg, ns, 'var(' + item.colorVar + ')', 14, p.x, p.y);
+      var iconG = parseSvgIcon(item.svg, ns, 'var(' + item.colorVar + ')', 24, p.x, p.y);
       g.appendChild(iconG);
 
       var label = document.createElementNS(ns, 'text');
       label.setAttribute('class', 'graph-node-label');
-      label.setAttribute('x', p.x); label.setAttribute('y', p.y + ITEM_R + 11);
+      label.setAttribute('x', p.x); label.setAttribute('y', p.y + ITEM_R + 14);
       label.textContent = item.name;
       g.appendChild(label);
 
@@ -841,7 +862,7 @@ html.capture .graph-node { cursor: default; }
     var sym = document.createElementNS(ns, 'text');
     sym.setAttribute('class', 'eur-node-symbol');
     sym.setAttribute('x', c.cx); sym.setAttribute('y', c.cy);
-    sym.setAttribute('font-size', '16');
+    sym.setAttribute('font-size', '22');
     sym.textContent = '€';
     eurG.appendChild(sym);
 
@@ -902,23 +923,30 @@ html.capture .graph-node { cursor: default; }
   }
 
   function updateProductNodeSizes() {
+    var prices = items.map(function(it) { return it.price; });
+    var minP = Math.min.apply(null, prices);
+    var maxP = Math.max.apply(null, prices);
+    var range = maxP - minP || 1;
     graphEls.itemNodeEls.forEach(function(el) {
-      var scale = 0.7 + 0.3 * (el.item.price / el.item.basePrice);
-      scale = Math.max(0.5, Math.min(1.6, scale));
+      var t = (el.item.price - minP) / range;
+      var scale = 0.6 + t * 0.6;
       var r = ITEM_R * scale;
       el.bgC.setAttribute('r', r);
       el.circle.setAttribute('r', r);
-      var iconSize = 14 * scale;
+      var iconSize = 24 * scale;
       var sc = iconSize / 24;
       el.iconG.setAttribute('transform', 'translate(' + (el.cx - iconSize / 2) + ',' + (el.cy - iconSize / 2) + ') scale(' + sc + ')');
-      el.label.setAttribute('y', el.cy + r + 11);
+      el.label.setAttribute('y', el.cy + r + 14);
     });
   }
 
   function getItemRadius(idx) {
-    var item = items[idx];
-    var scale = 0.7 + 0.3 * (item.price / item.basePrice);
-    return ITEM_R * Math.max(0.5, Math.min(1.6, scale));
+    var prices = items.map(function(it) { return it.price; });
+    var minP = Math.min.apply(null, prices);
+    var maxP = Math.max.apply(null, prices);
+    var range = maxP - minP || 1;
+    var t = (items[idx].price - minP) / range;
+    return ITEM_R * (0.6 + t * 0.6);
   }
 
   function getEurOuterRadius() {
@@ -1197,8 +1225,9 @@ html.capture .graph-node { cursor: default; }
         ae.marker.setPointerCapture(e.pointerId);
 
         function onMove(ev) {
+          var z = getZoom();
           var rect = axisArea.getBoundingClientRect();
-          var localY = ev.clientY - rect.top;
+          var localY = (ev.clientY - rect.top) / z;
           localY = Math.max(AXIS_PAD_TOP, Math.min(axisArea.offsetHeight - AXIS_PAD_BOT, localY));
           var rawPrice = yToPrice(localY);
           rawPrice = Math.max(ae.item.basePrice * 0.2, Math.min(ae.item.basePrice * 5, rawPrice));
@@ -1221,6 +1250,40 @@ html.capture .graph-node { cursor: default; }
       });
     });
 
+    // Dragging — EUR node (vertical → changes level)
+    if (eurNodeEls) {
+      var eurG = eurNodeEls.mainRing.parentNode;
+      eurG.style.cursor = 'grab';
+      eurG.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        eurG.style.cursor = 'grabbing';
+        gsap.killTweensOf(levelAnim);
+        var startY = e.clientY;
+        var startLevel = level;
+        var z = getZoom();
+
+        function onMove(ev) {
+          var dy = (ev.clientY - startY) / z;
+          var delta = -dy * 0.004;
+          var newLevel = Math.max(0.01, startLevel + delta);
+          level = newLevel;
+          levelAnim.val = newLevel;
+        }
+
+        function onUp() {
+          eurG.style.cursor = 'grab';
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onUp);
+        }
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
+      });
+    }
+
     // Dragging — graph nodes (radial)
     graphEls.itemNodeEls.forEach(function(el, idx) {
       var g = el.bgC.parentNode;
@@ -1231,19 +1294,15 @@ html.capture .graph-node { cursor: default; }
 
         var gc = getGC();
         var angle = itemAngles[idx];
-        var extent = Math.min(graphArea.offsetWidth, graphArea.offsetHeight);
-        var minDist = extent * 0.15;
-        var maxDist = extent * 0.48;
+        var startPrice = el.item.price;
+        var startY = e.clientY;
 
         function onMove(ev) {
-          var rect = graphArea.getBoundingClientRect();
-          var mx = ev.clientX - rect.left;
-          var my = ev.clientY - rect.top;
-          var dist = (mx - gc.cx) * Math.cos(angle) + (my - gc.cy) * Math.sin(angle);
-          dist = Math.max(minDist, Math.min(maxDist, dist));
-
-          var frac = (dist - minDist) / (maxDist - minDist);
-          var newPrice = el.item.basePrice * (0.2 + frac * 4.8);
+          var z = getZoom();
+          var dy = (ev.clientY - startY) / z;
+          var factor = Math.pow(2, -dy / 120);
+          var newPrice = startPrice * factor;
+          newPrice = Math.max(el.item.basePrice * 0.2, Math.min(el.item.basePrice * 5, newPrice));
           el.item.price = newPrice;
         }
 
@@ -1286,6 +1345,72 @@ html.capture .graph-node { cursor: default; }
 
   resizeCanvas();
   drawChart();
+
+  /* ══ Chart drag (standalone, runs once) ══ */
+  var panelChart = document.querySelector('.panel-chart');
+  if (panelChart) {
+    panelChart.style.cursor = 'ns-resize';
+    panelChart.style.touchAction = 'none';
+    panelChart.addEventListener('mousedown', function(e) {
+      if (frozen) return;
+      e.preventDefault();
+      gsap.killTweensOf(levelAnim);
+      panelChart.style.cursor = 'grabbing';
+      var startY = e.clientY;
+      var startLevel = level;
+      pulseHighlight();
+
+      function onMove(ev) {
+        var dy = ev.clientY - startY;
+        var delta = -dy * 0.004;
+        var newLevel = Math.max(0.01, startLevel + delta);
+        level = newLevel;
+        levelAnim.val = newLevel;
+      }
+
+      function onUp() {
+        panelChart.style.cursor = 'ns-resize';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  /* ══ Axis drag (drag the axis itself to change EUR value) ══ */
+  if (!frozen) {
+    axisArea.style.cursor = 'ns-resize';
+    axisArea.addEventListener('mousedown', function(e) {
+      // Ignore if drag started on a marker
+      if (e.target.closest('.axis-marker-wrap')) return;
+      e.preventDefault();
+      gsap.killTweensOf(levelAnim);
+      axisArea.style.cursor = 'grabbing';
+      var startY = e.clientY;
+      var startLevel = level;
+      pulseHighlight();
+
+      function onMove(ev) {
+        var dy = ev.clientY - startY;
+        var delta = dy * 0.004;
+        var newLevel = Math.max(0.01, startLevel + delta);
+        level = newLevel;
+        levelAnim.val = newLevel;
+      }
+
+      function onUp() {
+        axisArea.style.cursor = 'ns-resize';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
   if (running) requestAnimationFrame(function(ts) { lastFrame = ts; loop(ts); });
 
   window.addEventListener('resize', function() {
