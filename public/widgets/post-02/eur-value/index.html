@@ -199,7 +199,6 @@ html.embedded .container { max-width: 100%; }
   position: relative;
   flex: 1;
   min-width: 0;
-  touch-action: none;
 }
 .graph-svg { width: 100%; height: 100%; overflow: visible; }
 
@@ -294,7 +293,6 @@ html.embedded .container { max-width: 100%; }
   position: relative;
   width: 150px;
   flex-shrink: 0;
-  touch-action: none;
 }
 .axis-line {
   position: absolute;
@@ -1261,13 +1259,10 @@ html.capture .graph-node { cursor: default; }
     // Dragging — EUR node (vertical → changes level)
     if (eurNodeEls) {
       var eurG = eurNodeEls.mainRing.parentNode;
-      var eurCapture = eurNodeEls.mainRing;
       eurG.style.cursor = 'grab';
-      eurG.style.touchAction = 'none';
       eurG.addEventListener('pointerdown', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        eurCapture.setPointerCapture(e.pointerId);
         eurG.style.cursor = 'grabbing';
         gsap.killTweensOf(levelAnim);
         var startY = e.clientY;
@@ -1275,6 +1270,7 @@ html.capture .graph-node { cursor: default; }
         var z = getZoom();
 
         function onMove(ev) {
+          ev.preventDefault();
           var dy = (ev.clientY - startY) / z;
           var delta = -dy * 0.004;
           var newLevel = Math.max(0.01, startLevel + delta);
@@ -1284,26 +1280,24 @@ html.capture .graph-node { cursor: default; }
 
         function onUp() {
           eurG.style.cursor = 'grab';
-          eurCapture.removeEventListener('pointermove', onMove);
-          eurCapture.removeEventListener('pointerup', onUp);
-          eurCapture.removeEventListener('pointercancel', onUp);
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onUp);
         }
 
-        eurCapture.addEventListener('pointermove', onMove);
-        eurCapture.addEventListener('pointerup', onUp);
-        eurCapture.addEventListener('pointercancel', onUp);
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
       });
     }
 
     // Dragging — graph nodes (radial)
     graphEls.itemNodeEls.forEach(function(el, idx) {
       var g = el.bgC.parentNode;
-      var target = el.bgC; // largest hit area for pointer capture
       g.addEventListener('pointerdown', function(e) {
         e.preventDefault();
         e.stopPropagation();
         g.classList.add('dragging');
-        target.setPointerCapture(e.pointerId);
 
         var gc = getGC();
         var angle = itemAngles[idx];
@@ -1311,6 +1305,7 @@ html.capture .graph-node { cursor: default; }
         var startY = e.clientY;
 
         function onMove(ev) {
+          ev.preventDefault();
           var z = getZoom();
           var dy = (ev.clientY - startY) / z;
           var factor = Math.pow(2, -dy / 120);
@@ -1321,14 +1316,14 @@ html.capture .graph-node { cursor: default; }
 
         function onUp() {
           g.classList.remove('dragging');
-          target.removeEventListener('pointermove', onMove);
-          target.removeEventListener('pointerup', onUp);
-          target.removeEventListener('pointercancel', onUp);
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onUp);
         }
 
-        target.addEventListener('pointermove', onMove);
-        target.addEventListener('pointerup', onUp);
-        target.addEventListener('pointercancel', onUp);
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
       });
     });
   }

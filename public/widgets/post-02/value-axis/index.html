@@ -104,7 +104,6 @@ html { overflow: hidden; }
   position: relative;
   width: 100%;
   height: 280px;
-  touch-action: none;
 }
 
 .graph-svg {
@@ -191,7 +190,6 @@ html { overflow: hidden; }
 .axis-area {
   position: relative;
   height: 280px;
-  touch-action: none;
 }
 
 .axis-line {
@@ -937,13 +935,10 @@ initWidgetCommon('value-axis', { shareUrl: '/widgets/post-02/value-axis' });
      ════════════════════════════════════════════ */
   if (!skipAnim) {
     graphNodes.forEach(function (gn) {
-      // Use the bgCircle (largest hit area) as the pointer-capture target
-      var target = gn.bgCircle;
       gn.g.addEventListener('pointerdown', function (e) {
         e.preventDefault();
         e.stopPropagation();
         gn.g.classList.add('dragging');
-        target.setPointerCapture(e.pointerId);
 
         var c = getGraphCenter();
         var angle = nodeAngles[gn.index];
@@ -952,6 +947,7 @@ initWidgetCommon('value-axis', { shareUrl: '/widgets/post-02/value-axis' });
         var maxR = extent * GRAPH_R_MAX_FRAC;
 
         function onMove(ev) {
+          ev.preventDefault();
           var z = getZoom();
           var rect = graphArea.getBoundingClientRect();
           var mx = (ev.clientX - rect.left) / z;
@@ -1004,14 +1000,14 @@ initWidgetCommon('value-axis', { shareUrl: '/widgets/post-02/value-axis' });
           updateGraphImmediate();
           updateAxisPositions(false);
           refreshHoverTooltip();
-          target.removeEventListener('pointermove', onMove);
-          target.removeEventListener('pointerup', onUp);
-          target.removeEventListener('pointercancel', onUp);
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onUp);
         }
 
-        target.addEventListener('pointermove', onMove);
-        target.addEventListener('pointerup', onUp);
-        target.addEventListener('pointercancel', onUp);
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
       });
     });
   }
