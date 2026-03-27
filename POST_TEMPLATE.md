@@ -196,11 +196,11 @@ Bloques comunes que se pueden copiar entre posts:
 
 ### Social link (X/Twitter)
 ```tsx
-<a className={styles.socialLink} href="https://x.com/chamillionnnnn" target="_blank" rel="noopener noreferrer">
+<a className={styles.socialLink} href="https://x.com/chamillion__" target="_blank" rel="noopener noreferrer">
   <svg className={styles.socialLinkIcon} viewBox="0 0 24 24" fill="currentColor">
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </svg>
-  <span className={styles.socialLinkText}>TEXTO <strong>@chamillionnnnn</strong></span>
+  <span className={styles.socialLinkText}>TEXTO <strong>@chamillion__</strong></span>
   <span className={styles.socialLinkArrow}>&rarr;</span>
 </a>
 ```

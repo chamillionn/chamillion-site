@@ -56,7 +56,7 @@ const jsonLd = {
   author: {
     "@type": "Person",
     name: "Chamillion",
-    url: "https://x.com/chamillionnnnn",
+    url: "https://x.com/chamillion__",
   },
 };
 

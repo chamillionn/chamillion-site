@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: "Chamillion",
     description:
       "Documentando la vanguardia de los mercados financieros, y haciendo dinero. Con un ojo en cada pantalla.",
-    creator: "@chamillionnnnn",
+    creator: "@chamillion__",
     images: ["/og-image.jpg"],
   },
   other: {

@@ -2401,7 +2401,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
               }}
             >
               <SocialLink
-                href="https://x.com/chamillionnnnn"
+                href="https://x.com/chamillion__"
                 label="@chamillionnnnn"
                 icon="X"
               />
