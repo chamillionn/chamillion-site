@@ -1,3 +1,7 @@
+> **Flujo Notion suspendido.** El post ahora se escribe en Substack.
+> Para convertir, usar **SUBSTACK_TEMPLATE.md**.
+> Este archivo se conserva como referencia de estructura y CSS classes.
+
 # Post Template — Guía de conversión Notion → Web
 
 Referencia para convertir posts de Notion a páginas web en chamillion.site.

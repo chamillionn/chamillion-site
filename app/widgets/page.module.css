@@ -7,7 +7,8 @@
 }
 
 .wrapper {
-  max-width: 840px;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .topBar {
@@ -28,14 +29,14 @@
 }
 
 .subtitle {
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
   margin-bottom: 32px;
 }
 
 .backLink {
   display: inline-block;
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   color: var(--steel-blue);
   text-decoration: none;
   transition: color 0.2s;
@@ -57,7 +58,7 @@
   border-radius: 8px;
   padding: 8px 12px;
   font-family: var(--font-dm-mono), monospace;
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   color: var(--text-primary);
   outline: none;
   transition: border-color 0.15s;
@@ -112,7 +113,7 @@
 }
 
 .cardTag {
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--text-secondary);
@@ -127,7 +128,7 @@
 }
 
 .cardDesc {
-  font-size: 0.66rem;
+  font-size: 0.78rem;
   color: var(--text-secondary);
   line-height: 1.65;
 }
@@ -148,7 +149,7 @@
 
 .groupLabel {
   font-family: var(--font-dm-mono), monospace;
-  font-size: 0.58rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--text-secondary);
@@ -157,7 +158,7 @@
 
 .groupTitle {
   font-family: var(--font-playfair), serif;
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: var(--text-primary);
   opacity: 0.7;
 }
@@ -166,4 +167,18 @@
   font-size: 0.72rem;
   color: var(--text-secondary);
   padding: 8px 0;
+}
+
+/* ── Admin badge ── */
+.adminBadge {
+  margin-left: auto;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--steel-blue);
+  border: 1px solid var(--steel-blue);
+  border-radius: 4px;
+  padding: 1px 5px;
+  opacity: 0.7;
 }

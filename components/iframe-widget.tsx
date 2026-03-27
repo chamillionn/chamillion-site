@@ -25,6 +25,7 @@ export default function IframeWidget({ src, widgetId, className, title, loading 
 
   return (
     <iframe
+      id={widgetId}
       ref={ref}
       src={src}
       loading={loading}
