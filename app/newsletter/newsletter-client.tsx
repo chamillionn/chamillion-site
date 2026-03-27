@@ -30,37 +30,53 @@ const SECTION_META: Record<string, { image: string; description: string }> = {
   },
 };
 
+// All known sections — always shown even if no posts exist yet
+const ALL_SECTIONS = Object.keys(SECTION_META);
+
 // ── Section cards ──
 function SectionCards({
-  sections,
   active,
   onChange,
   loaded,
+  postCounts,
 }: {
-  sections: string[];
   active: string | null;
   onChange: (s: string | null) => void;
   loaded: boolean;
+  postCounts: Record<string, number>;
 }) {
-  if (sections.length === 0) return null;
-
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: 14,
+        gap: 12,
         marginBottom: 32,
         opacity: loaded ? 1 : 0,
         transform: loaded ? "translateY(0)" : "translateY(8px)",
         transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.18s",
       }}
     >
+      {/* Label */}
+      <div
+        style={{
+          fontFamily: "var(--font-jetbrains), monospace",
+          fontSize: 9,
+          color: V.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+        }}
+      >
+        Filtrar por sección
+      </div>
+
       {/* Section cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
-        {sections.map((section) => {
+        {ALL_SECTIONS.map((section) => {
           const meta = SECTION_META[section];
           const isActive = active === section;
+          const count = postCounts[section] ?? 0;
+          const isEmpty = count === 0;
           return (
             <button
               key={section}
@@ -77,6 +93,7 @@ function SectionCards({
                 cursor: "pointer",
                 transition: "all 0.25s ease",
                 textAlign: "left",
+                opacity: isEmpty && !isActive ? 0.55 : 1,
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
@@ -106,19 +123,30 @@ function SectionCards({
                   }}
                 />
               )}
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontFamily: "var(--font-playfair), serif",
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: isActive ? V.textPrimary : V.textSecondary,
-                    lineHeight: 1.3,
-                    marginBottom: 3,
-                    transition: "color 0.2s",
-                  }}
-                >
-                  {section}
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-playfair), serif",
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: isActive ? V.textPrimary : V.textSecondary,
+                      lineHeight: 1.3,
+                      transition: "color 0.2s",
+                    }}
+                  >
+                    {section}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-dm-mono), monospace",
+                      fontSize: 9,
+                      color: V.textMuted,
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    {isEmpty ? "Próximamente" : `${count}`}
+                  </span>
                 </div>
                 {meta?.description && (
                   <div
@@ -127,6 +155,7 @@ function SectionCards({
                       lineHeight: 1.45,
                       color: V.textMuted,
                       fontWeight: 300,
+                      marginTop: 3,
                     }}
                   >
                     {meta.description}
@@ -145,6 +174,9 @@ function SectionCards({
           onClick={() => onChange(null)}
           style={{
             alignSelf: "flex-start",
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
             fontFamily: "var(--font-dm-mono), monospace",
             fontSize: 9,
             textTransform: "uppercase",
@@ -166,7 +198,10 @@ function SectionCards({
             e.currentTarget.style.color = V.textMuted;
           }}
         >
-          Ver todo
+          <svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="3" y1="3" x2="13" y2="13" /><line x1="13" y1="3" x2="3" y2="13" />
+          </svg>
+          Quitar filtro
         </button>
       )}
     </div>
@@ -434,10 +469,11 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
     return () => clearTimeout(t);
   }, []);
 
-  // Derive sections preserving first-seen order (posts are date desc)
-  const sections = Array.from(
-    new Set(posts.map((p) => p.section).filter((s): s is string => !!s))
-  );
+  // Count posts per section
+  const postCounts: Record<string, number> = {};
+  for (const p of posts) {
+    if (p.section) postCounts[p.section] = (postCounts[p.section] ?? 0) + 1;
+  }
 
   const visiblePosts = activeSection
     ? posts.filter((p) => p.section === activeSection)
@@ -549,10 +585,10 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
 
       {/* Section filter cards */}
       <SectionCards
-        sections={sections}
         active={activeSection}
         onChange={setActiveSection}
         loaded={loaded}
+        postCounts={postCounts}
       />
 
       {/* Post grid */}
@@ -576,7 +612,7 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
             <line x1="16" y1="17" x2="8" y2="17" />
           </svg>
           <p style={{ color: V.textMuted, fontSize: 14, lineHeight: 1.5 }}>
-            Aun no hay posts publicados.
+            {activeSection ? "Aún no hay posts en esta sección." : "Aún no hay posts publicados."}
           </p>
         </div>
       ) : (
