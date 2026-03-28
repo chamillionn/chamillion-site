@@ -122,12 +122,12 @@ export default function PaywallCTA({ isLoggedIn }: Props) {
             </>
           ) : (
             <Link
-              href={`/login?next=${encodeURIComponent(pathname)}`}
+              href="/suscribirse"
               className={styles.primaryBtn}
             >
               {prices.length > 0
-                ? `Acceder · ${priceLabel(prices[0])}`
-                : "Acceder"}
+                ? `Suscribirme · ${priceLabel(prices[0])}`
+                : "Suscribirme"}
             </Link>
           )}
         </div>

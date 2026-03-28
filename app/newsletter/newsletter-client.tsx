@@ -529,7 +529,7 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
       {/* Premium CTA — hidden for members/admins */}
       {!hideUpgrade && prices.length > 0 && (
         <Link
-          href="/login?next=/cuenta"
+          href="/suscribirse"
           style={{
             display: "inline-flex",
             alignItems: "center",

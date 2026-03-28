@@ -1,0 +1,560 @@
+/* Monochrome steel-blue, news broadcast aesthetic */
+.root {
+  --sb: var(--steel-blue-rgb, 107, 142, 160);
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Line charts — draw across, drift, dissolve ── */
+.line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 3000;
+  stroke-dashoffset: 3000;
+}
+
+.lineA {
+  composes: line;
+  stroke: rgba(var(--sb), 0.09);
+  stroke-width: 1.8;
+  animation: drawSweep 22s ease-in-out infinite;
+}
+
+.lineB {
+  composes: line;
+  stroke: rgba(var(--sb), 0.06);
+  stroke-width: 1.2;
+  animation: drawSweep 26s 5s ease-in-out infinite;
+}
+
+.lineC {
+  composes: line;
+  stroke: rgba(var(--sb), 0.04);
+  stroke-width: 1;
+  animation: drawSweep 20s 10s ease-in-out infinite;
+}
+
+.lineD {
+  composes: line;
+  stroke: rgba(var(--sb), 0.035);
+  stroke-width: 0.8;
+  animation: drawSweep 28s 14s ease-in-out infinite;
+}
+
+/* ── Area fills — swell under lines ── */
+.area { opacity: 0; }
+
+.areaA {
+  composes: area;
+  fill: rgba(var(--sb), 0.018);
+  animation: areaSwell 22s ease-in-out infinite;
+}
+
+.areaB {
+  composes: area;
+  fill: rgba(var(--sb), 0.012);
+  animation: areaSwell 26s 5s ease-in-out infinite;
+}
+
+/* ── Pie charts — appear spinning, arcs redistribute, dissolve ── */
+.donutTrack {
+  stroke: rgba(var(--sb), 0.025);
+}
+
+.pie {
+  opacity: 0;
+  animation: pieLife 14s ease-in-out infinite;
+}
+.pie2 { animation-delay: 5s; }
+.pie3 { animation-delay: 10s; }
+
+.pieArc {
+  stroke: rgba(var(--sb), 0.10);
+  fill: none;
+  stroke-linecap: round;
+  animation: arcShift 14s ease-in-out infinite;
+}
+
+.pieArc2 {
+  composes: pieArc;
+  stroke: rgba(var(--sb), 0.06);
+  animation-delay: 0.3s;
+  animation-direction: reverse;
+}
+
+.pieArc3 {
+  composes: pieArc;
+  stroke: rgba(var(--sb), 0.035);
+  animation-delay: 0.6s;
+}
+
+.pie2 .pieArc  { animation-delay: 5s; }
+.pie2 .pieArc2 { animation-delay: 5.3s; animation-direction: reverse; }
+.pie2 .pieArc3 { animation-delay: 5.6s; }
+.pie3 .pieArc  { animation-delay: 10s; }
+.pie3 .pieArc2 { animation-delay: 10.3s; animation-direction: reverse; }
+.pie3 .pieArc3 { animation-delay: 10.6s; }
+
+/* ── Flow streams — traveling dashes ── */
+.flow {
+  stroke: rgba(var(--sb), 0.06);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-dasharray: 4 16;
+  opacity: 0;
+  animation: flowTravel 9s ease-in-out infinite;
+}
+
+/* ── Dots — orbit and pulse ── */
+.dot {
+  fill: rgba(var(--sb), 0.06);
+  animation: dotOrbit 10s ease-in-out infinite;
+}
+
+/* ── Headlines — cinematic zoom in ── */
+.headline {
+  font-family: var(--font-playfair), serif;
+  fill: rgba(var(--sb), 0.055);
+  text-anchor: middle;
+  opacity: 0;
+  animation: headlineCine 16s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+/* ── Data labels — typewriter appear ── */
+.dataLabel {
+  font-family: var(--font-dm-mono), monospace;
+  fill: rgba(var(--sb), 0.08);
+  opacity: 0;
+  animation: dataType 12s ease-out infinite;
+}
+
+/* ── Tickers — numbers rising with scale ── */
+.ticker {
+  font-family: var(--font-jetbrains), monospace;
+  fill: rgba(var(--sb), 0.07);
+  opacity: 0;
+  animation: tickerPop 9s ease-out infinite;
+}
+
+/* ── Bars — staggered grow with overshoot ── */
+.bar {
+  fill: rgba(var(--sb), 0.045);
+  rx: 2;
+  animation: barSlide 12s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  transform-origin: left;
+}
+
+/* ── Scan line — horizontal sweep across screen ── */
+.scanLine {
+  stroke: rgba(var(--sb), 0.04);
+  stroke-width: 1;
+  animation: scanSweep 8s linear infinite;
+}
+
+/* ── Crosshair — targeting reticle ── */
+.crosshair {
+  stroke: rgba(var(--sb), 0.05);
+  stroke-width: 0.8;
+  fill: none;
+  opacity: 0;
+  animation: crosshairLock 10s ease-in-out infinite;
+}
+
+.crosshairDot {
+  fill: rgba(var(--sb), 0.08);
+  opacity: 0;
+  animation: crosshairLock 10s ease-in-out infinite;
+}
+
+/* ── Sparklines ── */
+.spark {
+  opacity: 0;
+  animation: sparkLife 10s ease-in-out infinite;
+}
+
+.spark path {
+  fill: none;
+  stroke: rgba(var(--sb), 0.09);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: sparkDraw 10s ease-out infinite;
+}
+
+/* ── Connection lines ── */
+.connection {
+  stroke: rgba(var(--sb), 0.03);
+  stroke-width: 0.5;
+  stroke-dasharray: 4 6;
+  opacity: 0;
+  animation: connectionPulse 12s ease-in-out infinite;
+}
+
+/* ── Pulse rings ── */
+.pulseCore {
+  fill: rgba(var(--sb), 0.1);
+  opacity: 0;
+  animation: pulseCoreAnim 6s ease-out infinite;
+}
+
+.pulseRing {
+  fill: none;
+  stroke: rgba(var(--sb), 0.08);
+  stroke-width: 1;
+  opacity: 0;
+  animation: pulseRingAnim 6s ease-out infinite;
+}
+
+/* ── Grid fragments ── */
+.grid {
+  opacity: 0;
+  animation: gridReveal 14s ease-in-out infinite;
+}
+
+.grid line {
+  stroke: rgba(var(--sb), 0.025);
+  stroke-width: 0.5;
+  stroke-dasharray: 2 4;
+}
+
+/* ── Mini candle clusters ── */
+.candleCluster {
+  opacity: 0;
+  animation: candleClusterLife 12s ease-in-out infinite;
+}
+
+.candleBull line { stroke: rgba(var(--sb), 0.08); stroke-width: 1; }
+.candleBull rect { fill: rgba(var(--sb), 0.06); }
+.candleBear line { stroke: rgba(var(--sb), 0.05); stroke-width: 1; }
+.candleBear rect { fill: rgba(var(--sb), 0.03); stroke: rgba(var(--sb), 0.05); stroke-width: 0.5; }
+
+/* ── Gauge arcs ── */
+.gauge {
+  opacity: 0;
+  animation: gaugeLife 10s ease-in-out infinite;
+}
+
+.gaugeTrack {
+  fill: none;
+  stroke: rgba(var(--sb), 0.03);
+  stroke-linecap: round;
+}
+
+.gaugeValue {
+  fill: none;
+  stroke: rgba(var(--sb), 0.1);
+  stroke-linecap: round;
+  animation: gaugeFill 10s ease-out infinite;
+}
+
+.gaugeDot {
+  fill: rgba(var(--sb), 0.08);
+}
+
+/* ── Rising particles ── */
+.particle {
+  fill: rgba(var(--sb), 0.08);
+  opacity: 0;
+  animation: particleRise 7s ease-out infinite;
+}
+
+/* ── Orbit rings ── */
+.orbit {
+  opacity: 0;
+  animation: orbitLife 16s ease-in-out infinite;
+}
+
+.orbitRing {
+  fill: none;
+  stroke: rgba(var(--sb), 0.06);
+  stroke-width: 0.8;
+  stroke-dasharray: 4 3;
+}
+
+.orbitRingInner {
+  fill: none;
+  stroke: rgba(var(--sb), 0.035);
+  stroke-width: 0.5;
+}
+
+.orbitSat {
+  fill: rgba(var(--sb), 0.12);
+  animation: orbitSatSpin 8s linear infinite;
+}
+
+/* ── Sine waves ── */
+.wave {
+  fill: none;
+  stroke: rgba(var(--sb), 0.07);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  opacity: 0;
+  animation: waveDraw 12s ease-in-out infinite;
+}
+
+/* ── Data tables ── */
+.table {
+  opacity: 0;
+  animation: tableLife 14s ease-in-out infinite;
+}
+
+.tableRow {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 8px;
+  fill: rgba(var(--sb), 0.07);
+  letter-spacing: 0.3px;
+  opacity: 0;
+  animation: tableRowSlide 14s ease-out infinite;
+}
+
+/* ── Floating frames (corner brackets) ── */
+.frame {
+  opacity: 0;
+  animation: frameReveal 10s ease-in-out infinite;
+}
+
+.frame path {
+  fill: none;
+  stroke: rgba(var(--sb), 0.06);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ═══════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════ */
+
+@keyframes drawSweep {
+  0%   { stroke-dashoffset: 3000; opacity: 0; }
+  3%   { opacity: 0.8; }
+  45%  { stroke-dashoffset: 0; opacity: 1; }
+  65%  { stroke-dashoffset: 0; opacity: 0.5; }
+  85%  { stroke-dashoffset: -3000; opacity: 0; }
+  100% { stroke-dashoffset: -3000; opacity: 0; }
+}
+
+@keyframes areaSwell {
+  0%   { opacity: 0; }
+  10%  { opacity: 0.8; }
+  50%  { opacity: 1; }
+  80%  { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+@keyframes pieLife {
+  0%   { opacity: 0; transform: scale(0.5) rotate(-60deg); }
+  8%   { opacity: 1; transform: scale(1) rotate(0deg); }
+  55%  { opacity: 0.9; transform: scale(1.02) rotate(80deg); }
+  85%  { opacity: 0.3; transform: scale(1.08) rotate(130deg); }
+  100% { opacity: 0; transform: scale(0.7) rotate(160deg); }
+}
+
+@keyframes arcShift {
+  0%   { stroke-dashoffset: 180; }
+  15%  { stroke-dashoffset: 0; }
+  40%  { stroke-dashoffset: -30; }
+  65%  { stroke-dashoffset: 10; }
+  85%  { stroke-dashoffset: -20; }
+  100% { stroke-dashoffset: 180; }
+}
+
+@keyframes flowTravel {
+  0%   { opacity: 0; stroke-dashoffset: 80; }
+  8%   { opacity: 0.7; }
+  50%  { opacity: 0.9; stroke-dashoffset: 0; }
+  92%  { opacity: 0.5; stroke-dashoffset: -80; }
+  100% { opacity: 0; }
+}
+
+@keyframes dotOrbit {
+  0%   { opacity: 0; transform: translate(0, 12px) scale(0.4); }
+  12%  { opacity: 0.8; transform: translate(6px, 0) scale(1.3); }
+  35%  { opacity: 0.5; transform: translate(-4px, -8px) scale(1); }
+  60%  { opacity: 0.9; transform: translate(8px, -14px) scale(1.5); }
+  85%  { opacity: 0.4; transform: translate(-2px, -22px) scale(1.1); }
+  100% { opacity: 0; transform: translate(0, -30px) scale(0.4); }
+}
+
+@keyframes headlineCine {
+  0%   { opacity: 0; transform: scale(0.2); letter-spacing: 12px; filter: blur(4px); }
+  6%   { opacity: 1; transform: scale(1); letter-spacing: 0px; filter: blur(0); }
+  45%  { opacity: 0.7; transform: scale(1.12); letter-spacing: 1px; }
+  75%  { opacity: 0.25; transform: scale(1.25); letter-spacing: 3px; filter: blur(1px); }
+  100% { opacity: 0; transform: scale(1.4); letter-spacing: 6px; filter: blur(3px); }
+}
+
+@keyframes dataType {
+  0%   { opacity: 0; transform: translateX(-8px); clip-path: inset(0 100% 0 0); }
+  6%   { opacity: 1; transform: translateX(0); clip-path: inset(0 0 0 0); }
+  55%  { opacity: 0.9; transform: translateX(2px) scale(1.05); }
+  85%  { opacity: 0.3; transform: translateX(6px) scale(1.08); }
+  100% { opacity: 0; transform: translateX(12px) scale(1.1); clip-path: inset(0 0 0 100%); }
+}
+
+@keyframes tickerPop {
+  0%   { opacity: 0; transform: translateY(16px) scale(0.5); }
+  5%   { opacity: 1; transform: translateY(-2px) scale(1.1); }
+  10%  { transform: translateY(0) scale(1); }
+  50%  { opacity: 0.8; transform: translateY(-3px) scale(1.06); }
+  80%  { opacity: 0.25; transform: translateY(-10px) scale(1.12); }
+  100% { opacity: 0; transform: translateY(-20px) scale(1.15); }
+}
+
+@keyframes barSlide {
+  0%   { opacity: 0; transform: scaleX(0) translateX(-4px); }
+  6%   { opacity: 0.7; transform: scaleX(1.06) translateX(0); }
+  10%  { transform: scaleX(1) translateX(0); }
+  55%  { opacity: 0.5; transform: scaleX(1.03); }
+  85%  { opacity: 0.2; transform: scaleX(0.6); }
+  100% { opacity: 0; transform: scaleX(0); }
+}
+
+@keyframes scanSweep {
+  0%   { transform: translateX(-110%); opacity: 0; }
+  5%   { opacity: 0.6; }
+  95%  { opacity: 0.6; }
+  100% { transform: translateX(110%); opacity: 0; }
+}
+
+@keyframes crosshairLock {
+  0%   { opacity: 0; transform: scale(2); }
+  10%  { opacity: 0.7; transform: scale(1); }
+  50%  { opacity: 0.5; transform: scale(0.95); }
+  80%  { opacity: 0.2; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes sparkLife {
+  0%   { opacity: 0; transform: scale(0.8); }
+  8%   { opacity: 1; transform: scale(1); }
+  60%  { opacity: 0.8; transform: scale(1.05); }
+  90%  { opacity: 0.2; }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
+@keyframes sparkDraw {
+  0%   { stroke-dashoffset: 200; }
+  30%  { stroke-dashoffset: 0; }
+  70%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -200; }
+}
+
+@keyframes connectionPulse {
+  0%   { opacity: 0; stroke-dashoffset: 20; }
+  10%  { opacity: 0.6; }
+  50%  { opacity: 0.4; stroke-dashoffset: -10; }
+  90%  { opacity: 0.1; stroke-dashoffset: -30; }
+  100% { opacity: 0; }
+}
+
+@keyframes pulseCoreAnim {
+  0%   { opacity: 0; transform: scale(0); }
+  10%  { opacity: 0.8; transform: scale(1); }
+  60%  { opacity: 0.4; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.5); }
+}
+
+@keyframes pulseRingAnim {
+  0%   { opacity: 0; r: 3px; }
+  10%  { opacity: 0.6; }
+  100% { opacity: 0; r: 24px; }
+}
+
+@keyframes gridReveal {
+  0%   { opacity: 0; transform: scale(0.9); }
+  8%   { opacity: 0.6; transform: scale(1); }
+  55%  { opacity: 0.4; }
+  85%  { opacity: 0.1; transform: scale(1.03); }
+  100% { opacity: 0; }
+}
+
+@keyframes candleClusterLife {
+  0%   { opacity: 0; transform: translateY(10px); }
+  8%   { opacity: 1; transform: translateY(0); }
+  60%  { opacity: 0.7; transform: translateY(-4px); }
+  90%  { opacity: 0; transform: translateY(-12px); }
+  100% { opacity: 0; }
+}
+
+@keyframes gaugeLife {
+  0%   { opacity: 0; transform: scale(0.7); }
+  10%  { opacity: 0.8; transform: scale(1); }
+  60%  { opacity: 0.6; transform: scale(1.02); }
+  90%  { opacity: 0; transform: scale(1.08); }
+  100% { opacity: 0; }
+}
+
+@keyframes gaugeFill {
+  0%   { stroke-dashoffset: 200; }
+  20%  { stroke-dashoffset: var(--gauge-target, 30); }
+  70%  { stroke-dashoffset: var(--gauge-target, 30); }
+  90%  { stroke-dashoffset: 10; }
+  100% { stroke-dashoffset: 200; }
+}
+
+@keyframes particleRise {
+  0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+  10%  { opacity: 0.7; transform: translateY(-40px) scale(1); }
+  30%  { opacity: 0.9; transform: translateY(-160px) scale(1.2); }
+  60%  { opacity: 0.5; transform: translateY(-400px) scale(0.9); }
+  100% { opacity: 0; transform: translateY(-700px) scale(0.3); }
+}
+
+@keyframes orbitLife {
+  0%   { opacity: 0; transform: scale(0.5) rotate(-20deg); }
+  8%   { opacity: 0.7; transform: scale(1) rotate(0deg); }
+  50%  { opacity: 0.6; transform: scale(1) rotate(15deg); }
+  85%  { opacity: 0.15; transform: scale(1.1) rotate(30deg); }
+  100% { opacity: 0; transform: scale(0.8) rotate(40deg); }
+}
+
+@keyframes orbitSatSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes waveDraw {
+  0%   { opacity: 0; stroke-dashoffset: 300; }
+  8%   { opacity: 0.8; }
+  40%  { stroke-dashoffset: 0; opacity: 1; }
+  70%  { stroke-dashoffset: 0; opacity: 0.5; }
+  95%  { stroke-dashoffset: -300; opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes tableLife {
+  0%   { opacity: 0; }
+  6%   { opacity: 0.8; }
+  65%  { opacity: 0.5; }
+  90%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes tableRowSlide {
+  0%   { opacity: 0; transform: translateX(-12px); }
+  8%   { opacity: 0.8; transform: translateX(0); }
+  60%  { opacity: 0.6; transform: translateX(2px); }
+  85%  { opacity: 0; transform: translateX(8px); }
+  100% { opacity: 0; }
+}
+
+@keyframes frameReveal {
+  0%   { opacity: 0; transform: scale(1.3); }
+  8%   { opacity: 0.6; transform: scale(1); }
+  50%  { opacity: 0.4; transform: scale(0.98); }
+  85%  { opacity: 0.1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.15); }
+}
