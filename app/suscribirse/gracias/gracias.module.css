@@ -1,0 +1,134 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 40px 32px 32px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .card { padding: 32px 20px 28px; }
+}
+
+/* ── Icon ── */
+.iconWrap {
+  color: var(--green);
+  margin-bottom: 16px;
+}
+
+/* ── Label ── */
+.label {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--steel-blue);
+  margin-bottom: 10px;
+}
+
+/* ── Title ── */
+.title {
+  font-family: var(--font-playfair), serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+/* ── Body ── */
+.body {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-weight: 300;
+  max-width: 32ch;
+}
+
+/* ── Divider ── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+  margin: 24px 0;
+}
+
+/* ── Actions ── */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.primaryBtn {
+  display: block;
+  width: 100%;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  padding: 14px 24px;
+  background: var(--steel-blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease;
+}
+.primaryBtn:hover {
+  background: var(--steel-blue-dim);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(var(--steel-blue-rgb), 0.3);
+}
+
+.secondaryBtn {
+  display: block;
+  width: 100%;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  padding: 11px 20px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.secondaryBtn:hover {
+  color: var(--text-secondary);
+  border-color: rgba(var(--steel-blue-rgb), 0.25);
+  background: rgba(var(--steel-blue-rgb), 0.04);
+}
+
+/* ── Animation ── */
+.animIn {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeSlideUp {
+  to { opacity: 1; transform: translateY(0); }
+}

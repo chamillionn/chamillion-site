@@ -102,7 +102,7 @@ function SuscribirseForm() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId, returnTo: "/suscribirse" }),
+        body: JSON.stringify({ priceId, returnTo: "/suscribirse/gracias" }),
       });
       const data = await res.json();
       if (!res.ok) {
