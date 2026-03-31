@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: "Navegar las finanzas modernas: El augurio de una odisea — Chamillion",
     description:
       "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
-    images: [{ url: "/assets/newsletter/banner-post-01.jpeg" }],
+    images: [{ url: "/api/og?title=Navegar+las+finanzas+modernas%3A+El+augurio+de+una+odisea&subtitle=Un+viaje+con+dinero+real+por+los+mercados+que+est%C3%A1n+reemplazando+al+sistema.&banner=/assets/newsletter/banner-post-01.jpeg", width: 1200, height: 630 }],
   },
 };
 

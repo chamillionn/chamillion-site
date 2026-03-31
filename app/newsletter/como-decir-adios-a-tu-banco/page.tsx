@@ -124,7 +124,7 @@ export const metadata: Metadata = {
     title: "Cómo decir adiós a tu banco — Chamillion",
     description:
       "500 euros en el banco, listos para el despliegue. El primer paso hacia los mercados sin intermediarios.",
-    images: [{ url: "/assets/newsletter/banner-post-02.jpeg" }],
+    images: [{ url: "/api/og?title=C%C3%B3mo+decir+adi%C3%B3s+a+tu+banco&subtitle=500+euros+en+el+banco%2C+listos+para+el+despliegue.+El+primer+paso+hacia+los+mercados+sin+intermediarios.&banner=/assets/newsletter/banner-post-02.jpeg", width: 1200, height: 630 }],
   },
 };
 
