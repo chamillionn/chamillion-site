@@ -734,8 +734,10 @@ function SinglePostCard({ post, mobile }: { post: NonNullable<HomeProps["recentP
 function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: HomeProps["recentPosts"] }) {
   const mobile = useMediaQuery(768);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [animating, setAnimating] = useState(false);
+  // "idle" = card visible, "exit" = old card leaving, "enter" = new card arriving
+  const [phase, setPhase] = useState<"idle" | "exit" | "enter">("idle");
   const [direction, setDirection] = useState<"left" | "right">("right");
+  const pendingIndex = useRef(activeIndex);
 
   const posts = recentPosts && recentPosts.length > 0 ? recentPosts : [{
     slug: "navegar-las-finanzas-modernas-el-augurio-de-una-odisea",
@@ -810,7 +812,7 @@ function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: Home
             <button
               type="button"
               aria-label="Post anterior"
-              onClick={() => { if (activeIndex > 0 && !animating) { setDirection("left"); setAnimating(true); setTimeout(() => { setActiveIndex((i) => i - 1); setAnimating(false); }, 200); } }}
+              onClick={() => { if (activeIndex > 0 && phase === "idle") { pendingIndex.current = activeIndex - 1; setDirection("left"); setPhase("exit"); } }}
               style={{
                 width: 24,
                 height: 24,
@@ -833,7 +835,7 @@ function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: Home
             <button
               type="button"
               aria-label="Siguiente post"
-              onClick={() => { if (activeIndex < posts.length - 1 && !animating) { setDirection("right"); setAnimating(true); setTimeout(() => { setActiveIndex((i) => i + 1); setAnimating(false); }, 200); } }}
+              onClick={() => { if (activeIndex < posts.length - 1 && phase === "idle") { pendingIndex.current = activeIndex + 1; setDirection("right"); setPhase("exit"); } }}
               style={{
                 width: 24,
                 height: 24,
@@ -857,16 +859,34 @@ function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: Home
         )}
       </div>
 
-      {/* Single full-width card with transition */}
+      {/* Single full-width card with two-phase transition */}
       <div
+        ref={(el) => {
+          // When entering, snap to offset then animate to idle on next frame
+          if (phase === "enter" && el) {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => setPhase("idle"));
+            });
+          }
+        }}
+        onTransitionEnd={() => {
+          if (phase === "exit") {
+            setActiveIndex(pendingIndex.current);
+            setPhase("enter");
+          }
+        }}
         style={{
-          opacity: animating ? 0 : 1,
-          transform: animating
-            ? `translateX(${direction === "right" ? "-12px" : "12px"})`
-            : "translateX(0)",
-          transition: animating
-            ? "opacity 0.15s ease, transform 0.15s ease"
-            : "opacity 0.3s ease 0.05s, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.05s",
+          opacity: phase === "exit" || phase === "enter" ? 0 : 1,
+          transform:
+            phase === "exit"
+              ? `translateX(${direction === "right" ? "-20px" : "20px"})`
+              : phase === "enter"
+                ? `translateX(${direction === "right" ? "20px" : "-20px"})`
+                : "translateX(0)",
+          transition:
+            phase === "enter"
+              ? "none"
+              : "opacity 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
         <SinglePostCard post={posts[activeIndex]} mobile={mobile} />
