@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { createPostsClient } from "@/lib/supabase/posts-client";
 import PaywallGate from "@/components/paywall-gate";
+import PostJsonLd from "@/components/post-json-ld";
+import PostFooter from "@/components/post-footer";
+import ReadingProgress from "@/components/reading-progress";
+import BackToTop from "@/components/back-to-top";
+import Breadcrumbs from "@/components/breadcrumbs";
 import styles from "../post.module.css";
 
 const SLUG = "navegar-las-finanzas-modernas-el-augurio-de-una-odisea";
@@ -55,6 +60,10 @@ export default async function Post01() {
 
   return (
     <>
+      <ReadingProgress />
+      <BackToTop />
+      <Breadcrumbs title="El augurio de una odisea" />
+
       {/* BANNER */}
       <div className={styles.bannerSection}>
         <div className={styles.bannerWrapper}>
@@ -441,28 +450,15 @@ export default async function Post01() {
 
         </PaywallGate>
 
-        {/* Back to archive */}
-        <div style={{
-          textAlign: "center",
-          padding: "40px 0 0",
-          borderTop: "1px solid var(--border)",
-          marginTop: 40,
-        }}>
-          <a
-            href="/newsletter"
-            style={{
-              fontFamily: "var(--font-dm-mono), monospace",
-              fontSize: 13,
-              color: "var(--text-secondary)",
-              textDecoration: "none",
-              letterSpacing: "0.02em",
-              transition: "color 0.2s",
-            }}
-          >
-            &larr; Volver al archivo
-          </a>
-        </div>
+        <PostFooter slug={SLUG} title="Navegar las finanzas modernas: El augurio de una odisea" />
       </article>
+      <PostJsonLd
+        title="Navegar las finanzas modernas: El augurio de una odisea"
+        description="Un viaje con dinero real por los mercados que están reemplazando al sistema."
+        slug={SLUG}
+        date="2025-01-26"
+        bannerPath="/assets/newsletter/banner-post-01.jpeg"
+      />
     </>
   );
 }

@@ -5,6 +5,11 @@ import Link from "next/link";
 import { createPostsClient } from "@/lib/supabase/posts-client";
 import PaywallGate from "@/components/paywall-gate";
 import IframeWidget from "@/components/iframe-widget";
+import PostJsonLd from "@/components/post-json-ld";
+import PostFooter from "@/components/post-footer";
+import ReadingProgress from "@/components/reading-progress";
+import BackToTop from "@/components/back-to-top";
+import Breadcrumbs from "@/components/breadcrumbs";
 import WalletCollapsible from "./wallet-collapsible";
 import EvmLink from "./evm-link";
 import TocSidebar from "../toc-sidebar";
@@ -171,6 +176,9 @@ export default async function Post02() {
 
   return (
     <>
+      <ReadingProgress />
+      <BackToTop />
+      <Breadcrumbs title="Cómo decir adiós a tu banco" />
       <TocSidebar entries={TOC_ENTRIES} />
 
       {/* BANNER */}
@@ -801,28 +809,15 @@ export default async function Post02() {
 
         </PaywallGate>
 
-        {/* Back to archive */}
-        <div style={{
-          textAlign: "center",
-          padding: "40px 0 0",
-          borderTop: "1px solid var(--border)",
-          marginTop: 40,
-        }}>
-          <a
-            href="/newsletter"
-            style={{
-              fontFamily: "var(--font-dm-mono), monospace",
-              fontSize: 13,
-              color: "var(--text-secondary)",
-              textDecoration: "none",
-              letterSpacing: "0.02em",
-              transition: "color 0.2s",
-            }}
-          >
-            &larr; Volver al archivo
-          </a>
-        </div>
+        <PostFooter slug={SLUG} title="Cómo decir adiós a tu banco" />
       </article>
+      <PostJsonLd
+        title="Cómo decir adiós a tu banco"
+        description="500 euros en el banco, listos para el despliegue. El primer paso hacia los mercados sin intermediarios."
+        slug={SLUG}
+        date="2026-03-20"
+        bannerPath="/assets/newsletter/banner-post-02.jpeg"
+      />
     </>
   );
 }

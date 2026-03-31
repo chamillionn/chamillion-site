@@ -8,6 +8,7 @@ import {
   Outfit,
 } from "next/font/google";
 import NavigationProgress from "@/components/nav-progress";
+import KeyboardShortcuts from "@/components/keyboard-shortcuts";
 import "./globals.css";
 
 const dmMono = DM_Mono({
@@ -76,9 +77,7 @@ export const metadata: Metadata = {
     creator: "@chamillion__",
     images: ["/og-image.jpg"],
   },
-  other: {
-    "theme-color": "#0C0E11",
-  },
+  other: {},
 };
 
 export default function RootLayout({
@@ -89,13 +88,15 @@ export default function RootLayout({
   return (
     <html lang="es" data-scroll-behavior="smooth" suppressHydrationWarning className={`${dmMono.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${outfit.variable}`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("chamillion-theme")}catch(e){t=null}if(!t)t="dark";document.documentElement.setAttribute("data-theme",t)})()` }} />
+        <link rel="alternate" type="application/rss+xml" title="Chamillion" href="/feed.xml" />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("chamillion-theme")}catch(e){t=null}if(!t)t="dark";document.documentElement.setAttribute("data-theme",t);var c=t==="dark"?"#0C0E11":"#e2d5c3";var m=document.querySelector('meta[name=theme-color]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}m.content=c})()` }} />
       </head>
       <body>
         <a href="#main-content" className="skip-to-content">
           Ir al contenido
         </a>
         <NavigationProgress />
+        <KeyboardShortcuts />
         <div id="main-content">{children}</div>
       </body>
     </html>

@@ -169,6 +169,29 @@
   padding: 8px 0;
 }
 
+/* ── Embed button ── */
+.embedBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 4px 10px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.embedBtn:hover {
+  color: var(--steel-blue);
+  border-color: var(--steel-blue);
+}
+
 /* ── Admin badge ── */
 .adminBadge {
   margin-left: auto;

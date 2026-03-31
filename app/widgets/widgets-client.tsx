@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/theme-toggle";
 import styles from "./page.module.css";
@@ -122,12 +122,23 @@ const widgets: Widget[] = [
   },
 ];
 
-export default function WidgetsClient({ isAdmin }: { isAdmin: boolean }) {
+export default function WidgetsClient() {
   const [query, setQuery] = useState("");
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+
+  const copyEmbed = useCallback((e: React.MouseEvent, w: Widget) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const snippet = `<iframe src="https://chamillion.site/widgets/${w.path}/index.html" width="100%" height="500" frameborder="0" loading="lazy"></iframe>`;
+    navigator.clipboard.writeText(snippet).then(() => {
+      setCopiedSlug(w.slug);
+      setTimeout(() => setCopiedSlug(null), 2000);
+    });
+  }, []);
 
   const q = query.trim().toLowerCase();
   const filtered = widgets.filter((w) => {
-    if (w.private && !isAdmin) return false;
+    if (w.private) return false;
     if (!q) return true;
     const haystack =
       `${w.keywords} ${w.title} ${w.desc} ${w.tag} ${w.groupTitle ?? ""}`.toLowerCase();
@@ -165,6 +176,21 @@ export default function WidgetsClient({ isAdmin }: { isAdmin: boolean }) {
       </div>
       <div className={styles.cardTitle}>{w.title}</div>
       <div className={styles.cardDesc}>{w.desc}</div>
+      <button
+        className={styles.embedBtn}
+        onClick={(e) => copyEmbed(e, w)}
+        title="Copiar código para embeber"
+      >
+        {copiedSlug === w.slug ? (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+        ) : (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
+          </svg>
+        )}
+        {copiedSlug === w.slug ? "Copiado" : "Embeber"}
+      </button>
     </a>
   );
 

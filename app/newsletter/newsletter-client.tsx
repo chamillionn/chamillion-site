@@ -444,6 +444,7 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
   const [loaded, setLoaded] = useState(false);
   const [prices, setPrices] = useState<Price[]>([]);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [activeYear, setActiveYear] = useState<number | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100);
@@ -460,9 +461,14 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
     if (p.section) postCounts[p.section] = (postCounts[p.section] ?? 0) + 1;
   }
 
-  const visiblePosts = activeSection
-    ? posts.filter((p) => p.section === activeSection)
-    : posts;
+  // Collect available years
+  const years = [...new Set(posts.map((p) => new Date(p.date + "T00:00:00").getFullYear()))].sort((a, b) => b - a);
+
+  const visiblePosts = posts.filter((p) => {
+    if (activeSection && p.section !== activeSection) return false;
+    if (activeYear && new Date(p.date + "T00:00:00").getFullYear() !== activeYear) return false;
+    return true;
+  });
 
   return (
     <div
@@ -575,6 +581,53 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
         loaded={loaded}
         postCounts={postCounts}
       />
+
+      {/* Year filter */}
+      {years.length > 1 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 20,
+            opacity: loaded ? 1 : 0,
+            transform: loaded ? "translateY(0)" : "translateY(6px)",
+            transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.24s",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-jetbrains), monospace",
+              fontSize: 9,
+              color: V.textMuted,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+            }}
+          >
+            Año
+          </span>
+          {years.map((y) => (
+            <button
+              key={y}
+              type="button"
+              onClick={() => setActiveYear(activeYear === y ? null : y)}
+              style={{
+                fontFamily: "var(--font-dm-mono), monospace",
+                fontSize: 11,
+                padding: "3px 10px",
+                borderRadius: 5,
+                border: `1px solid ${activeYear === y ? steelA(0.35) : steelA(0.12)}`,
+                background: activeYear === y ? steelA(0.06) : "transparent",
+                color: activeYear === y ? V.textPrimary : V.textMuted,
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+            >
+              {y}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Post grid */}
       {error && posts.length === 0 ? (

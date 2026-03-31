@@ -31,12 +31,31 @@ export default function ThemeToggle() {
     const initial = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
     setTheme(initial as "dark" | "light");
     setMounted(true);
+
+    // Sync when keyboard shortcut changes theme
+    function onStorage(e: StorageEvent) {
+      if (e.key === "chamillion-theme" && e.newValue) {
+        setTheme(e.newValue as "dark" | "light");
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("chamillion-theme", theme);
+
+    // Sync meta theme-color with current theme
+    const themeColor = theme === "dark" ? "#0C0E11" : "#e2d5c3";
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "theme-color");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute("content", themeColor);
 
     // Sync with embedded iframes (restrict to same origin)
     document.querySelectorAll("iframe").forEach((f) => {

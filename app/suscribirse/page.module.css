@@ -90,6 +90,25 @@
   margin: 0 auto 20px;
 }
 
+/* ── Social proof ── */
+.socialProof {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+
+.socialProof svg {
+  color: var(--steel-blue);
+  opacity: 0.7;
+}
+
 /* ── Divider ── */
 .divider {
   height: 1px;

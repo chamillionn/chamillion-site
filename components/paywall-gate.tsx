@@ -30,8 +30,8 @@ export default async function PaywallGate({
     <>
       {teaser}
       <div className={styles.blurredPreview} aria-hidden="true">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.</p>
-        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</p>
+        <p>El siguiente paso es saber dónde y cómo desplegar el capital. Hay múltiples opciones, cada una con sus ventajas y riesgos. En esta sección desgloso las herramientas, plataformas y estrategias que estoy usando con mi propia cartera.</p>
+        <p>Incluye análisis detallados, capturas de pantalla de cada operación, y las métricas clave que monitorizo para tomar decisiones informadas. Todo con datos reales y verificables.</p>
       </div>
       <PaywallCTA isLoggedIn={!!ctx} />
     </>
