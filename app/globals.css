@@ -144,9 +144,6 @@ input, button, select, textarea, table th, table td {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-.hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-
 a:focus-visible,
 button:focus-visible,
 [role="button"]:focus-visible {

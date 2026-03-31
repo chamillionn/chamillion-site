@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
@@ -730,12 +730,12 @@ function SinglePostCard({ post, mobile }: { post: NonNullable<HomeProps["recentP
   );
 }
 
-// Post section — horizontal scroll when multiple posts
+// Post section — full card with prev/next when multiple posts
 function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: HomeProps["recentPosts"] }) {
   const mobile = useMediaQuery(768);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [direction, setDirection] = useState<"left" | "right">("right");
 
   const posts = recentPosts && recentPosts.length > 0 ? recentPosts : [{
     slug: "navegar-las-finanzas-modernas-el-augurio-de-una-odisea",
@@ -747,33 +747,6 @@ function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: Home
   }];
 
   const multiple = posts.length > 1;
-
-  const updateScrollState = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 2);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
-  }, []);
-
-  useEffect(() => {
-    if (!multiple) return;
-    const el = scrollRef.current;
-    if (!el) return;
-    updateScrollState();
-    el.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
-    return () => {
-      el.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [multiple, updateScrollState]);
-
-  const scroll = (dir: "left" | "right") => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const amount = el.clientWidth * 0.8;
-    el.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
-  };
 
   return (
     <div
@@ -831,25 +804,25 @@ function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: Home
           {multiple ? "Últimos posts" : "Último post"}
         </span>
 
-        {/* Scroll arrows — only when multiple */}
+        {/* Prev/next arrows — only when multiple */}
         {multiple && (
           <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
             <button
               type="button"
-              aria-label="Anterior"
-              onClick={() => scroll("left")}
+              aria-label="Post anterior"
+              onClick={() => { if (activeIndex > 0 && !animating) { setDirection("left"); setAnimating(true); setTimeout(() => { setActiveIndex((i) => i - 1); setAnimating(false); }, 200); } }}
               style={{
                 width: 24,
                 height: 24,
                 borderRadius: 6,
-                border: `1px solid ${canScrollLeft ? steelA(0.2) : steelA(0.08)}`,
+                border: `1px solid ${activeIndex > 0 ? steelA(0.2) : steelA(0.08)}`,
                 background: "transparent",
-                color: canScrollLeft ? V.textSecondary : V.textMuted,
-                cursor: canScrollLeft ? "pointer" : "default",
+                color: activeIndex > 0 ? V.textSecondary : V.textMuted,
+                cursor: activeIndex > 0 ? "pointer" : "default",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: canScrollLeft ? 1 : 0.4,
+                opacity: activeIndex > 0 ? 1 : 0.4,
                 transition: "all 0.2s ease",
               }}
             >
@@ -859,20 +832,20 @@ function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: Home
             </button>
             <button
               type="button"
-              aria-label="Siguiente"
-              onClick={() => scroll("right")}
+              aria-label="Siguiente post"
+              onClick={() => { if (activeIndex < posts.length - 1 && !animating) { setDirection("right"); setAnimating(true); setTimeout(() => { setActiveIndex((i) => i + 1); setAnimating(false); }, 200); } }}
               style={{
                 width: 24,
                 height: 24,
                 borderRadius: 6,
-                border: `1px solid ${canScrollRight ? steelA(0.2) : steelA(0.08)}`,
+                border: `1px solid ${activeIndex < posts.length - 1 ? steelA(0.2) : steelA(0.08)}`,
                 background: "transparent",
-                color: canScrollRight ? V.textSecondary : V.textMuted,
-                cursor: canScrollRight ? "pointer" : "default",
+                color: activeIndex < posts.length - 1 ? V.textSecondary : V.textMuted,
+                cursor: activeIndex < posts.length - 1 ? "pointer" : "default",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: canScrollRight ? 1 : 0.4,
+                opacity: activeIndex < posts.length - 1 ? 1 : 0.4,
                 transition: "all 0.2s ease",
               }}
             >
@@ -884,35 +857,20 @@ function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: Home
         )}
       </div>
 
-      {/* Cards — horizontal scroll when multiple */}
-      {multiple ? (
-        <div
-          ref={scrollRef}
-          className="hide-scrollbar"
-          style={{
-            display: "flex",
-            gap: 16,
-            overflowX: "auto",
-            scrollSnapType: "x mandatory",
-            WebkitOverflowScrolling: "touch",
-          }}
-        >
-          {posts.map((post) => (
-            <div
-              key={post.slug}
-              style={{
-                scrollSnapAlign: "start",
-                minWidth: mobile ? "85%" : "calc(50% - 8px)",
-                maxWidth: mobile ? "85%" : "calc(50% - 8px)",
-              }}
-            >
-              <SinglePostCard post={post} mobile={mobile} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <SinglePostCard post={posts[0]} mobile={mobile} />
-      )}
+      {/* Single full-width card with transition */}
+      <div
+        style={{
+          opacity: animating ? 0 : 1,
+          transform: animating
+            ? `translateX(${direction === "right" ? "-12px" : "12px"})`
+            : "translateX(0)",
+          transition: animating
+            ? "opacity 0.15s ease, transform 0.15s ease"
+            : "opacity 0.3s ease 0.05s, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.05s",
+        }}
+      >
+        <SinglePostCard post={posts[activeIndex]} mobile={mobile} />
+      </div>
     </div>
   );
 }
