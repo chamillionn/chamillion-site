@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   title: "Navegar las finanzas modernas: El augurio de una odisea",
   description:
     "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
+  alternates: {
+    canonical: `https://chamillion.site/newsletter/${SLUG}`,
+  },
   openGraph: {
     title: "Navegar las finanzas modernas: El augurio de una odisea — Chamillion",
     description:

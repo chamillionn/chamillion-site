@@ -117,6 +117,9 @@ export const metadata: Metadata = {
   title: "Cómo decir adiós a tu banco",
   description:
     "500 euros en el banco, listos para el despliegue. El primer paso hacia los mercados sin intermediarios.",
+  alternates: {
+    canonical: `https://chamillion.site/newsletter/${SLUG}`,
+  },
   openGraph: {
     title: "Cómo decir adiós a tu banco — Chamillion",
     description:

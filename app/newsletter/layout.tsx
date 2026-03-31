@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Newsletter",
   description:
     "Un viaje con dinero real por la vanguardia de los mercados financieros. Documentado, y verificable.",
+  alternates: {
+    canonical: "https://chamillion.site/newsletter",
+  },
   openGraph: {
     title: "Newsletter — Chamillion",
     description:
