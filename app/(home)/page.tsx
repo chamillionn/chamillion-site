@@ -64,8 +64,8 @@ export default async function HomePage() {
   const dc = await resolvePublicClient();
   const demo = await isDemoMode(dc);
 
-  // Fetch latest published post
-  let latestPost: { slug: string; title: string; subtitle: string | null; date: string; banner_path: string | null; substack_url: string | null } | null = null;
+  // Fetch recent published posts
+  let recentPosts: { slug: string; title: string; subtitle: string | null; date: string; banner_path: string | null; substack_url: string | null }[] = [];
   try {
     const postsDb = createPostsClient();
     const { data } = await postsDb
@@ -73,10 +73,9 @@ export default async function HomePage() {
       .select("slug, title, subtitle, date, banner_path, substack_url")
       .eq("published", true)
       .order("date", { ascending: false })
-      .limit(1)
-      .single();
-    latestPost = data;
-  } catch { /* fallback: no post shown */ }
+      .limit(5);
+    recentPosts = data ?? [];
+  } catch { /* fallback: no posts shown */ }
 
   if (demo) {
     return (
@@ -85,7 +84,7 @@ export default async function HomePage() {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <HomeClient {...DEMO_DATA} isDemo platformColorsLight={PLATFORM_COLORS_LIGHT} latestPost={latestPost} />
+        <HomeClient {...DEMO_DATA} isDemo platformColorsLight={PLATFORM_COLORS_LIGHT} recentPosts={recentPosts} />
       </>
     );
   }
@@ -171,7 +170,7 @@ export default async function HomePage() {
         totalValue={totalValue}
         dailyData={dailyData}
         capitalInvested={costBasis.net > 0 ? costBasis.net : null}
-        latestPost={latestPost}
+        recentPosts={recentPosts}
       />
     </>
   );

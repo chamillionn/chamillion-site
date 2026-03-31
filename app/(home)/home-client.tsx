@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/theme-toggle";
@@ -159,14 +159,14 @@ export interface HomeProps {
   capitalInvested: number | null;
   isDemo?: boolean;
   platformColorsLight?: string[];
-  latestPost?: {
+  recentPosts?: {
     slug: string;
     title: string;
     subtitle: string | null;
     date: string;
     banner_path: string | null;
     substack_url: string | null;
-  } | null;
+  }[];
 }
 
 // Detect current theme from data-theme attribute
@@ -492,21 +492,12 @@ function SocialLink({
   );
 }
 
-// Post preview card with drawer reveal for edition selection
-function PostCard({ loaded, latestPost }: { loaded: boolean; latestPost?: HomeProps["latestPost"] }) {
+// Single post card with drawer reveal for edition selection
+function SinglePostCard({ post, mobile }: { post: NonNullable<HomeProps["recentPosts"]>[number]; mobile: boolean }) {
   const [hovered, setHovered] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  const mobile = useMediaQuery(768);
 
-  const post = latestPost ?? {
-    slug: "navegar-las-finanzas-modernas-el-augurio-de-una-odisea",
-    title: "Navegar las finanzas modernas: El augurio de una odisea",
-    subtitle: "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
-    date: "2026-02-21",
-    banner_path: "/assets/newsletter/banner-post-01.jpeg",
-    substack_url: null,
-  };
   const postDate = new Date(post.date + "T00:00:00").toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" });
   const postHref = `/newsletter/${post.slug}`;
   const substackHref = post.substack_url || "https://chamillion.substack.com";
@@ -529,6 +520,260 @@ function PostCard({ loaded, latestPost }: { loaded: boolean; latestPost?: HomePr
       document.removeEventListener("keydown", handleEsc);
     };
   }, [expanded]);
+
+  return (
+    <div
+      ref={cardRef}
+      role="button"
+      tabIndex={0}
+      aria-expanded={expanded}
+      onClick={() => setExpanded((v) => !v)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded((v) => !v); } }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRadius: 12,
+        overflow: "hidden",
+        border: `1px solid ${expanded ? steelA(0.3) : V.border}`,
+        background: V.bgCard,
+        cursor: "pointer",
+        transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease",
+        transform: hovered && !expanded ? "translateY(-2px)" : "translateY(0)",
+        boxShadow: hovered || expanded
+          ? `inset 0 0 0 1px ${steelA(0.25)}, 0 4px 24px ${steelA(0.03)}`
+          : "inset 0 0 0 0px transparent",
+        flexShrink: 0,
+        minWidth: 0,
+      }}
+    >
+      {/* Content area — slides up when expanded */}
+      <div
+        style={{
+          transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+          transform: expanded ? `translateY(${mobile ? -4 : -8}px)` : "translateY(0)",
+        }}
+      >
+        <div style={{ position: "relative", width: "100%", aspectRatio: "2.4/1", overflow: "hidden" }}>
+          <Image
+            src={post.banner_path || "/assets/newsletter/banner-post-01.jpeg"}
+            alt={post.title}
+            fill
+            style={{
+              objectFit: "cover",
+              transition: "transform 0.6s ease",
+              transform: hovered && !expanded ? "scale(1.05)" : "scale(1.01)",
+            }}
+            sizes="(max-width: 1100px) 50vw, 526px"
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: "60%",
+              background: `linear-gradient(to top, ${V.bgCard}, transparent)`,
+              pointerEvents: "none",
+            }}
+          />
+        </div>
+        <div style={{ padding: "14px 14px 14px", position: "relative", marginTop: -2, background: V.bgCard }}>
+          <div
+            style={{
+              fontFamily: "var(--font-jetbrains), monospace",
+              fontSize: 9,
+              color: V.steel,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              marginBottom: 6,
+            }}
+          >
+            {postDate}
+          </div>
+          <div
+            style={{
+              fontFamily: "var(--font-playfair), serif",
+              fontSize: 19,
+              lineHeight: 1.3,
+              color: V.textPrimary,
+              letterSpacing: "-0.01em",
+              marginBottom: 4,
+            }}
+          >
+            {post.title}
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              lineHeight: 1.5,
+              color: V.textSecondary,
+              fontWeight: 300,
+            }}
+          >
+            {post.subtitle}
+          </div>
+          <div
+            style={{
+              marginTop: 10,
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              fontFamily: "var(--font-jetbrains), monospace",
+              fontSize: 9,
+              color: V.steel,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+            }}
+          >
+            Elegir edición
+            <svg
+              width="9"
+              height="9"
+              viewBox="0 0 16 16"
+              fill="none"
+              style={{
+                transition: "transform 0.25s ease",
+                transform: expanded ? "rotate(90deg)" : hovered ? "translateX(3px)" : "translateX(0)",
+              }}
+            >
+              <path d="M6 3L11 8L6 13" stroke={V.steel} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Drawer panel — edition selector */}
+      <div
+        style={{
+          maxHeight: expanded ? 100 : 0,
+          opacity: expanded ? 1 : 0,
+          overflow: "hidden",
+          transition: expanded
+            ? "max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease 0.1s"
+            : "opacity 0.2s ease, max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.05s",
+        }}
+      >
+        <div style={{ padding: "0 14px 14px" }}>
+          {/* Separator */}
+          <div
+            style={{
+              height: 1,
+              background: `linear-gradient(to right, transparent, ${V.border}, transparent)`,
+              marginBottom: 10,
+            }}
+          />
+          {/* Compact side-by-side buttons */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+          >
+            {/* Substack */}
+            <a
+              href={substackHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: `1px solid ${steelA(0.2)}`,
+                background: steelA(0.03),
+                textDecoration: "none",
+                transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = steelA(0.08); e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = steelA(0.03); e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              <svg width="16" height="16" viewBox="0 0 448 512" fill="none" style={{ flexShrink: 0 }}>
+                <path fill={V.steel} d="M0 0h448v62.804H0V0zm0 229.083h448v282.388L223.954 385.808 0 511.471V229.083zm0-114.542h448v62.804H0v-62.804z"/>
+              </svg>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: V.steel, letterSpacing: "-0.01em" }}>Substack</div>
+                <div style={{ fontSize: 9, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace", textTransform: "uppercase", letterSpacing: "0.06em" }}>Gratis</div>
+              </div>
+            </a>
+            {/* Web */}
+            <Link
+              href={postHref}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: `1px solid ${V.border}`,
+                background: V.bgCard,
+                textDecoration: "none",
+                transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = V.bgCardHover; e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = V.bgCard; e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                <rect x="3" y="3" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
+                <rect x="14" y="3" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
+                <rect x="14" y="14" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
+              </svg>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: V.textPrimary, letterSpacing: "-0.01em" }}>Web</div>
+                <div style={{ fontSize: 9, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace", textTransform: "uppercase", letterSpacing: "0.06em" }}>Extendida</div>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Post section — horizontal scroll when multiple posts
+function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: HomeProps["recentPosts"] }) {
+  const mobile = useMediaQuery(768);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const posts = recentPosts && recentPosts.length > 0 ? recentPosts : [{
+    slug: "navegar-las-finanzas-modernas-el-augurio-de-una-odisea",
+    title: "Navegar las finanzas modernas: El augurio de una odisea",
+    subtitle: "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
+    date: "2026-02-21",
+    banner_path: "/assets/newsletter/banner-post-01.jpeg",
+    substack_url: null,
+  }];
+
+  const multiple = posts.length > 1;
+
+  const updateScrollState = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    if (!multiple) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    updateScrollState();
+    el.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+    return () => {
+      el.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [multiple, updateScrollState]);
+
+  const scroll = (dir: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const amount = el.clientWidth * 0.8;
+    el.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
+  };
 
   return (
     <div
@@ -583,214 +828,91 @@ function PostCard({ loaded, latestPost }: { loaded: boolean; latestPost?: HomePr
             letterSpacing: "0.08em",
           }}
         >
-          Último post
+          {multiple ? "Últimos posts" : "Último post"}
         </span>
-      </div>
 
-      {/* Card container */}
-      <div
-        ref={cardRef}
-        role="button"
-        tabIndex={0}
-        aria-expanded={expanded}
-        onClick={() => setExpanded((v) => !v)}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded((v) => !v); } }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          borderRadius: 12,
-          overflow: "hidden",
-          border: `1px solid ${expanded ? steelA(0.3) : V.border}`,
-          background: V.bgCard,
-          cursor: "pointer",
-          transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease",
-          transform: hovered && !expanded ? "translateY(-2px)" : "translateY(0)",
-          boxShadow: hovered || expanded
-            ? `inset 0 0 0 1px ${steelA(0.25)}, 0 4px 24px ${steelA(0.03)}`
-            : "inset 0 0 0 0px transparent",
-        }}
-      >
-        {/* Content area — slides up when expanded */}
-        <div
-          style={{
-            transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-            transform: expanded ? `translateY(${mobile ? -4 : -8}px)` : "translateY(0)",
-          }}
-        >
-          <div style={{ position: "relative", width: "100%", aspectRatio: "2.4/1", overflow: "hidden" }}>
-            <Image
-              src={post.banner_path || "/assets/newsletter/banner-post-01.jpeg"}
-              alt={post.title}
-              fill
+        {/* Scroll arrows — only when multiple */}
+        {multiple && (
+          <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+            <button
+              type="button"
+              aria-label="Anterior"
+              onClick={() => scroll("left")}
               style={{
-                objectFit: "cover",
-                transition: "transform 0.6s ease",
-                transform: hovered && !expanded ? "scale(1.05)" : "scale(1.01)",
-              }}
-              sizes="(max-width: 1100px) 50vw, 526px"
-            />
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: "60%",
-                background: `linear-gradient(to top, ${V.bgCard}, transparent)`,
-                pointerEvents: "none",
-              }}
-            />
-          </div>
-          <div style={{ padding: "14px 14px 14px", position: "relative", marginTop: -2, background: V.bgCard }}>
-            <div
-              style={{
-                fontFamily: "var(--font-jetbrains), monospace",
-                fontSize: 9,
-                color: V.steel,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                marginBottom: 6,
-              }}
-            >
-              {postDate}
-            </div>
-            <div
-              style={{
-                fontFamily: "var(--font-playfair), serif",
-                fontSize: 19,
-                lineHeight: 1.3,
-                color: V.textPrimary,
-                letterSpacing: "-0.01em",
-                marginBottom: 4,
-              }}
-            >
-              {post.title}
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                lineHeight: 1.5,
-                color: V.textSecondary,
-                fontWeight: 300,
-              }}
-            >
-              {post.subtitle}
-            </div>
-            <div
-              style={{
-                marginTop: 10,
+                width: 24,
+                height: 24,
+                borderRadius: 6,
+                border: `1px solid ${canScrollLeft ? steelA(0.2) : steelA(0.08)}`,
+                background: "transparent",
+                color: canScrollLeft ? V.textSecondary : V.textMuted,
+                cursor: canScrollLeft ? "pointer" : "default",
                 display: "flex",
                 alignItems: "center",
-                gap: 5,
-                fontFamily: "var(--font-jetbrains), monospace",
-                fontSize: 9,
-                color: V.steel,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
+                justifyContent: "center",
+                opacity: canScrollLeft ? 1 : 0.4,
+                transition: "all 0.2s ease",
               }}
             >
-              Elegir edición
-              <svg
-                width="9"
-                height="9"
-                viewBox="0 0 16 16"
-                fill="none"
-                style={{
-                  transition: "transform 0.25s ease",
-                  transform: expanded ? "rotate(90deg)" : hovered ? "translateX(3px)" : "translateX(0)",
-                }}
-              >
-                <path d="M6 3L11 8L6 13" stroke={V.steel} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </div>
+            </button>
+            <button
+              type="button"
+              aria-label="Siguiente"
+              onClick={() => scroll("right")}
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 6,
+                border: `1px solid ${canScrollRight ? steelA(0.2) : steelA(0.08)}`,
+                background: "transparent",
+                color: canScrollRight ? V.textSecondary : V.textMuted,
+                cursor: canScrollRight ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: canScrollRight ? 1 : 0.4,
+                transition: "all 0.2s ease",
+              }}
+            >
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* Drawer panel — edition selector */}
+      {/* Cards — horizontal scroll when multiple */}
+      {multiple ? (
         <div
+          ref={scrollRef}
+          className="hide-scrollbar"
           style={{
-            maxHeight: expanded ? 100 : 0,
-            opacity: expanded ? 1 : 0,
-            overflow: "hidden",
-            transition: expanded
-              ? "max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease 0.1s"
-              : "opacity 0.2s ease, max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.05s",
+            display: "flex",
+            gap: 16,
+            overflowX: "auto",
+            scrollSnapType: "x mandatory",
+            WebkitOverflowScrolling: "touch",
           }}
         >
-          <div style={{ padding: "0 14px 14px" }}>
-            {/* Separator */}
+          {posts.map((post) => (
             <div
+              key={post.slug}
               style={{
-                height: 1,
-                background: `linear-gradient(to right, transparent, ${V.border}, transparent)`,
-                marginBottom: 10,
+                scrollSnapAlign: "start",
+                minWidth: mobile ? "85%" : "calc(50% - 8px)",
+                maxWidth: mobile ? "85%" : "calc(50% - 8px)",
               }}
-            />
-            {/* Compact side-by-side buttons */}
-            <div
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-              style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
             >
-              {/* Substack */}
-              <a
-                href={substackHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: `1px solid ${steelA(0.2)}`,
-                  background: steelA(0.03),
-                  textDecoration: "none",
-                  transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = steelA(0.08); e.currentTarget.style.transform = "translateY(-1px)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = steelA(0.03); e.currentTarget.style.transform = "translateY(0)"; }}
-              >
-                <svg width="16" height="16" viewBox="0 0 448 512" fill="none" style={{ flexShrink: 0 }}>
-                  <path fill={V.steel} d="M0 0h448v62.804H0V0zm0 229.083h448v282.388L223.954 385.808 0 511.471V229.083zm0-114.542h448v62.804H0v-62.804z"/>
-                </svg>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: V.steel, letterSpacing: "-0.01em" }}>Substack</div>
-                  <div style={{ fontSize: 9, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace", textTransform: "uppercase", letterSpacing: "0.06em" }}>Gratis</div>
-                </div>
-              </a>
-              {/* Web */}
-              <Link
-                href={postHref}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: `1px solid ${V.border}`,
-                  background: V.bgCard,
-                  textDecoration: "none",
-                  transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = V.bgCardHover; e.currentTarget.style.transform = "translateY(-1px)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = V.bgCard; e.currentTarget.style.transform = "translateY(0)"; }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                  <rect x="3" y="3" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
-                  <rect x="14" y="3" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
-                  <rect x="3" y="14" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
-                  <rect x="14" y="14" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
-                </svg>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: V.textPrimary, letterSpacing: "-0.01em" }}>Web</div>
-                  <div style={{ fontSize: 9, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace", textTransform: "uppercase", letterSpacing: "0.06em" }}>Extendida</div>
-                </div>
-              </Link>
+              <SinglePostCard post={post} mobile={mobile} />
             </div>
-          </div>
+          ))}
         </div>
-      </div>
+      ) : (
+        <SinglePostCard post={posts[0]} mobile={mobile} />
+      )}
     </div>
   );
 }
@@ -1340,7 +1462,7 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   );
 }
 
-export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, isDemo, platformColorsLight, latestPost }: HomeProps) {
+export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, isDemo, platformColorsLight, recentPosts }: HomeProps) {
   const [loaded, setLoaded] = useState(false);
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
   const [navDropdown, setNavDropdown] = useState(false);
@@ -1902,7 +2024,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
           </div>
 
           {/* Right: Latest post preview */}
-          <PostCard loaded={loaded} latestPost={latestPost} />
+          <PostCard loaded={loaded} recentPosts={recentPosts} />
         </div>
 
         {/* Divider */}
