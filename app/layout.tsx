@@ -89,6 +89,7 @@ export default function RootLayout({
     <html lang="es" data-scroll-behavior="smooth" suppressHydrationWarning className={`${dmMono.variable} ${playfair.variable} ${sourceSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${outfit.variable}`}>
       <head>
         <link rel="alternate" type="application/rss+xml" title="Chamillion" href="/feed.xml" />
+        <link rel="manifest" href="/manifest.json" />
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("chamillion-theme")}catch(e){t=null}if(!t)t="dark";document.documentElement.setAttribute("data-theme",t);var c=t==="dark"?"#0C0E11":"#e2d5c3";var m=document.querySelector('meta[name=theme-color]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}m.content=c})()` }} />
       </head>
       <body>

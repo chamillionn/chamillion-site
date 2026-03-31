@@ -1,0 +1,16 @@
+{
+  "name": "Chamillion",
+  "short_name": "Chamillion",
+  "description": "Documentando la vanguardia de los mercados financieros, y haciendo dinero.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0C0E11",
+  "theme_color": "#0C0E11",
+  "icons": [
+    {
+      "src": "/icon",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
