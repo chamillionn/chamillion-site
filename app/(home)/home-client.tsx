@@ -165,6 +165,7 @@ export interface HomeProps {
     subtitle: string | null;
     date: string;
     banner_path: string | null;
+    substack_url: string | null;
   } | null;
 }
 
@@ -504,9 +505,11 @@ function PostCard({ loaded, latestPost }: { loaded: boolean; latestPost?: HomePr
     subtitle: "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
     date: "2026-02-21",
     banner_path: "/assets/newsletter/banner-post-01.jpeg",
+    substack_url: null,
   };
   const postDate = new Date(post.date + "T00:00:00").toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" });
   const postHref = `/newsletter/${post.slug}`;
+  const substackHref = post.substack_url || "https://chamillion.substack.com";
 
   // Close on click outside or Escape
   useEffect(() => {
@@ -731,7 +734,7 @@ function PostCard({ loaded, latestPost }: { loaded: boolean; latestPost?: HomePr
             >
               {/* Substack */}
               <a
-                href="https://chamillion.substack.com"
+                href={substackHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

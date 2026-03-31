@@ -65,12 +65,12 @@ export default async function HomePage() {
   const demo = await isDemoMode(dc);
 
   // Fetch latest published post
-  let latestPost: { slug: string; title: string; subtitle: string | null; date: string; banner_path: string | null } | null = null;
+  let latestPost: { slug: string; title: string; subtitle: string | null; date: string; banner_path: string | null; substack_url: string | null } | null = null;
   try {
     const postsDb = createPostsClient();
     const { data } = await postsDb
       .from("posts")
-      .select("slug, title, subtitle, date, banner_path")
+      .select("slug, title, subtitle, date, banner_path, substack_url")
       .eq("published", true)
       .order("date", { ascending: false })
       .limit(1)

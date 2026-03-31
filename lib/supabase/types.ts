@@ -96,6 +96,7 @@ export interface Post {
   date: string; // YYYY-MM-DD
   banner_path: string | null;
   section: string | null; // e.g. "Reporte de la Cartera" | "Deep Dives"
+  substack_url: string | null;
   premium: boolean;
   published: boolean;
   created_at: string;
@@ -190,7 +191,7 @@ export type Database = {
       };
       posts: {
         Row: Flatten<Post>;
-        Insert: Flatten<Omit<Post, "id" | "created_at" | "subtitle" | "banner_path" | "section"> & { id?: string; created_at?: string; subtitle?: string | null; banner_path?: string | null; section?: string | null }>;
+        Insert: Flatten<Omit<Post, "id" | "created_at" | "subtitle" | "banner_path" | "section" | "substack_url"> & { id?: string; created_at?: string; subtitle?: string | null; banner_path?: string | null; section?: string | null; substack_url?: string | null }>;
         Update: Flatten<Partial<Post>>;
         Relationships: [];
       };
