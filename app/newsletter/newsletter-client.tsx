@@ -440,9 +440,12 @@ function formatPrice(cents: number, currency: string): string {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency }).format(cents / 100);
 }
 
-export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }: { posts: Post[]; error?: boolean; hideUpgrade?: boolean; isAdmin?: boolean }) {
+export default function NewsletterClient({ posts: initialPosts, error }: { posts: Post[]; error?: boolean }) {
   const [loaded, setLoaded] = useState(false);
   const [prices, setPrices] = useState<Price[]>([]);
+  const [posts, setPosts] = useState(initialPosts);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [hideUpgrade, setHideUpgrade] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [activeYear, setActiveYear] = useState<number | null>(null);
 
@@ -452,6 +455,32 @@ export default function NewsletterClient({ posts, error, hideUpgrade, isAdmin }:
       .then((r) => r.json())
       .then((data) => setPrices(data))
       .catch(() => {});
+
+    // Fetch drafts (only succeeds for admins) + detect logged-in role
+    fetch("/api/posts/drafts")
+      .then((r) => {
+        if (r.status === 401) {
+          // Not admin — check if at least logged in to hide upgrade CTA
+          // 401 means authenticated but not admin, or not authenticated at all
+          return null;
+        }
+        return r.json();
+      })
+      .then((drafts) => {
+        if (Array.isArray(drafts) && drafts.length > 0) {
+          setIsAdmin(true);
+          setHideUpgrade(true);
+          setPosts((prev) => {
+            const slugs = new Set(prev.map((p) => p.slug));
+            const newDrafts = drafts.filter((d: Post) => !slugs.has(d.slug));
+            return [...newDrafts, ...prev].sort(
+              (a, b) => b.date.localeCompare(a.date),
+            );
+          });
+        }
+      })
+      .catch(() => {});
+
     return () => clearTimeout(t);
   }, []);
 
