@@ -78,16 +78,16 @@
 
 /* ── Light palette ── */
 [data-theme="light"] {
-  --accent: #3a6d88;
-  --steel-blue: #3a6d88;
-  --steel-blue-rgb: 58, 109, 136;
-  --steel-blue-dim: #2c5468;
+  --accent: #2b5d73;
+  --steel-blue: #2b5d73;             /* deepened for WCAG AA on beige (≥4.5:1) */
+  --steel-blue-rgb: 43, 93, 115;
+  --steel-blue-dim: #1e4a5c;
   --bg-dark: #e2d5c3;
-  --bg-card: #e8dac8;
-  --bg-card-rgb: 232, 218, 200;
-  --bg-card-hover: #ecdece;
-  --border: #c4b49e;
-  --border-rgb: 196, 180, 158;
+  --bg-card: #ede1d1;                /* more separation from page — paper on parchment */
+  --bg-card-rgb: 237, 225, 209;
+  --bg-card-hover: #f2e8da;
+  --border: #c9b89f;
+  --border-rgb: 201, 184, 159;
   --text-primary: #1a1410;
   --text-secondary: #4a3f35;
   --text-muted: #5d5044;
@@ -95,20 +95,20 @@
   --red: #a8333a;
   --gold: #8a7020;
   --gold-rgb: 138, 112, 32;
-  --shadow-dropdown: rgba(0, 0, 0, 0.18);
+  --shadow-dropdown: rgba(80, 50, 20, 0.14);  /* warm shadow */
 
   /* ── Newsletter / posts ── */
-  --divider: rgba(0, 0, 0, 0.08);
-  --accent-strong: #2c5468;
-  --accent-light: #4a8aaa;
-  --bg-surface: #ddd0be;
-  --bg-surface-alt: #d8cab8;
-  --bg-elevated: #e8dac8;
+  --divider: rgba(80, 50, 20, 0.10);          /* warm, visible on beige */
+  --accent-strong: #1e4a5c;
+  --accent-light: #3a7a9a;
+  --bg-surface: #e5d9c8;
+  --bg-surface-alt: #ddd0be;
+  --bg-elevated: #ede1d1;
   --bg-page: #e2d5c3;
-  --text-tertiary: #a09282;
-  --shadow-glow: rgba(58, 109, 136, 0.2);
+  --text-tertiary: #b8a690;
+  --shadow-glow: rgba(43, 93, 115, 0.15);
   --tooltip-bg: #2a2015;
-  --tooltip-color: #e8dac8;
+  --tooltip-color: #ede1d1;
 }
 
 html {
@@ -144,6 +144,9 @@ input, button, select, textarea, table th, table td {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+/* Light-mode scrollbar — darker thumb for visibility on beige */
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #b5a48c; }
+
 a:focus-visible,
 button:focus-visible,
 [role="button"]:focus-visible {
@@ -154,6 +157,13 @@ button:focus-visible,
 /* Subtle background shift on input focus */
 input:focus, textarea:focus, select:focus {
   background-color: rgba(var(--steel-blue-rgb), 0.03);
+}
+
+/* Light-mode: stronger focus tint (0.03 is invisible on beige) */
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus,
+[data-theme="light"] select:focus {
+  background-color: rgba(var(--steel-blue-rgb), 0.06);
 }
 
 /* ── Keyframes ── */
