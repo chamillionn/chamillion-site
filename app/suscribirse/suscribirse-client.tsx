@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { usePendingLogin } from "@/hooks/use-pending-login";
 import SubscribeBg from "./subscribe-bg";
 import styles from "./page.module.css";
 
@@ -133,6 +134,11 @@ function SuscribirseForm() {
       setEmailError("");
     }
   }
+
+  // Poll for cross-device magic link verification
+  usePendingLogin(email, emailSent, () => {
+    window.location.href = `/suscribirse?plan=${selectedPlan}`;
+  });
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();

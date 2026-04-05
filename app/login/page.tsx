@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { usePendingLogin } from "@/hooks/use-pending-login";
 import styles from "./page.module.css";
 
 function LoginForm() {
@@ -34,6 +35,11 @@ function LoginForm() {
   const [magicLoading, setMagicLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
   const [magicError, setMagicError] = useState("");
+
+  // Poll for cross-device magic link verification
+  usePendingLogin(email, magicSent, () => {
+    window.location.href = next;
+  });
 
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();

@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { EmailOtpType } from "@supabase/supabase-js";
-import { ensureProfile } from "./actions";
+import { ensureProfile, completeTransfer } from "./actions";
 import styles from "./page.module.css";
 
 function ConfirmContent() {
@@ -41,6 +41,15 @@ function ConfirmContent() {
     }
 
     await ensureProfile();
+
+    // Generate a transfer token so the original device can auto-authenticate
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user?.email) {
+      await completeTransfer(user.email);
+    }
+
     router.push(next);
   }
 

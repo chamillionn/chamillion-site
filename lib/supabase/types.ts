@@ -108,6 +108,15 @@ export interface SiteSetting {
   updated_at: string;
 }
 
+export interface PendingLogin {
+  id: string;
+  email: string;
+  token_hash: string | null;
+  verified_at: string | null;
+  created_at: string;
+  expires_at: string;
+}
+
 /* ── View types ── */
 
 export interface PositionEnriched {
@@ -193,6 +202,12 @@ export type Database = {
         Row: Flatten<Post>;
         Insert: Flatten<Omit<Post, "id" | "created_at" | "subtitle" | "banner_path" | "section" | "substack_url"> & { id?: string; created_at?: string; subtitle?: string | null; banner_path?: string | null; section?: string | null; substack_url?: string | null }>;
         Update: Flatten<Partial<Post>>;
+        Relationships: [];
+      };
+      pending_logins: {
+        Row: Flatten<PendingLogin>;
+        Insert: Flatten<Omit<PendingLogin, "id" | "created_at" | "expires_at" | "token_hash" | "verified_at"> & { id?: string; created_at?: string; expires_at?: string; token_hash?: string | null; verified_at?: string | null }>;
+        Update: Flatten<Partial<PendingLogin>>;
         Relationships: [];
       };
     };
