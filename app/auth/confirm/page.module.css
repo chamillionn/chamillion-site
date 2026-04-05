@@ -1,0 +1,88 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 12px);
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.logo {
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border);
+}
+
+.title {
+  font-family: var(--font-playfair), serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: -8px;
+}
+
+.button {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  padding: 12px 32px;
+  background: var(--steel-blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: opacity 0.2s;
+  width: 100%;
+}
+
+.button:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 13px;
+  color: var(--red);
+  line-height: 1.5;
+}
+
+.link {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: var(--steel-blue);
+}
