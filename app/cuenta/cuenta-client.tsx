@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { updateDisplayName, deleteOwnAccount } from "./actions";
 import Spinner from "@/components/spinner";
+import ErrorBox from "@/components/error-box";
 import styles from "./page.module.css";
 
 interface Price {
@@ -277,15 +278,9 @@ export default function CuentaClient({
         </button>
 
         {feedback && (
-          <p
-            id="cuenta-feedback"
-            role="status"
-            className={
-              feedback.type === "success" ? styles.success : styles.error
-            }
-          >
-            {feedback.msg}
-          </p>
+          feedback.type === "error"
+            ? <ErrorBox>{feedback.msg}</ErrorBox>
+            : <p id="cuenta-feedback" role="status" className={styles.success}>{feedback.msg}</p>
         )}
 
         <div className={styles.divider} />
@@ -429,9 +424,7 @@ export default function CuentaClient({
                     className={styles.input}
                     autoComplete="off"
                   />
-                  {deleteError && (
-                    <p className={styles.error}>{deleteError}</p>
-                  )}
+                  {deleteError && <ErrorBox>{deleteError}</ErrorBox>}
                   <div className={styles.deleteActions}>
                     <button
                       className={styles.buttonDeleteConfirm}

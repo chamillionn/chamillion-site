@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { usePendingLogin } from "@/hooks/use-pending-login";
 import Spinner from "@/components/spinner";
+import ErrorBox from "@/components/error-box";
 import styles from "./page.module.css";
 
 function LoginForm() {
@@ -138,8 +139,8 @@ function LoginForm() {
             >
               {magicLoading ? <><Spinner /> Enviando...</> : "Continuar"}
             </button>
-            {magicError && <p className={styles.error} role="alert">{magicError}</p>}
-            {authError === "auth_failed" && <p className={styles.error} role="alert">El enlace ha expirado o no es valido. Intentalo de nuevo.</p>}
+            {magicError && <ErrorBox>{magicError}</ErrorBox>}
+            {authError === "auth_failed" && <ErrorBox>El enlace ha expirado o no es valido. Intentalo de nuevo.</ErrorBox>}
           </form>
         )}
 

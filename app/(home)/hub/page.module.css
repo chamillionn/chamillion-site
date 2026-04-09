@@ -316,7 +316,6 @@
   width: 100%;
   height: 100%;
   opacity: 0.03;
-  animation: gridPulse 8s ease-in-out infinite;
 }
 
 .bgGrid line {
@@ -333,7 +332,7 @@
   top: 10%;
   width: clamp(200px, 25vw, 320px);
   height: auto;
-  animation: chartCycle 12s ease-in-out infinite;
+  opacity: 0.7;
 }
 
 .bgAxis {
@@ -342,7 +341,6 @@
 }
 
 .bgCandle {
-  animation: candleBreathe 12s ease-in-out infinite;
 }
 
 .bgWick {
@@ -367,10 +365,7 @@
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 300;
-  stroke-dashoffset: 300;
   opacity: 0.12;
-  animation: trendDraw 12s ease-in-out infinite;
 }
 
 /* --- Donut chart --- */
@@ -381,7 +376,6 @@
   bottom: 15%;
   width: clamp(100px, 12vw, 160px);
   height: auto;
-  animation: donutSpin 20s linear infinite;
 }
 
 .bgDonutTrack {
@@ -403,21 +397,18 @@
 .bgDonutArc1 {
   stroke: rgba(var(--steel-blue-rgb), 0.15);
   stroke-dasharray: 113 283;
-  animation: arcPulse1 10s ease-in-out infinite;
 }
 
 .bgDonutArc2 {
   stroke: rgba(var(--steel-blue-rgb), 0.09);
   stroke-dasharray: 71 283;
   stroke-dashoffset: -113;
-  animation: arcPulse2 10s ease-in-out 1s infinite;
 }
 
 .bgDonutArc3 {
   stroke: rgba(var(--steel-blue-rgb), 0.05);
   stroke-dasharray: 57 283;
   stroke-dashoffset: -184;
-  animation: arcPulse3 10s ease-in-out 2s infinite;
 }
 
 /* --- Area chart --- */
@@ -431,7 +422,7 @@
 }
 
 .bgAreaFill {
-  animation: areaPulse 8s ease-in-out infinite;
+  opacity: 0.6;
 }
 
 .bgAreaLine {
@@ -439,9 +430,6 @@
   stroke-width: 1.5;
   stroke-linecap: round;
   opacity: 0.1;
-  stroke-dasharray: 500;
-  stroke-dashoffset: 0;
-  animation: areaLineDraw 10s ease-in-out infinite;
 }
 
 /* ===== ANIMATIONS ===== */
@@ -456,74 +444,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Grid breathes */
-@keyframes gridPulse {
-  0%, 100% { opacity: 0.03; }
-  50% { opacity: 0.06; }
-}
-
-/* Candlestick chart fades in, holds, fades out, repeats */
-@keyframes chartCycle {
-  0% { opacity: 0; }
-  8% { opacity: 1; }
-  75% { opacity: 1; }
-  92% { opacity: 0; }
-  100% { opacity: 0; }
-}
-
-/* Each candle breathes with staggered timing */
-@keyframes candleBreathe {
-  0% { opacity: 0; transform: translateY(6px); }
-  10% { opacity: 1; transform: translateY(0); }
-  70% { opacity: 1; transform: translateY(0); }
-  85% { opacity: 0; transform: translateY(-4px); }
-  100% { opacity: 0; transform: translateY(6px); }
-}
-
-/* Trend line draws and undraws */
-@keyframes trendDraw {
-  0% { stroke-dashoffset: 300; }
-  15% { stroke-dashoffset: 0; }
-  75% { stroke-dashoffset: 0; }
-  92% { stroke-dashoffset: -300; }
-  100% { stroke-dashoffset: -300; }
-}
-
-/* Donut slow rotation */
-@keyframes donutSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Donut arcs breathe between different sizes */
-@keyframes arcPulse1 {
-  0%, 100% { stroke-dasharray: 113 283; }
-  50% { stroke-dasharray: 90 283; }
-}
-
-@keyframes arcPulse2 {
-  0%, 100% { stroke-dasharray: 71 283; stroke-dashoffset: -113; }
-  50% { stroke-dasharray: 95 283; stroke-dashoffset: -90; }
-}
-
-@keyframes arcPulse3 {
-  0%, 100% { stroke-dasharray: 57 283; stroke-dashoffset: -184; }
-  50% { stroke-dasharray: 50 283; stroke-dashoffset: -185; }
-}
-
-/* Area fill pulses opacity */
-@keyframes areaPulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 0.3; }
-}
-
-/* Area line draws back and forth */
-@keyframes areaLineDraw {
-  0% { stroke-dashoffset: 500; }
-  30% { stroke-dashoffset: 0; }
-  70% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -500; }
-}
 
 /* ===== RESPONSIVE ===== */
 

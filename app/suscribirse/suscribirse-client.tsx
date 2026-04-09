@@ -7,6 +7,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { usePendingLogin } from "@/hooks/use-pending-login";
 import Spinner from "@/components/spinner";
+import ErrorBox from "@/components/error-box";
 import SubscribeBg from "./subscribe-bg";
 import styles from "./page.module.css";
 
@@ -177,7 +178,7 @@ function SuscribirseForm() {
   return (
     <div className={styles.page}>
       <SubscribeBg />
-      <div className={`${styles.card} ${styles.animIn}`} style={{ animationDelay: "0s" }}>
+      <div className={`${styles.card} ${styles.animIn}`}>
         {/* Hero image */}
         <div className={styles.hero}>
           <Image
@@ -194,22 +195,22 @@ function SuscribirseForm() {
         {/* Content */}
         <div className={styles.content}>
           {/* Label */}
-          <div className={`${styles.label} ${styles.animIn}`} style={{ animationDelay: "0.1s" }}>
+          <div className={styles.label}>
             Chamillion Premium
           </div>
 
           {/* Heading */}
-          <h1 className={`${styles.title} ${styles.animIn}`} style={{ animationDelay: "0.15s" }}>
+          <h1 className={styles.title}>
             Acceso completo a la vanguardia de los mercados
           </h1>
 
           {/* Subtitle */}
-          <p className={`${styles.subtitle} ${styles.animIn}`} style={{ animationDelay: "0.2s" }}>
+          <p className={styles.subtitle}>
             Un todo en uno para seguir el proyecto desde dentro.
           </p>
 
           {/* Social proof */}
-          <div className={`${styles.socialProof} ${styles.animIn}`} style={{ animationDelay: "0.22s" }}>
+          <div className={styles.socialProof}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
@@ -220,10 +221,10 @@ function SuscribirseForm() {
           </div>
 
           {/* Divider */}
-          <div className={`${styles.divider} ${styles.animIn}`} style={{ animationDelay: "0.23s" }} />
+          <div className={styles.divider} />
 
           {/* Features */}
-          <div className={`${styles.features} ${styles.animIn}`} style={{ animationDelay: "0.26s" }}>
+          <div className={styles.features}>
             {FEATURES.map((f) => (
               <div key={f} className={styles.feature}>
                 <CheckIcon />
@@ -233,11 +234,11 @@ function SuscribirseForm() {
           </div>
 
           {/* Divider */}
-          <div className={`${styles.divider} ${styles.animIn}`} style={{ animationDelay: "0.3s" }} />
+          <div className={styles.divider} />
 
           {/* Already member */}
           {isMember && (
-            <div className={`${styles.already} ${styles.animIn}`} style={{ animationDelay: "0.33s" }}>
+            <div className={styles.already}>
               Ya eres miembro.{" "}
               <Link href="/cuenta" className={styles.alreadyLink}>
                 Ir a mi cuenta
@@ -251,7 +252,7 @@ function SuscribirseForm() {
               {loadingPrices || checkingSession ? (
                 <p className={styles.loading}>Cargando planes...</p>
               ) : prices.length === 0 ? (
-                <p className={styles.error}>No se pudieron cargar los planes.</p>
+                <ErrorBox>No se pudieron cargar los planes. Recarga la pagina.</ErrorBox>
               ) : (
                 <>
                   {(() => {
@@ -259,7 +260,7 @@ function SuscribirseForm() {
                     const isSelected = selectedPlan === price.id;
                     const interval = price.interval ?? "";
                     return (
-                      <div className={`${styles.planCta} ${styles.animIn}`} style={{ animationDelay: "0.33s" }}>
+                      <div className={styles.planCta}>
                         <div className={styles.planPriceWrap}>
                           <span className={styles.planPrice}>
                             {formatPrice(price.unitAmount, price.currency)}
@@ -282,7 +283,7 @@ function SuscribirseForm() {
                 </>
               )}
 
-              {checkoutError && <p className={styles.error}>{checkoutError}</p>}
+              {checkoutError && <ErrorBox>{checkoutError}</ErrorBox>}
 
               {/* Email input */}
               {selectedPlan && !user && !emailSent && (
@@ -308,7 +309,7 @@ function SuscribirseForm() {
                   >
                     {emailLoading ? <><Spinner /> Enviando...</> : "Continuar"}
                   </button>
-                  {emailError && <p className={styles.error}>{emailError}</p>}
+                  {emailError && <ErrorBox>{emailError}</ErrorBox>}
                 </form>
               )}
 
@@ -332,7 +333,7 @@ function SuscribirseForm() {
       </div>
 
       {/* Back to home */}
-      <Link href="/" className={`${styles.homeBtn} ${styles.animIn}`} style={{ animationDelay: "0.42s" }}>
+      <Link href="/" className={styles.homeBtn}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
           <polyline points="9 22 9 12 15 12 15 22" />

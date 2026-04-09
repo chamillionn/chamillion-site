@@ -16,6 +16,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md, 12px);
   padding: 40px 32px;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .backLink {
