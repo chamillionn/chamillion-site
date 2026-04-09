@@ -473,7 +473,7 @@
 }
 
 /* Hide on narrow viewports */
-@media (max-width: 1200px) {
+@media (max-width: 1080px) {
   .tocSidebar {
     display: none;
   }

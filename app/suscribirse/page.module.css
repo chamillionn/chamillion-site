@@ -197,14 +197,13 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.25s ease, letter-spacing 0.3s ease;
+    box-shadow 0.25s ease;
   white-space: nowrap;
 }
 .planBtn:hover:not(:disabled) {
   background: var(--steel-blue-dim);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(var(--steel-blue-rgb), 0.3);
-  letter-spacing: 1.2px;
 }
 .planBtn:active:not(:disabled) {
   transform: scale(0.97);
