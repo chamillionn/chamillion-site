@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { usePendingLogin } from "@/hooks/use-pending-login";
+import Spinner from "@/components/spinner";
 import SubscribeBg from "./subscribe-bg";
 import styles from "./page.module.css";
 
@@ -167,7 +168,7 @@ function SuscribirseForm() {
     return (
       <div className={styles.page}>
         <div className={styles.card}>
-          <p className={styles.redirecting}>Redirigiendo al pago...</p>
+          <p className={styles.redirecting}><Spinner /> Redirigiendo al pago...</p>
         </div>
       </div>
     );
@@ -273,7 +274,7 @@ function SuscribirseForm() {
                           disabled={checkoutLoading}
                           onClick={() => handleSelectPlan(price.id)}
                         >
-                          {checkoutLoading && isSelected ? "Cargando..." : "Suscribirme"}
+                          {checkoutLoading && isSelected ? <><Spinner /> Cargando...</> : "Suscribirme"}
                         </button>
                       </div>
                     );
@@ -305,7 +306,7 @@ function SuscribirseForm() {
                     disabled={emailLoading || !email}
                     className={styles.submitBtn}
                   >
-                    {emailLoading ? "Enviando..." : "Continuar"}
+                    {emailLoading ? <><Spinner /> Enviando...</> : "Continuar"}
                   </button>
                   {emailError && <p className={styles.error}>{emailError}</p>}
                 </form>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { updateDisplayName, deleteOwnAccount } from "./actions";
+import Spinner from "@/components/spinner";
 import styles from "./page.module.css";
 
 interface Price {
@@ -350,7 +351,7 @@ export default function CuentaClient({
                                 onClick={() => handleCheckout(p.id)}
                                 disabled={checkoutLoading !== null}
                               >
-                                {isLoading ? "..." : "Elegir"}
+                                {isLoading ? <Spinner /> : "Elegir"}
                               </button>
                             </div>
                           </div>
@@ -386,7 +387,7 @@ export default function CuentaClient({
             onClick={handlePortal}
             disabled={portalLoading}
           >
-            {portalLoading ? "Redirigiendo..." : "Gestionar suscripcion"}
+            {portalLoading ? <><Spinner /> Redirigiendo...</> : "Gestionar suscripcion"}
           </button>
         )}
 

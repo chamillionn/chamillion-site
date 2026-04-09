@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { usePendingLogin } from "@/hooks/use-pending-login";
+import Spinner from "@/components/spinner";
 import styles from "./page.module.css";
 
 function LoginForm() {
@@ -68,7 +69,7 @@ function LoginForm() {
     return (
       <div className={styles.page}>
         <div className={styles.card} style={{ textAlign: "center" }}>
-          <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Verificando sesion...</p>
+          <p style={{ color: "var(--text-secondary)", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Spinner /> Verificando sesion...</p>
         </div>
       </div>
     );
@@ -135,7 +136,7 @@ function LoginForm() {
               disabled={magicLoading || !email}
               className={styles.button}
             >
-              {magicLoading ? "Enviando..." : "Continuar"}
+              {magicLoading ? <><Spinner /> Enviando...</> : "Continuar"}
             </button>
             {magicError && <p className={styles.error} role="alert">{magicError}</p>}
             {authError === "auth_failed" && <p className={styles.error} role="alert">El enlace ha expirado o no es valido. Intentalo de nuevo.</p>}

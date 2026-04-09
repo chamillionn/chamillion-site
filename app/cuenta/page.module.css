@@ -118,6 +118,10 @@
 /* ── Buttons ── */
 
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-family: var(--font-dm-mono), monospace;
   font-size: 13px;
   letter-spacing: 0.3px;
@@ -304,6 +308,10 @@
 }
 
 .tierCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
   font-family: var(--font-dm-mono), monospace;
   font-size: 12px;
