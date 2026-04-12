@@ -68,7 +68,17 @@ export default function ThemeToggle() {
   }, [theme, mounted]);
 
   function toggle() {
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
+    const next = theme === "dark" ? "light" : "dark";
+    const apply = () => {
+      // Set attribute synchronously so the View Transition captures the new state
+      document.documentElement.setAttribute("data-theme", next);
+      setTheme(next);
+    };
+    if (!document.startViewTransition) {
+      apply();
+      return;
+    }
+    document.startViewTransition(apply);
   }
 
   if (!mounted) return <button aria-label="Cambiar tema" style={{ width: 32, height: 32, background: "none", border: "none" }} />;
