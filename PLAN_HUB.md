@@ -19,12 +19,23 @@ El Hub es la plataforma premium de chamillion.site. Actualmente `/hub` es un pla
 
 **Directriz de UI:** Para toda creacion de UI nueva, usar siempre el comando `/impeccable` (skill de design taste).
 
-**Lo que NO existe y hay que crear:**
-- Email transaccional (Resend) — solo hay Supabase native emails
-- Supabase Realtime — zero uso actual
-- Supabase Storage — no hay buckets configurados
-- Booking/calendario — nada
-- User-scoped portfolio data — solo existe el de chamillion
+**Ya construido en esta iteracion:**
+- ✅ Email transaccional (Resend) — `lib/email.ts`
+- ✅ Supabase Realtime — en tabla `trades`
+- ✅ Supabase Storage — bucket `software-releases` (privado)
+- ✅ Hub shell (observatory design) — `app/hub/`
+- ✅ Trade fetchers (Hyperliquid, Polymarket, on-chain) — `lib/sync/trades/`
+- ✅ Cartera page (prototipo) — `app/hub/cartera/`
+- ✅ Premium widgets con admin edit mode — `app/widgets/`
+- ✅ Software catalog con signed URL downloads — `app/hub/software/`
+- ✅ Consultorías estructura + UI — `app/hub/consultorias/`
+- ✅ Daily digest cron (inactivo) — `app/api/cron/daily-digest/`
+
+**Pendiente de construir:**
+- Landing publica del Hub (Fase 0.4)
+- Kronos prediccion de velas (Fase 2.2)
+- Mi Cartera — user-scoped portfolio (Fase 4, diferida)
+- Consultorías — Stripe checkout, calendar picker, emails (Fase 5, parcial)
 
 ---
 
@@ -646,16 +657,20 @@ Fase 5 — Consultorias (Modulo 5)                    ████░░░░�
 
 ---
 
-## Archivos criticos a modificar
+## Archivos criticos (ya modificados o creados)
 
-| Archivo | Cambio |
+| Archivo | Estado |
 |---------|--------|
-| [app/(home)/hub/](app/(home)/hub/) | Mover a `app/hub/`, reescribir como layout + modulos |
-| [lib/sync/engine.ts](lib/sync/engine.ts) | Extender para loguear operations en diffs. Refactorizar para soporte user-scoped |
-| [lib/supabase/types.ts](lib/supabase/types.ts) | Anadir tipos de todas las tablas nuevas |
-| [app/api/stripe/webhook/route.ts](app/api/stripe/webhook/route.ts) | Extender para `mode === 'payment'` (consultorias) |
-| [middleware.ts](middleware.ts) | Ajustes menores si hay sub-rutas publicas del Hub |
-| [lib/supabase/auth.ts](lib/supabase/auth.ts) | Ya tiene `requireMember()`, no necesita cambios |
+| `app/hub/` (layout, shell, overview, cartera, software, consultorias) | ✅ Creado |
+| `lib/sync/trades/` (hyperliquid, polymarket, onchain, types) | ✅ Creado |
+| `app/api/sync/trades/route.ts` | ✅ Creado |
+| `app/api/software/download/route.ts` | ✅ Creado |
+| `app/api/cron/daily-digest/route.ts` | ✅ Creado (inactivo) |
+| `app/widgets/` (page, client, actions, css) | ✅ Modificado (premium system) |
+| `lib/supabase/types.ts` | ✅ Modificado (todos los tipos nuevos) |
+| `lib/email.ts` | ✅ Creado |
+| `app/api/stripe/webhook/route.ts` | Pendiente (extender para consultorias) |
+| `lib/sync/engine.ts` | Pendiente (refactor para Mi Cartera, diferido) |
 
 ---
 
