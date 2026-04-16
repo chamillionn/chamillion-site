@@ -117,6 +117,23 @@ export interface PendingLogin {
   expires_at: string;
 }
 
+export type TradeSide = "buy" | "sell" | "open_long" | "open_short" | "close_long" | "close_short";
+
+export interface Trade {
+  id: string;
+  platform_id: string | null;
+  asset: string;
+  side: TradeSide;
+  quantity: number;
+  price: number;
+  total_value: number;
+  total_value_eur: number | null;
+  fee: number | null;
+  trade_id: string | null;
+  executed_at: string;
+  synced_at: string;
+}
+
 /* ── View types ── */
 
 export interface PositionEnriched {
@@ -134,6 +151,10 @@ export interface PositionEnriched {
   strategy_name: string | null;
   notes: string | null;
   opened_at: string;
+}
+
+export interface TradeEnriched extends Trade {
+  platform_name: string | null;
 }
 
 export interface PortfolioSummary {
@@ -210,6 +231,14 @@ export type Database = {
         Update: Flatten<Partial<PendingLogin>>;
         Relationships: [];
       };
+      trades: {
+        Row: Flatten<Trade>;
+        Insert: Flatten<Omit<Trade, "id" | "synced_at" | "total_value_eur" | "fee" | "trade_id"> & { id?: string; synced_at?: string; total_value_eur?: number | null; fee?: number | null; trade_id?: string | null }>;
+        Update: Flatten<Partial<Trade>>;
+        Relationships: [
+          { foreignKeyName: "trades_platform_id_fkey"; columns: ["platform_id"]; referencedRelation: "platforms"; referencedColumns: ["id"]; isOneToOne: false },
+        ];
+      };
     };
     Views: {
       positions_enriched: {
@@ -218,6 +247,10 @@ export type Database = {
       };
       portfolio_summary: {
         Row: Flatten<PortfolioSummary>;
+        Relationships: [];
+      };
+      trades_enriched: {
+        Row: Flatten<TradeEnriched>;
         Relationships: [];
       };
     };
