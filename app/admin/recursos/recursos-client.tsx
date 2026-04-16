@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import styles from "./recursos.module.css";
 
 interface ServiceInfo {
@@ -7,8 +8,9 @@ interface ServiceInfo {
   plan: string;
   icon: string;
   dashboardUrl: string;
-  limits: { label: string; value: string; used?: string; pct?: number }[];
+  limits: { label: string; value: string }[];
   notes?: string;
+  liveUsage?: boolean;
 }
 
 const SERVICES: ServiceInfo[] = [
@@ -45,12 +47,12 @@ const SERVICES: ServiceInfo[] = [
     icon: "M4 6h16M4 12h16M4 18h16",
     dashboardUrl: "https://modal.com/apps/chamillionn/main/deployed/kronos-predictor",
     limits: [
-      { label: "GPU Compute", value: "$30/mes en créditos" },
+      { label: "Créditos", value: "$30/mes" },
       { label: "GPU", value: "T4 (Kronos)" },
-      { label: "Scaledown", value: "300s inactividad" },
+      { label: "Scaledown", value: "300s" },
       { label: "Cold start", value: "~25-30s" },
     ],
-    notes: "Cada predicción de Kronos consume GPU. Cold starts incluidos en coste.",
+    liveUsage: true,
   },
   {
     name: "Resend",
@@ -82,7 +84,27 @@ interface Props {
   totalRows: number;
 }
 
+interface ModalUsage {
+  totalCost: string;
+  creditLimit: number;
+  usedPct: string;
+  items: { Description: string; Cost: string; "Interval Start": string }[];
+}
+
 export default function RecursosClient({ dbCounts, totalRows }: Props) {
+  const [modal, setModal] = useState<ModalUsage | null>(null);
+  const [modalLoading, setModalLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/modal-usage")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.error) setModal(data);
+      })
+      .catch(() => {})
+      .finally(() => setModalLoading(false));
+  }, []);
+
   return (
     <div className={styles.page}>
       <h1 className={styles.heading}>Recursos</h1>
@@ -158,6 +180,32 @@ export default function RecursosClient({ dbCounts, totalRows }: Props) {
                   </div>
                 ))}
               </div>
+
+              {svc.liveUsage && svc.name === "Modal" && (
+                <div className={styles.usageBlock}>
+                  {modalLoading ? (
+                    <span className={styles.usageLoading}>Cargando uso...</span>
+                  ) : modal ? (
+                    <>
+                      <div className={styles.usageHeader}>
+                        <span className={styles.usageLabel}>Uso este mes</span>
+                        <span className={styles.usageValue}>
+                          ${modal.totalCost} / ${modal.creditLimit}
+                        </span>
+                      </div>
+                      <div className={styles.progressBar}>
+                        <div
+                          className={styles.progressFill}
+                          style={{ width: `${Math.min(parseFloat(modal.usedPct), 100)}%` }}
+                        />
+                      </div>
+                      <span className={styles.usagePct}>{modal.usedPct}%</span>
+                    </>
+                  ) : (
+                    <span className={styles.usageLoading}>No se pudo obtener el uso</span>
+                  )}
+                </div>
+              )}
 
               {svc.notes && (
                 <p className={styles.serviceNotes}>{svc.notes}</p>
