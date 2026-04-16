@@ -1,0 +1,172 @@
+/* ══════════════════════════════════════════
+   HUB OVERVIEW — Observatory panel
+   ══════════════════════════════════════════ */
+
+.page {
+  width: 100%;
+}
+
+/* ── HEADER ── */
+
+.header {
+  margin-bottom: 48px;
+}
+
+.title {
+  font-family: var(--font-playfair), serif;
+  font-size: clamp(24px, 3.5vw, 34px);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 10px;
+}
+
+.subtitle {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── STATION GRID ── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.station {
+  background: var(--bg-dark);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: station-in 0.5s ease-out both;
+  transition: background var(--transition-fast);
+}
+
+.station:hover {
+  background: var(--bg-surface);
+}
+
+@keyframes station-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stationWide {
+  grid-column: 1 / -1;
+}
+
+/* ── STATION HEADER ── */
+
+.stationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stationLabel {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+/* ── STATUS ── */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.dotActive {
+  background: var(--steel-blue);
+  box-shadow: 0 0 6px rgba(var(--steel-blue-rgb), 0.5);
+  animation: pulse-dot 2.5s ease-in-out infinite;
+}
+
+.dotPlanned {
+  background: var(--text-muted);
+  opacity: 0.4;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* ── STATION DESC ── */
+
+.stationDesc {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 480px;
+}
+
+/* ── FOOTER ── */
+
+.footer {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.footerText {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  letter-spacing: 0.02em;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .header {
+    margin-bottom: 32px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .station {
+    padding: 22px 18px;
+  }
+
+  .footer {
+    margin-top: 32px;
+  }
+}

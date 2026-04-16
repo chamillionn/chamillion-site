@@ -1,0 +1,217 @@
+/* ══════════════════════════════════════════
+   HUB SHELL — Observatory layout
+   Horizontal top bar, full-width canvas.
+   ══════════════════════════════════════════ */
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOP BAR ── */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbarInner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+/* ── BRAND ── */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.brandIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--steel-blue-rgb), 0.25);
+}
+
+.brandIcon img {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.brandName {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+/* ── NAV ── */
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.navLink {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 13px;
+  font-weight: 450;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast), background var(--transition-fast);
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--text-primary);
+  background: rgba(var(--steel-blue-rgb), 0.05);
+}
+
+.navLinkActive {
+  color: var(--text-primary);
+  background: rgba(var(--steel-blue-rgb), 0.08);
+}
+
+/* ── ACTIONS ── */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.adminBadge {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(var(--gold-rgb), 0.08);
+  border: 1px solid rgba(var(--gold-rgb), 0.18);
+  border-radius: var(--radius-xs);
+  padding: 2px 7px;
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.adminBadge:hover {
+  background: rgba(var(--gold-rgb), 0.16);
+}
+
+/* ── MOBILE TOGGLE ── */
+
+.mobileToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 12px;
+  margin: -12px;
+  margin-left: 0;
+  transition: color var(--transition-fast);
+}
+
+.mobileToggle:hover {
+  color: var(--text-primary);
+}
+
+/* ── OVERLAY (mobile) ── */
+
+.overlay {
+  display: none;
+}
+
+/* ── MAIN ── */
+
+.main {
+  flex: 1;
+  padding: 40px 32px 80px;
+}
+
+.mainInner {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .topbarInner {
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .nav {
+    display: none;
+    position: fixed;
+    top: 53px;
+    left: 0;
+    right: 0;
+    z-index: 45;
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    padding: 8px 16px 12px;
+    gap: 2px;
+  }
+
+  .navOpen {
+    display: flex;
+  }
+
+  .navLink {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .mobileToggle {
+    display: flex;
+  }
+
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: 53px;
+    z-index: 39;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .main {
+    padding: 24px 16px 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brandName {
+    display: none;
+  }
+}
