@@ -157,6 +157,7 @@ export interface HomeProps {
   totalValue: number;
   dailyData: DailyData[];
   capitalInvested: number | null;
+  costBasisTimeline?: { date: string; cumulative: number }[];
   isDemo?: boolean;
   platformColorsLight?: string[];
   recentPosts?: {
@@ -212,7 +213,7 @@ function DonutChart({ platforms, total, hoveredPlatform, onHover }: { platforms:
         viewBox={`0 0 ${size} ${size}`}
         overflow="visible"
         role="img"
-        aria-label={`Distribucion del portfolio: ${platforms.map(p => `${p.name} ${((p.value / total) * 100).toFixed(0)}%`).join(", ")}. Total: ${total.toFixed(0)}€`}
+        aria-label={`Distribución del portfolio: ${platforms.map(p => `${p.name} ${((p.value / total) * 100).toFixed(0)}%`).join(", ")}. Total: ${total.toFixed(0)}€`}
         style={{ transform: "rotate(-90deg)", cursor: "pointer" }}
         onMouseLeave={() => onHover(null)}
       >
@@ -472,6 +473,12 @@ function SocialLink({
             <rect x="2" y="4" width="20" height="16" rx="2" />
             <path d="M22 7L13.03 12.7a1.94 1.94 0 01-2.06 0L2 7" />
           </svg>
+        ) : icon === "rss" ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 11a9 9 0 0 1 9 9" />
+            <path d="M4 4a16 16 0 0 1 16 16" />
+            <circle cx="5" cy="19" r="1" fill="currentColor" />
+          </svg>
         ) : (
           icon
         )}
@@ -495,63 +502,36 @@ function SocialLink({
 // Single post card with drawer reveal for edition selection
 function SinglePostCard({ post, mobile }: { post: NonNullable<HomeProps["recentPosts"]>[number]; mobile: boolean }) {
   const [hovered, setHovered] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [webHovered, setWebHovered] = useState(false);
 
   const postDate = new Date(post.date + "T00:00:00").toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" });
   const postHref = `/newsletter/${post.slug}`;
   const substackHref = post.substack_url || "https://chamillion.substack.com";
 
-  // Close on click outside or Escape
-  useEffect(() => {
-    if (!expanded) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
-        setExpanded(false);
-      }
-    };
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setExpanded(false);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEsc);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEsc);
-    };
-  }, [expanded]);
-
   return (
     <div
-      ref={cardRef}
-      role="button"
-      tabIndex={0}
-      aria-expanded={expanded}
-      onClick={() => setExpanded((v) => !v)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded((v) => !v); } }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); setWebHovered(false); }}
       style={{
         borderRadius: 12,
         overflow: "hidden",
-        border: `1px solid ${expanded ? steelA(0.3) : V.border}`,
+        border: `1px solid ${V.border}`,
         background: V.bgCard,
-        cursor: "pointer",
-        transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease",
-        transform: hovered && !expanded ? "translateY(-2px)" : "translateY(0)",
-        boxShadow: hovered || expanded
+        transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease",
+        transform: hovered && !webHovered ? "translateY(-2px)" : "translateY(0)",
+        boxShadow: hovered
           ? `inset 0 0 0 1px ${steelA(0.25)}, 0 4px 24px ${steelA(0.03)}`
           : "inset 0 0 0 0px transparent",
         flexShrink: 0,
         minWidth: 0,
       }}
     >
-      {/* Content area — slides up when expanded */}
-      <div
-        style={{
-          transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-          transform: expanded ? `translateY(${mobile ? -4 : -8}px)` : "translateY(0)",
-        }}
+      {/* Banner image — links to Substack */}
+      <a
+        href={substackHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ textDecoration: "none", display: "block" }}
       >
         <div style={{ position: "relative", width: "100%", aspectRatio: "2.4/1", overflow: "hidden" }}>
           <Image
@@ -561,7 +541,7 @@ function SinglePostCard({ post, mobile }: { post: NonNullable<HomeProps["recentP
             style={{
               objectFit: "cover",
               transition: "transform 0.6s ease",
-              transform: hovered && !expanded ? "scale(1.05)" : "scale(1.01)",
+              transform: hovered && !webHovered ? "scale(1.05)" : "scale(1.01)",
             }}
             sizes="(max-width: 1100px) 50vw, 526px"
           />
@@ -577,19 +557,28 @@ function SinglePostCard({ post, mobile }: { post: NonNullable<HomeProps["recentP
             }}
           />
         </div>
-        <div style={{ padding: "14px 14px 14px", position: "relative", marginTop: -2, background: V.bgCard }}>
-          <div
-            style={{
-              fontFamily: "var(--font-jetbrains), monospace",
-              fontSize: 9,
-              color: V.steel,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              marginBottom: 6,
-            }}
-          >
-            {postDate}
-          </div>
+      </a>
+
+      {/* Text content */}
+      <div style={{ padding: "14px 14px 14px", position: "relative", marginTop: -2, background: V.bgCard }}>
+        <div
+          style={{
+            fontFamily: "var(--font-jetbrains), monospace",
+            fontSize: 9,
+            color: V.steel,
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            marginBottom: 6,
+          }}
+        >
+          {postDate}
+        </div>
+        <a
+          href={substackHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: "none" }}
+        >
           <div
             style={{
               fontFamily: "var(--font-playfair), serif",
@@ -602,128 +591,105 @@ function SinglePostCard({ post, mobile }: { post: NonNullable<HomeProps["recentP
           >
             {post.title}
           </div>
-          <div
+        </a>
+        <div
+          style={{
+            fontSize: 12,
+            lineHeight: 1.5,
+            color: V.textSecondary,
+            fontWeight: 300,
+            marginBottom: 12,
+          }}
+        >
+          {post.subtitle}
+        </div>
+
+        {/* Two inline CTAs side by side */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <a
+            href={substackHref}
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
-              fontSize: 12,
-              lineHeight: 1.5,
-              color: V.textSecondary,
-              fontWeight: 300,
-            }}
-          >
-            {post.subtitle}
-          </div>
-          <div
-            style={{
-              marginTop: 10,
               display: "flex",
               alignItems: "center",
-              gap: 5,
+              gap: 6,
               fontFamily: "var(--font-jetbrains), monospace",
               fontSize: 9,
               color: V.steel,
               textTransform: "uppercase",
               letterSpacing: "0.06em",
+              textDecoration: "none",
             }}
           >
-            Elegir edición
+            <svg width="11" height="11" viewBox="0 0 448 512" fill="none" style={{ flexShrink: 0 }}>
+              <path fill={V.steel} d="M0 0h448v62.804H0V0zm0 229.083h448v282.388L223.954 385.808 0 511.471V229.083zm0-114.542h448v62.804H0v-62.804z"/>
+            </svg>
+            Leer en Substack
             <svg
               width="9"
               height="9"
               viewBox="0 0 16 16"
               fill="none"
               style={{
-                transition: "transform 0.25s ease",
-                transform: expanded ? "rotate(90deg)" : hovered ? "translateX(3px)" : "translateX(0)",
+                transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                transform: hovered && !webHovered ? "translateX(3px)" : "translateX(0)",
               }}
             >
               <path d="M6 3L11 8L6 13" stroke={V.steel} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </div>
-        </div>
-      </div>
+          </a>
 
-      {/* Drawer panel — edition selector */}
-      <div
-        style={{
-          maxHeight: expanded ? 100 : 0,
-          opacity: expanded ? 1 : 0,
-          overflow: "hidden",
-          transition: expanded
-            ? "max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease 0.1s"
-            : "opacity 0.2s ease, max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.05s",
-        }}
-      >
-        <div style={{ padding: "0 14px 14px" }}>
-          {/* Separator */}
-          <div
+          <span style={{ width: 1, height: 10, background: V.border, flexShrink: 0 }} />
+
+          <Link
+            href={postHref}
+            onMouseEnter={() => setWebHovered(true)}
+            onMouseLeave={() => setWebHovered(false)}
             style={{
-              height: 1,
-              background: `linear-gradient(to right, transparent, ${V.border}, transparent)`,
-              marginBottom: 10,
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              fontFamily: "var(--font-jetbrains), monospace",
+              fontSize: 9,
+              color: webHovered ? V.steel : V.textMuted,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              textDecoration: "none",
+              transition: "color 0.2s ease",
             }}
-          />
-          {/* Compact side-by-side buttons */}
-          <div
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
           >
-            {/* Substack */}
-            <a
-              href={substackHref}
-              target="_blank"
-              rel="noopener noreferrer"
+            {/* Small diamond icon — subtle premium hint */}
+            <svg
+              width="9"
+              height="9"
+              viewBox="0 0 16 16"
+              fill="none"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: `1px solid ${steelA(0.2)}`,
-                background: steelA(0.03),
-                textDecoration: "none",
-                transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                flexShrink: 0,
+                transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease",
+                transform: webHovered ? "scale(1.15)" : "scale(1)",
+                opacity: webHovered ? 1 : 0.6,
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = steelA(0.08); e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = steelA(0.03); e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              <svg width="16" height="16" viewBox="0 0 448 512" fill="none" style={{ flexShrink: 0 }}>
-                <path fill={V.steel} d="M0 0h448v62.804H0V0zm0 229.083h448v282.388L223.954 385.808 0 511.471V229.083zm0-114.542h448v62.804H0v-62.804z"/>
-              </svg>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: V.steel, letterSpacing: "-0.01em" }}>Substack</div>
-                <div style={{ fontSize: 9, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace", textTransform: "uppercase", letterSpacing: "0.06em" }}>Gratis</div>
-              </div>
-            </a>
-            {/* Web */}
-            <Link
-              href={postHref}
+              <path d="M8 1L14.5 6L8 15L1.5 6L8 1Z" stroke={webHovered ? V.steel : V.textMuted} strokeWidth="1.3" strokeLinejoin="round" style={{ transition: "stroke 0.2s ease" }} />
+              <path d="M1.5 6H14.5" stroke={webHovered ? V.steel : V.textMuted} strokeWidth="1.3" style={{ transition: "stroke 0.2s ease" }} />
+              <path d="M8 1L5.5 6L8 15L10.5 6L8 1Z" stroke={webHovered ? V.steel : V.textMuted} strokeWidth="1.3" strokeLinejoin="round" style={{ transition: "stroke 0.2s ease" }} />
+            </svg>
+            Web extendida
+            <svg
+              width="8"
+              height="8"
+              viewBox="0 0 16 16"
+              fill="none"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: `1px solid ${V.border}`,
-                background: V.bgCard,
-                textDecoration: "none",
-                transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                transform: webHovered ? "translateX(2px)" : "translateX(0)",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = V.bgCardHover; e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = V.bgCard; e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                <rect x="3" y="3" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
-                <rect x="14" y="3" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
-                <rect x="3" y="14" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
-                <rect x="14" y="14" width="7" height="7" rx="1.5" stroke={V.textSecondary} strokeWidth="1.5" />
-              </svg>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: V.textPrimary, letterSpacing: "-0.01em" }}>Web</div>
-                <div style={{ fontSize: 9, color: V.textMuted, fontFamily: "var(--font-jetbrains), monospace", textTransform: "uppercase", letterSpacing: "0.06em" }}>Extendida</div>
-              </div>
-            </Link>
-          </div>
+              <path d="M6 3L11 8L6 13" stroke={webHovered ? V.steel : V.textMuted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "stroke 0.2s ease" }} />
+            </svg>
+          </Link>
         </div>
       </div>
     </div>
@@ -1155,7 +1121,7 @@ function formatLabel(d: DailyData, range: ChartRange): string {
   return dt.toLocaleDateString("es", { day: "numeric", month: "short" });
 }
 
-function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
+function PortfolioChart({ dailyData, costBasisTimeline }: { dailyData: DailyData[]; costBasisTimeline?: { date: string; cumulative: number }[] }) {
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [range, setRange] = useState<ChartRange>("7d");
   const chartRef = useRef<HTMLDivElement>(null);
@@ -1179,10 +1145,26 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   const padBottom = 24;
   const chartH = H - padTop - padBottom;
 
-  // Calculate Y range with 5% padding
+  // Compute cost basis value for each visible day
+  const costBasisValues = visibleData.map((d) => {
+    if (!costBasisTimeline || costBasisTimeline.length === 0) return null;
+    // Find the last flow on or before this date
+    let val = 0;
+    for (const f of costBasisTimeline) {
+      if (f.date <= d.date) val = f.cumulative;
+      else break;
+    }
+    return val;
+  });
+  const hasCostBasis = costBasisValues.some((v) => v !== null && v > 0);
+
+  // Calculate Y range with 5% padding (include cost basis in range)
   const totals = visibleData.map(d => d.total);
-  const minVal = Math.min(...totals);
-  const maxVal = Math.max(...totals);
+  const allValues = hasCostBasis
+    ? [...totals, ...costBasisValues.filter((v): v is number => v !== null && v > 0)]
+    : totals;
+  const minVal = Math.min(...allValues);
+  const maxVal = Math.max(...allValues);
   const yRange = maxVal - minVal || 1;
   const yPad = yRange * 0.15;
   const yMin = minVal - yPad;
@@ -1193,6 +1175,25 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
     x: padX + (i / (visibleData.length - 1)) * (W - padX * 2),
     y: padTop + chartH - ((d.total - yMin) / (yMax - yMin)) * chartH,
   }));
+
+  // Cost basis line points
+  const costBasisPoints = hasCostBasis
+    ? visibleData.map((_, i) => {
+        const val = costBasisValues[i];
+        if (val === null || val <= 0) return null;
+        return {
+          x: padX + (i / (visibleData.length - 1)) * (W - padX * 2),
+          y: padTop + chartH - ((val - yMin) / (yMax - yMin)) * chartH,
+        };
+      })
+    : null;
+
+  const costBasisPath = costBasisPoints
+    ? costBasisPoints
+        .filter((p): p is { x: number; y: number } => p !== null)
+        .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+        .join(" ")
+    : null;
 
   // Build SVG path
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
@@ -1241,14 +1242,18 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
             const active = tab === range;
             const hasData = tab === "7d" || tab === "All" || (tab === "30d" ? dailyData.length > 7 : true);
             return (
-              <span
+              <button
                 key={tab}
-                onClick={hasData ? () => { setRange(tab); setHoveredDay(null); } : undefined}
+                type="button"
+                disabled={!hasData}
+                aria-pressed={active}
+                onClick={() => { setRange(tab); setHoveredDay(null); }}
                 style={{
                   fontFamily: "var(--font-jetbrains), monospace",
                   fontSize: 10,
                   color: active ? V.steel : V.textMuted,
                   background: active ? `${steelA(0.08)}` : "transparent",
+                  border: "none",
                   borderRadius: 4,
                   padding: "3px 8px",
                   cursor: hasData ? "pointer" : "default",
@@ -1257,7 +1262,7 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
                 }}
               >
                 {tab}
-              </span>
+              </button>
             );
           })}
         </div>
@@ -1319,6 +1324,20 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
 
           {/* Area fill */}
           <path d={areaPath} fill="url(#areaGrad)" style={{ opacity: 0, animation: "area-fade 0.8s ease 0.8s forwards" }} />
+
+          {/* Cost basis dashed line */}
+          {costBasisPath && (
+            <path
+              d={costBasisPath}
+              fill="none"
+              stroke={V.gold}
+              strokeWidth="1"
+              strokeDasharray="4 4"
+              strokeLinecap="round"
+              opacity="0.45"
+              style={{ animation: "area-fade 0.8s ease 1s forwards", opacity: 0 }}
+            />
+          )}
 
           {/* Line stroke — draws itself */}
           <path
@@ -1432,6 +1451,11 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
                 {hoveredData.total >= prevTotal ? "+" : ""}{(hoveredData.total - prevTotal).toFixed(2)} €
               </div>
             )}
+            {hasCostBasis && hoveredDay !== null && costBasisValues[hoveredDay] != null && costBasisValues[hoveredDay]! > 0 && (
+              <div style={{ fontSize: 9, color: V.gold, opacity: 0.7, marginTop: 2 }}>
+                Invertido: {costBasisValues[hoveredDay]!.toFixed(0)} €
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1440,7 +1464,7 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   );
 }
 
-export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, isDemo, platformColorsLight, recentPosts }: HomeProps) {
+export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, costBasisTimeline, isDemo, platformColorsLight, recentPosts }: HomeProps) {
   const [loaded, setLoaded] = useState(false);
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
   const [navDropdown, setNavDropdown] = useState(false);
@@ -1772,6 +1796,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
               zIndex: 9999,
               background: "rgba(0,0,0,0.5)",
               backdropFilter: "blur(4px)",
+              animation: "backdropIn 0.2s ease-out",
             }}
             onClick={() => setMobileMenuOpen(false)}
           >
@@ -1789,7 +1814,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
-                animation: "fadeIn 0.2s ease-out",
+                animation: "slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
                 overflowY: "auto",
               }}
               onClick={(e) => e.stopPropagation()}
@@ -2074,7 +2099,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                 letterSpacing: "0.06em",
               }}
             >
-              Semana #1
+              Semana #{Math.max(1, Math.ceil((Date.now() - new Date("2026-02-21").getTime()) / (7 * 24 * 60 * 60 * 1000)))}
             </div>
           </div>
 
@@ -2254,7 +2279,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
           </div>
 
           {/* Portfolio chart */}
-          {dailyData.length > 1 && <PortfolioChart dailyData={dailyData} />}
+          {dailyData.length > 1 && <PortfolioChart dailyData={dailyData} costBasisTimeline={costBasisTimeline} />}
 
           {/* Disclaimer */}
           <div
@@ -2512,6 +2537,11 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                 href="mailto:chamilli@pm.me"
                 label="chamilli@pm.me"
                 icon="@"
+              />
+              <SocialLink
+                href="/feed.xml"
+                label="RSS"
+                icon="rss"
               />
             </div>
             <div

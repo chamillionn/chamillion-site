@@ -105,7 +105,7 @@
   --bg-surface-alt: #ddd0be;
   --bg-elevated: #ede1d1;
   --bg-page: #e2d5c3;
-  --text-tertiary: #b8a690;
+  --text-tertiary: #7a6a4f;
   --shadow-glow: rgba(43, 93, 115, 0.15);
   --tooltip-bg: #2a2015;
   --tooltip-color: #ede1d1;
@@ -262,6 +262,16 @@ input:focus, textarea:focus, select:focus {
 @keyframes donut-fill {
   from { stroke-dasharray: 0 var(--circ); }
   to { stroke-dasharray: var(--vis) var(--gap); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes grain {

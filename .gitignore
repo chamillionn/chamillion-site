@@ -17,3 +17,8 @@ next-env.d.ts
 npm-debug.log*
 .vercel
 supabase/.temp/
+
+# claude / agents
+.claude/
+.agents/
+skills-lock.json

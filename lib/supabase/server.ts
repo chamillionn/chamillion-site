@@ -3,12 +3,34 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "./types";
 
+/**
+ * When DB_ENV=prod, server-side clients use production credentials
+ * even in `next dev`. Auth (createClient) always uses the default
+ * env since user sessions are per-database.
+ */
+const isProdDb = process.env.DB_ENV === "prod";
+
+function getDbUrl(): string {
+  if (isProdDb && process.env.PROD_SUPABASE_URL) return process.env.PROD_SUPABASE_URL;
+  return process.env.NEXT_PUBLIC_SUPABASE_URL!;
+}
+
+function getAnonKey(): string {
+  if (isProdDb && process.env.PROD_SUPABASE_ANON_KEY) return process.env.PROD_SUPABASE_ANON_KEY;
+  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+}
+
+function getServiceKey(): string | undefined {
+  if (isProdDb && process.env.PROD_SUPABASE_SERVICE_ROLE_KEY) return process.env.PROD_SUPABASE_SERVICE_ROLE_KEY;
+  return process.env.SUPABASE_SERVICE_ROLE_KEY;
+}
+
 export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getDbUrl(),
+    getAnonKey(),
     {
       cookies: {
         getAll() {
@@ -34,12 +56,12 @@ export async function createClient() {
  * Bypasses RLS — only use in trusted server-side code.
  */
 export function createServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = getDbUrl();
+  const key = getServiceKey();
 
   if (!url || !key) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY. " +
+      "Missing Supabase URL or SERVICE_ROLE_KEY. " +
         "Service-role client cannot be created without both env vars.",
     );
   }

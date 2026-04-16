@@ -4,6 +4,7 @@ import {
   getPlatforms,
   getDailySnapshots,
   getCostBasis,
+  getCapitalFlows,
   isDemoMode,
   resolvePublicClient,
 } from "@/lib/supabase/queries";
@@ -89,14 +90,15 @@ export default async function HomePage() {
     );
   }
 
-  let summary, positions, allPlatforms, snapshots, costBasis;
+  let summary, positions, allPlatforms, snapshots, costBasis, capitalFlows;
   try {
-    [summary, positions, allPlatforms, snapshots, costBasis] = await Promise.all([
+    [summary, positions, allPlatforms, snapshots, costBasis, capitalFlows] = await Promise.all([
       getPortfolioSummary(dc),
       getPositions(dc),
       getPlatforms(dc),
       getDailySnapshots(365, dc),
       getCostBasis(dc),
+      getCapitalFlows(500, dc),
     ]);
   } catch (e) {
     console.error("Homepage data fetch failed:", e);
@@ -148,6 +150,16 @@ export default async function HomePage() {
       total: s.total_value,
     }));
 
+  // Build cumulative cost basis timeline from capital flows
+  const sortedFlows = [...capitalFlows].sort((a, b) => a.date.localeCompare(b.date));
+  const costBasisTimeline: { date: string; cumulative: number }[] = [];
+  let cumulative = 0;
+  for (const f of sortedFlows) {
+    if (f.type === "buy" || f.type === "deposit_fiat") cumulative += f.amount_eur;
+    else cumulative -= f.amount_eur;
+    costBasisTimeline.push({ date: f.date.slice(0, 10), cumulative });
+  }
+
   return (
     <>
       <script
@@ -170,6 +182,7 @@ export default async function HomePage() {
         totalValue={totalValue}
         dailyData={dailyData}
         capitalInvested={costBasis.net > 0 ? costBasis.net : null}
+        costBasisTimeline={costBasisTimeline}
         recentPosts={recentPosts}
       />
     </>
