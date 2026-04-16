@@ -609,8 +609,9 @@ Fase 3 — Software & Bots (Modulo 4)               █████████�
 Fase 4 — Mi Cartera (Modulo 3)                     ░░░░░░░░░░
   El mas complejo — sync refactor, user-scoped data
 
-Fase 5 — Consultorias (Modulo 5)                    ░░░░░░░░░░
-  Requiere toda la infra (Resend, Stripe extension)
+Fase 5 — Consultorias (Modulo 5)                    ████░░░░░░
+  Estructura basica + UI (tablas, tipos, pagina Hub)
+  Pendiente: Stripe checkout, webhook, calendar picker, disponibilidad admin, emails
 ```
 
 ---
@@ -668,6 +669,7 @@ Las migraciones SQL se aplican solo en dev (mdkejqbsfkhfhohhsljy). Antes de desp
 - [ ] `20260416_software.sql`
 - [ ] Crear bucket `software-releases` en Supabase Storage (privado)
 - [ ] Configurar Vercel Cron para daily-digest
+- [ ] `20260416_consultations.sql`
 - [ ] _(futuras migraciones se iran anadiendo aqui)_
 
 ## Tareas pendientes (construido pero no activado)

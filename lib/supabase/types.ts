@@ -163,6 +163,41 @@ export interface SoftwareWithLatest {
   latest_released_at: string | null;
 }
 
+export interface ConsultationType {
+  id: string;
+  name: string;
+  description: string | null;
+  duration: number;
+  price_eur: number;
+  stripe_price_id: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AvailabilitySlot {
+  id: string;
+  day_of_week: number | null;
+  specific_date: string | null;
+  start_time: string;
+  end_time: string;
+  is_blocked: boolean;
+  created_at: string;
+}
+
+export interface Consultation {
+  id: string;
+  user_id: string;
+  type_id: string;
+  scheduled_at: string;
+  duration: number;
+  status: string;
+  stripe_payment_id: string | null;
+  stripe_session_id: string | null;
+  notes_user: string | null;
+  notes_admin: string | null;
+  created_at: string;
+}
+
 export interface EmailPreferences {
   user_id: string;
   daily_digest: boolean;
@@ -318,6 +353,26 @@ export type Database = {
         Update: Flatten<Partial<Download>>;
         Relationships: [
           { foreignKeyName: "downloads_version_id_fkey"; columns: ["version_id"]; referencedRelation: "software_versions"; referencedColumns: ["id"]; isOneToOne: false },
+        ];
+      };
+      consultation_types: {
+        Row: Flatten<ConsultationType>;
+        Insert: Flatten<Omit<ConsultationType, "id" | "created_at" | "description" | "stripe_price_id" | "is_active"> & { id?: string; created_at?: string; description?: string | null; stripe_price_id?: string | null; is_active?: boolean }>;
+        Update: Flatten<Partial<ConsultationType>>;
+        Relationships: [];
+      };
+      availability_slots: {
+        Row: Flatten<AvailabilitySlot>;
+        Insert: Flatten<Omit<AvailabilitySlot, "id" | "created_at" | "day_of_week" | "specific_date" | "is_blocked"> & { id?: string; created_at?: string; day_of_week?: number | null; specific_date?: string | null; is_blocked?: boolean }>;
+        Update: Flatten<Partial<AvailabilitySlot>>;
+        Relationships: [];
+      };
+      consultations: {
+        Row: Flatten<Consultation>;
+        Insert: Flatten<Omit<Consultation, "id" | "created_at" | "status" | "stripe_payment_id" | "stripe_session_id" | "notes_user" | "notes_admin"> & { id?: string; created_at?: string; status?: string; stripe_payment_id?: string | null; stripe_session_id?: string | null; notes_user?: string | null; notes_admin?: string | null }>;
+        Update: Flatten<Partial<Consultation>>;
+        Relationships: [
+          { foreignKeyName: "consultations_type_id_fkey"; columns: ["type_id"]; referencedRelation: "consultation_types"; referencedColumns: ["id"]; isOneToOne: false },
         ];
       };
     };
