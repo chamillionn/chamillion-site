@@ -265,6 +265,82 @@
   border-radius: 1px;
 }
 
+/* ── TERMINAL LOG ── */
+
+.terminal {
+  margin-top: 20px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.terminalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.terminalTitle {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.terminalClear {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity var(--transition-fast);
+}
+
+.terminalClear:hover {
+  opacity: 1;
+}
+
+.terminalBody {
+  padding: 10px 12px;
+  max-height: 180px;
+  overflow-y: auto;
+  background: var(--bg-dark);
+}
+
+.terminalLine {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.terminalError {
+  color: var(--red);
+}
+
+.terminalSeparator {
+  color: var(--steel-blue);
+  opacity: 0.6;
+}
+
+.terminalCursor {
+  display: inline-block;
+  color: var(--steel-blue);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* ── SPINNER ── */
 
 .spinner {

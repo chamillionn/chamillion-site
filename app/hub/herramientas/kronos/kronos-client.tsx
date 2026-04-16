@@ -20,10 +20,25 @@ export default function KronosClient() {
   const [error, setError] = useState<string | null>(null);
   const [candles, setCandles] = useState<Candle[]>([]);
   const [predicted, setPredicted] = useState<Candle[]>([]);
+  const [logs, setLogs] = useState<string[]>([]);
+  const logRef = useRef<HTMLDivElement>(null);
+
+  function log(msg: string) {
+    const ts = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    setLogs((prev) => [...prev, `[${ts}] ${msg}`]);
+    // Auto-scroll
+    requestAnimationFrame(() => {
+      if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+    });
+  }
 
   // Load pairs on mount
   useEffect(() => {
-    fetchPairs().then(setPairs).catch(() => {});
+    fetchPairs().then((p) => {
+      setPairs(p);
+      log(`${p.length} pares USDT cargados desde Binance`);
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Load candles when symbol or timeframe changes
@@ -31,14 +46,20 @@ export default function KronosClient() {
     setStatus("loading-candles");
     setError(null);
     setPredicted([]);
+    log(`Solicitando 512 velas ${tf} para ${sym}...`);
+    const t0 = performance.now();
     try {
       const data = await fetchCandles(sym, tf, 512);
+      const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
       setCandles(data);
+      log(`${data.length} velas recibidas (${elapsed}s) — rango: ${new Date(data[0].time * 1000).toLocaleDateString("es-ES")} → ${new Date(data[data.length - 1].time * 1000).toLocaleDateString("es-ES")}`);
       setStatus("idle");
     } catch (e) {
+      log(`ERROR: ${e instanceof Error ? e.message : "fallo en fetch"}`);
       setError(e instanceof Error ? e.message : "Error al cargar velas");
       setStatus("error");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Initial load
@@ -190,13 +211,45 @@ export default function KronosClient() {
     setError(null);
     setPredicted([]);
 
+    const lastCandle = candles[candles.length - 1];
+    const lastPrice = lastCandle.close;
+
+    log(`── Iniciando predicción ──`);
+    log(`Activo: ${currentBase}/USDT | Timeframe: ${getTimeframeLabel(timeframe)} | Velas de entrada: ${candles.length}`);
+    log(`Último cierre: $${lastPrice.toLocaleString("es-ES", { maximumFractionDigits: 2 })}`);
+    log(`Preparando payload OHLCV (${candles.length}×4 matrix)...`);
+    log(`Enviando al modelo Kronos (prediction_length=24)...`);
+
+    const t0 = performance.now();
+
     try {
       const result = await predict(candles, 24);
+      const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
       const predCandles = resultToCandles(result);
+
+      log(`Respuesta recibida en ${elapsed}s — ${predCandles.length} velas predichas`);
+
+      if (predCandles.length > 0) {
+        const firstPred = predCandles[0];
+        const lastPred = predCandles[predCandles.length - 1];
+        const predHigh = Math.max(...predCandles.map((c) => c.high));
+        const predLow = Math.min(...predCandles.map((c) => c.low));
+        const delta = ((lastPred.close - lastPrice) / lastPrice * 100).toFixed(2);
+        const sign = Number(delta) >= 0 ? "+" : "";
+
+        log(`Rango predicho: $${predLow.toLocaleString("es-ES", { maximumFractionDigits: 2 })} — $${predHigh.toLocaleString("es-ES", { maximumFractionDigits: 2 })}`);
+        log(`Cierre final predicho: $${lastPred.close.toLocaleString("es-ES", { maximumFractionDigits: 2 })} (${sign}${delta}%)`);
+        log(`Periodo: ${new Date(firstPred.time * 1000).toLocaleString("es-ES")} → ${new Date(lastPred.time * 1000).toLocaleString("es-ES")}`);
+      }
+
+      log(`── Predicción completada ──`);
       setPredicted(predCandles);
       setStatus("done");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error en la predicción");
+      const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+      const msg = e instanceof Error ? e.message : "Error desconocido";
+      log(`ERROR después de ${elapsed}s: ${msg}`);
+      setError(msg);
       setStatus("error");
     }
   }
@@ -321,6 +374,36 @@ export default function KronosClient() {
           </span>
         )}
       </div>
+
+      {/* ── Terminal log ── */}
+      {logs.length > 0 && (
+        <div className={styles.terminal}>
+          <div className={styles.terminalHeader}>
+            <span className={styles.terminalTitle}>Log</span>
+            <button
+              className={styles.terminalClear}
+              onClick={() => setLogs([])}
+            >
+              Limpiar
+            </button>
+          </div>
+          <div ref={logRef} className={styles.terminalBody}>
+            {logs.map((line, i) => (
+              <div
+                key={i}
+                className={`${styles.terminalLine} ${line.includes("ERROR") ? styles.terminalError : ""} ${line.includes("──") ? styles.terminalSeparator : ""}`}
+              >
+                {line}
+              </div>
+            ))}
+            {status === "predicting" && (
+              <div className={styles.terminalLine}>
+                <span className={styles.terminalCursor}>_</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
