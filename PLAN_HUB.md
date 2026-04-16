@@ -19,6 +19,8 @@ El Hub es la plataforma premium de chamillion.site. Actualmente `/hub` es un pla
 
 **Directriz de UI:** Para toda creacion de UI nueva, usar siempre el comando `/impeccable` (skill de design taste).
 
+**Directriz de commits:** Hacer commit despues de cada paso completado. Commits atomicos por proposito para poder revertir granularmente.
+
 **Lo que NO existe y hay que crear:**
 - Email transaccional (Resend) — solo hay Supabase native emails
 - Supabase Realtime — zero uso actual
@@ -649,6 +651,13 @@ Fase 5 — Consultorias (Modulo 5)                    ███░░░░░�
 | [lib/supabase/auth.ts](lib/supabase/auth.ts) | Ya tiene `requireMember()`, no necesita cambios |
 
 ---
+
+## Pre-deploy a produccion
+
+Las migraciones SQL se aplican solo en dev (mdkejqbsfkhfhohhsljy). Antes de desplegar el Hub a produccion, ejecutar todas las migraciones pendientes en el SQL Editor del proyecto prod (hpyyuftotmpnzogaykgh), en orden cronologico:
+
+- [ ] `20260416_trades.sql` + fix del index (DROP parcial, ALTER trade_id NOT NULL, CREATE sin WHERE)
+- [ ] _(futuras migraciones se iran anadiendo aqui)_
 
 ## Verificacion
 

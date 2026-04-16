@@ -11,7 +11,7 @@ create table if not exists public.trades (
   total_value     numeric not null,     -- quantity * price
   total_value_eur numeric,              -- converted at the EUR/USD rate at execution time
   fee             numeric,              -- platform fee in USD
-  trade_id        text,                 -- unique ID from the platform (for deduplication)
+  trade_id        text not null,         -- unique ID from the platform (for deduplication)
   executed_at     timestamptz not null,
   synced_at       timestamptz not null default now()
 );
@@ -29,8 +29,7 @@ create policy "trades_select_authenticated"
 
 -- Deduplication: same platform + same trade_id = same trade
 create unique index if not exists idx_trades_dedup
-  on public.trades (platform_id, trade_id)
-  where trade_id is not null;
+  on public.trades (platform_id, trade_id);
 
 -- Query pattern: recent trades by platform, ordered by time
 create index if not exists idx_trades_platform_time
