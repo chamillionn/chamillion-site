@@ -19,8 +19,6 @@ El Hub es la plataforma premium de chamillion.site. Actualmente `/hub` es un pla
 
 **Directriz de UI:** Para toda creacion de UI nueva, usar siempre el comando `/impeccable` (skill de design taste).
 
-**Directriz de commits:** Hacer commit despues de cada paso completado. Commits atomicos por proposito para poder revertir granularmente.
-
 **Lo que NO existe y hay que crear:**
 - Email transaccional (Resend) — solo hay Supabase native emails
 - Supabase Realtime — zero uso actual
@@ -195,57 +193,65 @@ Nuevos fetchers independientes del sync engine (no modifican posiciones, solo ca
 
 ### 1.7 Orden de construccion
 
-1. Crear tabla `trades` + RLS + Realtime + index de dedup
-2. Crear trade fetcher para Hyperliquid (`userFillsByTime`)
-3. Crear trade fetcher para Polymarket (`/trades`)
-4. Crear trade fetcher para on-chain swaps (Moralis `getWalletTokenTransfers` + agrupacion por txHash)
-5. Crear ruta `app/api/sync/trades/route.ts`
-6. Crear vista `trades_enriched`
-7. Pagina de cartera con datos estaticos (positions, snapshots, strategies)
-8. Anadir feed de trades con Realtime
-9. Email preferences + daily digest cron
+1. ~~Crear tabla `trades` + RLS + Realtime + index de dedup~~ ✅
+2. ~~Crear trade fetcher para Hyperliquid (`userFillsByTime`)~~ ✅
+3. ~~Crear trade fetcher para Polymarket (`/trades`)~~ ✅ (820 trades sincronizados)
+4. ~~Crear trade fetcher para on-chain swaps (Moralis + agrupacion por txHash)~~ ✅
+5. ~~Crear ruta `app/api/sync/trades/route.ts`~~ ✅
+6. ~~Crear vista `trades_enriched`~~ ✅
+7. ~~Pagina de cartera (prototipo: posiciones, trades, chart rendimiento)~~ ✅
+8. ~~Feed de trades con Supabase Realtime~~ ✅
+9. ~~Email preferences + daily digest cron (inactivo)~~ ✅
+10. ~~Auditoria Fase 1: 5 bugs corregidos~~ ✅
 
 ---
 
 ## Modulo 2: Herramientas Premium
 
-**Objetivo:** Widgets/herramientas interactivas exclusivas para members. Extension del sistema de widgets existente.
+**Objetivo:** Convertir la pagina `/widgets` existente en un sistema con widgets free y premium. Admin puede marcar widgets como premium directamente desde la UI.
 
-### 2.1 Features
+### 2.1 Implementacion — Premium widgets en la pagina existente
 
-- Galeria de widgets premium (mismo patron que `/widgets` pero gated)
-- Nuevas herramientas: simuladores de portfolio, calculadoras de riesgo, analisis avanzado
-- Embedded via `IframeWidget` existente
-- Flag `premium` en metadata de widget para distinguir free vs premium
+**Enfoque:** No crear pagina separada en `/hub/herramientas`. En vez de eso, enriquecer la pagina `/widgets` existente:
 
-### 2.2 Base de datos
+**Persistencia del flag premium:**
+- Usar tabla `site_settings` existente (JSONB) con key `premium_widgets`
+- Valor: array de slugs (ej: `["compound-interest", "daily-compounder"]`)
+- Sin migracion, sin tabla nueva — `site_settings` ya existe y acepta cualquier key
 
-Ninguna inicialmente. La metadata de widgets esta hardcodeada en `widgets-client.tsx`. Mantener el mismo patron para premium:
-- Widgets como archivos estaticos en `/public/widgets/premium/`
-- Metadata hardcodeada en el componente client del Hub
+**Cambios en `app/widgets/page.tsx`:**
+- Convertir de component puro a Server Component que fetch:
+  1. `premium_widgets` desde `site_settings`
+  2. User role (via `getOptionalUser()`) — para saber si es admin, member, o free/anonimo
+- Pasar `premiumSlugs`, `userRole` como props a `WidgetsClient`
 
-**Futuro:** Si la lista crece mucho, migrar metadata a tabla `widgets` en Supabase.
+**Cambios en `app/widgets/widgets-client.tsx`:**
+- Recibir `premiumSlugs: string[]` y `userRole: "free" | "member" | "admin" | null`
+- **Modo edicion (solo admin):** Boton toggle "Editar". En modo edicion, cada card muestra un toggle para marcar/desmarcar como premium. Los cambios se guardan via server action en `site_settings`.
+- **Widgets premium para no-members:** Se ven en la galeria pero con overlay/lock. No se pueden abrir (el `<a>` se desactiva). Mensaje "Suscribete para acceder".
+- **Widgets premium para members/admin:** Funcionan normal, con badge "Premium".
 
-### 2.3 Componentes
+**Server action para guardar:**
+- `app/widgets/actions.ts` — `toggleWidgetPremium(slug)`: lee `premium_widgets` de `site_settings`, toggle el slug, guarda. Requiere `requireAdmin()`.
 
-- `app/hub/herramientas/page.tsx` — Server Component (protegido por Hub layout)
-- `app/hub/herramientas/herramientas-client.tsx` — Grid de widgets premium (mismo patron que `widgets-client.tsx`)
-- Nuevos widgets en `/public/widgets/premium/` siguiendo convenciones existentes (`widget-common.css/js`, tema dark/light via `data-theme`)
+**Archivos a modificar:**
+- `app/widgets/page.tsx` — fetch premium slugs + user role
+- `app/widgets/widgets-client.tsx` — admin edit mode, premium lock, premium badge
+- `app/widgets/page.module.css` — estilos para premium lock, edit toggle, admin controls
+- `app/widgets/actions.ts` — nuevo: server action para toggle premium
 
-### 2.4 Dificultades tecnicas
+**No se necesita:**
+- No nueva tabla ni migracion
+- No pagina separada en `/hub/herramientas` (los widgets premium viven en `/widgets`, accesibles para todos pero gated)
+- No mover widgets a directorio separado
 
-| Dificultad | Detalle | Mitigacion |
-|-----------|---------|-----------|
-| Acceso directo a archivos | `/public/` se sirve via CDN, bypassing middleware | Aceptar como low-risk: los widgets son herramientas, no datos sensibles. El valor esta en la experiencia curada del Hub |
-| Desarrollo de widgets | Cada widget es HTML+JS+CSS vanilla, requiere desarrollo manual | Reutilizar `widget-common.js/css`. Crear plantilla de widget premium como starter |
+### 2.2 Orden de construccion
 
-### 2.5 Orden de construccion
-
-1. Crear ruta `app/hub/herramientas/` con galeria
-2. Desarrollar 2-3 widgets premium de lanzamiento
-3. Iterar — anadir widgets nuevos con el tiempo
-
-**Esfuerzo:** Bajo (la infraestructura de widgets ya existe). El grueso es crear los widgets en si.
+1. ~~Convertir `page.tsx` a Server Component con fetch de premium slugs + user role~~ ✅
+2. ~~Crear `actions.ts` con server action `toggleWidgetPremium`~~ ✅
+3. ~~Modificar `widgets-client.tsx`: props nuevas, admin edit mode, premium lock~~ ✅
+4. ~~Estilos CSS para premium lock overlay, edit toggle, admin badge~~ ✅
+5. ~~Link "Suscribete para acceder" lleva a `/suscribirse`~~ ✅
 
 ### 2.6 Kronos — Analisis financiero (futuro)
 
@@ -583,28 +589,28 @@ El webhook actual (`app/api/stripe/webhook/route.ts`) maneja solo subscriptions.
 ## Orden global de construccion
 
 ```
-Fase 0 — Infraestructura                        ██░░░░░░░░
-  0.1 Resend email
-  0.2 Hub layout + route restructure
-  0.3 Middleware adjustments
+Fase 0 — Infraestructura                        ██████████ ✅
+  0.1 Resend email ✅
+  0.2 Hub layout + route restructure ✅ (observatory design)
+  0.3 Middleware — sin cambios necesarios ✅
+  0.4 Landing publica para no autenticados — PENDIENTE
 
-Fase 1 — Cartera Ampliada (Modulo 1)             ████░░░░░░
-  Maximo valor inmediato, establece patrones UI
+Fase 1 — Cartera Ampliada (Modulo 1)             ██████████ ✅
+  Trades API-based (no diff), Realtime, digest (inactivo)
+  Pagina de cartera (prototipo — necesita mas analiticas)
 
-Fase 2 — Herramientas Premium (Modulo 2)          █░░░░░░░░░
-  Quick win, bajo esfuerzo, reutiliza infra existente
-  (puede ir en paralelo con back-end de Fase 1)
+Fase 2 — Herramientas Premium (Modulo 2)          ████████░░
+  2.1 Premium widgets con admin edit mode ✅
+  2.2 Kronos (prediccion de velas) — PENDIENTE
 
-Fase 3 — Software & Bots (Modulo 4)               ██░░░░░░░░
+Fase 3 — Software & Bots (Modulo 4)               ░░░░░░░░░░
   Relativamente aislado, introduce Storage
 
-Fase 4 — Mi Cartera (Modulo 3)                     ████░░░░░░
+Fase 4 — Mi Cartera (Modulo 3)                     ░░░░░░░░░░
   El mas complejo — sync refactor, user-scoped data
-  Se beneficia de componentes de Modulo 1
 
-Fase 5 — Consultorias (Modulo 5)                    ███░░░░░░░
+Fase 5 — Consultorias (Modulo 5)                    ░░░░░░░░░░
   Requiere toda la infra (Resend, Stripe extension)
-  Puede diferirse hasta que haya demanda
 ```
 
 ---
@@ -651,24 +657,6 @@ Fase 5 — Consultorias (Modulo 5)                    ███░░░░░�
 | [lib/supabase/auth.ts](lib/supabase/auth.ts) | Ya tiene `requireMember()`, no necesita cambios |
 
 ---
-
-## Pre-deploy a produccion
-
-Las migraciones SQL se aplican solo en dev (mdkejqbsfkhfhohhsljy). Antes de desplegar el Hub a produccion, ejecutar todas las migraciones pendientes en el SQL Editor del proyecto prod (hpyyuftotmpnzogaykgh), en orden cronologico:
-
-- [ ] `20260416_trades.sql` + fix del index (DROP parcial, ALTER trade_id NOT NULL, CREATE sin WHERE)
-- [ ] Habilitar Realtime en tabla trades: `ALTER PUBLICATION supabase_realtime ADD TABLE public.trades;`
-- [ ] `20260416_email_preferences.sql` — tabla email_preferences + RLS
-- [ ] Configurar Vercel Cron para daily-digest (`vercel.json`)
-- [ ] _(futuras migraciones y configs se iran anadiendo aqui)_
-
-## Tareas pendientes (construido pero no activado)
-
-- [ ] **Daily digest**: el cron endpoint existe (`/api/cron/daily-digest`) pero no hay Vercel Cron configurado ni UI para activarlo. Cuando se active:
-  1. Anadir cron en `vercel.json`: `{ "crons": [{ "path": "/api/cron/daily-digest", "schedule": "0 8 * * *" }] }`
-  2. Anadir toggle de digest en la UI (en `/hub/cartera` o en `/cuenta`)
-  3. Configurar `CRON_SECRET` en Vercel env vars
-- [ ] **Landing publica del Hub** (Fase 0.4): pagina atractiva para visitantes no autenticados
 
 ## Verificacion
 
