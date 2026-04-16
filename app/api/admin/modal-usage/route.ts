@@ -30,12 +30,13 @@ export async function GET() {
     }[];
 
     const totalCost = items.reduce((sum, item) => sum + parseFloat(item.Cost), 0);
+    const creditLimit = 5; // Modal free tier — update if plan changes
 
     return NextResponse.json({
       items,
       totalCost: totalCost.toFixed(4),
-      creditLimit: 30,
-      usedPct: ((totalCost / 30) * 100).toFixed(1),
+      creditLimit,
+      usedPct: ((totalCost / creditLimit) * 100).toFixed(1),
       period: "this month",
     });
   } catch (e) {
