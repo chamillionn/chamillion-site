@@ -117,6 +117,52 @@ export interface PendingLogin {
   expires_at: string;
 }
 
+export interface Software {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  icon_path: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface SoftwareVersion {
+  id: string;
+  software_id: string;
+  version: string;
+  release_notes: string | null;
+  file_path: string;
+  file_size: number | null;
+  is_latest: boolean;
+  released_at: string;
+}
+
+export interface Download {
+  id: string;
+  user_id: string;
+  version_id: string;
+  created_at: string;
+}
+
+export interface SoftwareWithLatest {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  icon_path: string | null;
+  is_active: boolean;
+  created_at: string;
+  latest_version_id: string | null;
+  latest_version: string | null;
+  latest_release_notes: string | null;
+  latest_file_path: string | null;
+  latest_file_size: number | null;
+  latest_released_at: string | null;
+}
+
 export interface EmailPreferences {
   user_id: string;
   daily_digest: boolean;
@@ -252,6 +298,28 @@ export type Database = {
           { foreignKeyName: "trades_platform_id_fkey"; columns: ["platform_id"]; referencedRelation: "platforms"; referencedColumns: ["id"]; isOneToOne: false },
         ];
       };
+      software: {
+        Row: Flatten<Software>;
+        Insert: Flatten<Omit<Software, "id" | "created_at" | "description" | "category" | "icon_path" | "is_active"> & { id?: string; created_at?: string; description?: string | null; category?: string | null; icon_path?: string | null; is_active?: boolean }>;
+        Update: Flatten<Partial<Software>>;
+        Relationships: [];
+      };
+      software_versions: {
+        Row: Flatten<SoftwareVersion>;
+        Insert: Flatten<Omit<SoftwareVersion, "id" | "release_notes" | "file_size" | "is_latest" | "released_at"> & { id?: string; release_notes?: string | null; file_size?: number | null; is_latest?: boolean; released_at?: string }>;
+        Update: Flatten<Partial<SoftwareVersion>>;
+        Relationships: [
+          { foreignKeyName: "software_versions_software_id_fkey"; columns: ["software_id"]; referencedRelation: "software"; referencedColumns: ["id"]; isOneToOne: false },
+        ];
+      };
+      downloads: {
+        Row: Flatten<Download>;
+        Insert: Flatten<Omit<Download, "id" | "created_at"> & { id?: string; created_at?: string }>;
+        Update: Flatten<Partial<Download>>;
+        Relationships: [
+          { foreignKeyName: "downloads_version_id_fkey"; columns: ["version_id"]; referencedRelation: "software_versions"; referencedColumns: ["id"]; isOneToOne: false },
+        ];
+      };
     };
     Views: {
       positions_enriched: {
@@ -264,6 +332,10 @@ export type Database = {
       };
       trades_enriched: {
         Row: Flatten<TradeEnriched>;
+        Relationships: [];
+      };
+      software_with_latest: {
+        Row: Flatten<SoftwareWithLatest>;
         Relationships: [];
       };
     };

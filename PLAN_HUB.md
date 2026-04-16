@@ -603,8 +603,8 @@ Fase 2 — Herramientas Premium (Modulo 2)          ████████░�
   2.1 Premium widgets con admin edit mode ✅
   2.2 Kronos (prediccion de velas) — PENDIENTE
 
-Fase 3 — Software & Bots (Modulo 4)               ░░░░░░░░░░
-  Relativamente aislado, introduce Storage
+Fase 3 — Software & Bots (Modulo 4)               ██████████ ✅
+  Tablas, API download con signed URL, pagina Hub, empty state
 
 Fase 4 — Mi Cartera (Modulo 3)                     ░░░░░░░░░░
   El mas complejo — sync refactor, user-scoped data
@@ -655,6 +655,26 @@ Fase 5 — Consultorias (Modulo 5)                    ░░░░░░░░�
 | [app/api/stripe/webhook/route.ts](app/api/stripe/webhook/route.ts) | Extender para `mode === 'payment'` (consultorias) |
 | [middleware.ts](middleware.ts) | Ajustes menores si hay sub-rutas publicas del Hub |
 | [lib/supabase/auth.ts](lib/supabase/auth.ts) | Ya tiene `requireMember()`, no necesita cambios |
+
+---
+
+## Pre-deploy a produccion
+
+Las migraciones SQL se aplican solo en dev (mdkejqbsfkhfhohhsljy). Antes de desplegar el Hub a produccion, ejecutar en el SQL Editor del proyecto prod (hpyyuftotmpnzogaykgh):
+
+- [ ] `20260416_trades.sql` + fix index (DROP parcial, ALTER trade_id NOT NULL, CREATE sin WHERE)
+- [ ] `ALTER PUBLICATION supabase_realtime ADD TABLE public.trades;`
+- [ ] `20260416_email_preferences.sql`
+- [ ] `20260416_software.sql`
+- [ ] Crear bucket `software-releases` en Supabase Storage (privado)
+- [ ] Configurar Vercel Cron para daily-digest
+- [ ] _(futuras migraciones se iran anadiendo aqui)_
+
+## Tareas pendientes (construido pero no activado)
+
+- [ ] **Daily digest**: cron endpoint existe pero no hay Vercel Cron ni UI toggle
+- [ ] **Landing publica del Hub** (Fase 0.4)
+- [ ] **Kronos** (Fase 2.2): UI de prediccion de velas
 
 ---
 
