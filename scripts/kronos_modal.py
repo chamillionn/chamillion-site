@@ -40,13 +40,37 @@ class KronosService:
         import sys
         sys.path.insert(0, "/opt/kronos")
         import pandas as pd
+        import numpy as np
 
         df = pd.DataFrame(ohlcv_data["data"], columns=ohlcv_data["columns"])
-        timestamps = pd.to_datetime(ohlcv_data["timestamps"])
+        x_timestamp = pd.Series(pd.to_datetime(ohlcv_data["timestamps"]))
+
+        # Generate future timestamps by extrapolating the interval
+        if len(x_timestamp) >= 2:
+            freq = x_timestamp.iloc[-1] - x_timestamp.iloc[-2]
+        else:
+            freq = pd.Timedelta(hours=1)
+
+        y_timestamp = pd.Series(pd.date_range(
+            start=x_timestamp.iloc[-1] + freq,
+            periods=prediction_length,
+            freq=freq,
+        ))
 
         result = self.predictor.predict(
-            df, timestamps, prediction_length=prediction_length
+            df=df,
+            x_timestamp=x_timestamp,
+            y_timestamp=y_timestamp,
+            pred_len=prediction_length,
+            T=1.0,
+            top_p=0.9,
+            sample_count=1,
+            verbose=False,
         )
+
+        # Return only OHLC columns (drop volume/amount if present)
+        ohlc_cols = [c for c in ["open", "high", "low", "close"] if c in result.columns]
+        result = result[ohlc_cols]
 
         return {
             "columns": result.columns.tolist(),
