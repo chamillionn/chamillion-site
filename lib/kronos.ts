@@ -1,7 +1,7 @@
 import type { Candle } from "./binance";
 
-const KRONOS_URL =
-  "https://chamillionn--kronos-predictor-kronosservice-api.modal.run";
+/** Calls our own proxy route, which forwards to Modal server-side. */
+const KRONOS_URL = "/api/kronos/predict";
 
 export interface KronosResult {
   columns: string[];
@@ -35,7 +35,8 @@ export async function predict(
   });
 
   if (!res.ok) {
-    throw new Error(`Kronos: HTTP ${res.status} ${res.statusText}`);
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.detail || err.error || `Kronos: HTTP ${res.status}`);
   }
 
   return res.json();
