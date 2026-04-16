@@ -117,6 +117,13 @@ export interface PendingLogin {
   expires_at: string;
 }
 
+export interface EmailPreferences {
+  user_id: string;
+  daily_digest: boolean;
+  digest_hour: number;
+  updated_at: string;
+}
+
 export type TradeSide = "buy" | "sell" | "open_long" | "open_short" | "close_long" | "close_short";
 
 export interface Trade {
@@ -223,6 +230,12 @@ export type Database = {
         Row: Flatten<Post>;
         Insert: Flatten<Omit<Post, "id" | "created_at" | "subtitle" | "banner_path" | "section" | "substack_url"> & { id?: string; created_at?: string; subtitle?: string | null; banner_path?: string | null; section?: string | null; substack_url?: string | null }>;
         Update: Flatten<Partial<Post>>;
+        Relationships: [];
+      };
+      email_preferences: {
+        Row: Flatten<EmailPreferences>;
+        Insert: Flatten<Omit<EmailPreferences, "daily_digest" | "digest_hour" | "updated_at"> & { daily_digest?: boolean; digest_hour?: number; updated_at?: string }>;
+        Update: Flatten<Partial<EmailPreferences>>;
         Relationships: [];
       };
       pending_logins: {

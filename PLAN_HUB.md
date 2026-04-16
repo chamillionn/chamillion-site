@@ -658,7 +658,17 @@ Las migraciones SQL se aplican solo en dev (mdkejqbsfkhfhohhsljy). Antes de desp
 
 - [ ] `20260416_trades.sql` + fix del index (DROP parcial, ALTER trade_id NOT NULL, CREATE sin WHERE)
 - [ ] Habilitar Realtime en tabla trades: `ALTER PUBLICATION supabase_realtime ADD TABLE public.trades;`
+- [ ] `20260416_email_preferences.sql` — tabla email_preferences + RLS
+- [ ] Configurar Vercel Cron para daily-digest (`vercel.json`)
 - [ ] _(futuras migraciones y configs se iran anadiendo aqui)_
+
+## Tareas pendientes (construido pero no activado)
+
+- [ ] **Daily digest**: el cron endpoint existe (`/api/cron/daily-digest`) pero no hay Vercel Cron configurado ni UI para activarlo. Cuando se active:
+  1. Anadir cron en `vercel.json`: `{ "crons": [{ "path": "/api/cron/daily-digest", "schedule": "0 8 * * *" }] }`
+  2. Anadir toggle de digest en la UI (en `/hub/cartera` o en `/cuenta`)
+  3. Configurar `CRON_SECRET` en Vercel env vars
+- [ ] **Landing publica del Hub** (Fase 0.4): pagina atractiva para visitantes no autenticados
 
 ## Verificacion
 
