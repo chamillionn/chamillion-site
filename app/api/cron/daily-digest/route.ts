@@ -105,14 +105,14 @@ export async function GET(request: Request) {
 
   for (const sub of subscribers) {
     // Get user email from profiles
-    const { data: profile } = await supabase
+    const { data: profile, error: profileErr } = await supabase
       .from("profiles")
       .select("email")
       .eq("id", sub.user_id)
       .single();
 
-    if (!profile?.email) {
-      errors.push(`No email for user ${sub.user_id}`);
+    if (profileErr || !profile?.email) {
+      errors.push(`No email for user ${sub.user_id}: ${profileErr?.message ?? "missing"}`);
       continue;
     }
 

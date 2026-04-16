@@ -97,7 +97,7 @@ export async function GET(request: Request) {
       const batch = trades.slice(i, i + BATCH_SIZE);
       const { data, error } = await supabase
         .from("trades")
-        .upsert(batch, { onConflict: "platform_id,trade_id", ignoreDuplicates: true })
+        .upsert(batch, { onConflict: "platform_id,trade_id" })
         .select("id");
 
       if (error) {

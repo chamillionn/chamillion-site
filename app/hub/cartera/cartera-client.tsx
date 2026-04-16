@@ -104,6 +104,7 @@ export default function CarteraClient({
       .subscribe();
 
     return () => {
+      channel.unsubscribe();
       supabase.removeChannel(channel);
     };
   }, []);
@@ -334,8 +335,8 @@ function TradesTab({ trades }: { trades: TradeEnriched[] }) {
 /* ── Rendimiento tab ── */
 
 function RendimientoTab({ snapshots }: { snapshots: Snapshot[] }) {
-  if (snapshots.length === 0) {
-    return <p className={styles.empty}>No hay datos de rendimiento aún.</p>;
+  if (snapshots.length < 2) {
+    return <p className={styles.empty}>Se necesitan al menos 2 días de datos para el gráfico.</p>;
   }
 
   // Reverse to chronological order for the chart

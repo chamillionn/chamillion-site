@@ -137,6 +137,7 @@ export const OnchainTradeFetcher: TradeFetcher = {
           const outVal = parseFloat(swap.out.value_decimal);
           const inVal = parseFloat(swap.in.value_decimal);
           if (!Number.isFinite(outVal) || !Number.isFinite(inVal)) continue;
+          if (outVal === 0 || inVal === 0) continue;
 
           // Price: how much of token_out per token_in
           const impliedPrice = outVal / inVal;
