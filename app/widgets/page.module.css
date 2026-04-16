@@ -192,6 +192,53 @@
   border-color: var(--steel-blue);
 }
 
+/* ── Card link wrapper ── */
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+/* ── Locked card ── */
+.cardLocked {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+.cardLocked .cardTitle,
+.cardLocked .cardDesc,
+.cardLocked .cardIcon {
+  filter: grayscale(0.4);
+}
+
+.lockedHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 0.63rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  pointer-events: auto;
+}
+
+/* ── Premium badge ── */
+.premiumBadge {
+  margin-left: auto;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  background: rgba(var(--gold-rgb), 0.1);
+  border: 1px solid rgba(var(--gold-rgb), 0.2);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 /* ── Admin badge ── */
 .adminBadge {
   margin-left: auto;
@@ -204,4 +251,71 @@
   border-radius: 4px;
   padding: 1px 5px;
   opacity: 0.7;
+}
+
+/* ── Top bar right group ── */
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Edit mode toggle ── */
+.editToggle {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.editToggle:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.editToggleActive {
+  color: var(--gold);
+  border-color: rgba(var(--gold-rgb), 0.4);
+  background: rgba(var(--gold-rgb), 0.06);
+}
+
+/* ── Toggle premium button (in edit mode) ── */
+.togglePremium {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 5px 0;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.togglePremium:hover {
+  color: var(--gold);
+  border-color: rgba(var(--gold-rgb), 0.4);
+}
+
+.togglePremiumActive {
+  color: var(--gold);
+  border-color: rgba(var(--gold-rgb), 0.3);
+  background: rgba(var(--gold-rgb), 0.06);
+}
+
+.togglePremium:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
