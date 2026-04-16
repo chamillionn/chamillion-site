@@ -260,9 +260,42 @@
 
 .legendDotPrediction {
   width: 8px;
-  height: 2px;
-  background: var(--steel-blue);
+  height: 8px;
   border-radius: 1px;
+  background: var(--steel-blue);
+}
+
+/* ── VIEW TOGGLE ── */
+
+.viewToggle {
+  display: flex;
+  gap: 1px;
+  margin-left: auto;
+  background: var(--border);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+}
+
+.viewBtn {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-dark);
+  border: none;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.viewBtn:hover {
+  color: var(--text-primary);
+}
+
+.viewBtnActive {
+  color: var(--steel-blue);
+  background: rgba(var(--steel-blue-rgb), 0.08);
 }
 
 /* ── TERMINAL LOG ── */

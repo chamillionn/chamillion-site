@@ -17,6 +17,7 @@ export default function KronosClient() {
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const [predView, setPredView] = useState<"candles" | "line">("candles");
   const [error, setError] = useState<string | null>(null);
   const [candles, setCandles] = useState<Candle[]>([]);
   const [predicted, setPredicted] = useState<Candle[]>([]);
@@ -132,52 +133,70 @@ export default function KronosClient() {
         close: c.close,
       })));
 
-      // Predicted candles (if any) — rendered as a line series for distinction
+      // Predicted candles (if any)
       if (predicted.length > 0) {
-        // Connect prediction to last historical candle
-        const lastHistorical = candles[candles.length - 1];
-        const predictionData = [
-          { time: lastHistorical.time as import("lightweight-charts").UTCTimestamp, value: lastHistorical.close },
-          ...predicted.map((c) => ({
+        if (predView === "candles") {
+          // Candlestick view — same shape as historical but in steel-blue tones
+          const predCandleSeries = chart.addSeries(CandlestickSeries, {
+            upColor: isDark ? "#6B8EA0" : "#2b5d73",
+            downColor: isDark ? "#4A6E80" : "#1e4a5c",
+            borderUpColor: isDark ? "#6B8EA0" : "#2b5d73",
+            borderDownColor: isDark ? "#4A6E80" : "#1e4a5c",
+            wickUpColor: isDark ? "#6B8EA080" : "#2b5d7380",
+            wickDownColor: isDark ? "#4A6E8080" : "#1e4a5c80",
+          });
+
+          predCandleSeries.setData(predicted.map((c) => ({
             time: c.time as import("lightweight-charts").UTCTimestamp,
-            value: c.close,
-          })),
-        ];
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+          })));
+        } else {
+          // Line view — dashed close line + high/low bands
+          const lastHistorical = candles[candles.length - 1];
 
-        const predLine = chart.addSeries(LineSeries, {
-          color: isDark ? "#6B8EA0" : "#2b5d73",
-          lineWidth: 2,
-          lineStyle: 2, // dashed
-          crosshairMarkerVisible: true,
-          crosshairMarkerRadius: 3,
-        });
+          const predLine = chart.addSeries(LineSeries, {
+            color: isDark ? "#6B8EA0" : "#2b5d73",
+            lineWidth: 2,
+            lineStyle: 2,
+            crosshairMarkerVisible: true,
+            crosshairMarkerRadius: 3,
+          });
 
-        predLine.setData(predictionData);
+          predLine.setData([
+            { time: lastHistorical.time as import("lightweight-charts").UTCTimestamp, value: lastHistorical.close },
+            ...predicted.map((c) => ({
+              time: c.time as import("lightweight-charts").UTCTimestamp,
+              value: c.close,
+            })),
+          ]);
 
-        // Also show prediction high/low as area
-        const predHighLine = chart.addSeries(LineSeries, {
-          color: isDark ? "#6B8EA040" : "#2b5d7330",
-          lineWidth: 1,
-          lineStyle: 2,
-          crosshairMarkerVisible: false,
-        });
+          const predHighLine = chart.addSeries(LineSeries, {
+            color: isDark ? "#6B8EA040" : "#2b5d7330",
+            lineWidth: 1,
+            lineStyle: 2,
+            crosshairMarkerVisible: false,
+          });
 
-        predHighLine.setData(predicted.map((c) => ({
-          time: c.time as import("lightweight-charts").UTCTimestamp,
-          value: c.high,
-        })));
+          predHighLine.setData(predicted.map((c) => ({
+            time: c.time as import("lightweight-charts").UTCTimestamp,
+            value: c.high,
+          })));
 
-        const predLowLine = chart.addSeries(LineSeries, {
-          color: isDark ? "#6B8EA040" : "#2b5d7330",
-          lineWidth: 1,
-          lineStyle: 2,
-          crosshairMarkerVisible: false,
-        });
+          const predLowLine = chart.addSeries(LineSeries, {
+            color: isDark ? "#6B8EA040" : "#2b5d7330",
+            lineWidth: 1,
+            lineStyle: 2,
+            crosshairMarkerVisible: false,
+          });
 
-        predLowLine.setData(predicted.map((c) => ({
-          time: c.time as import("lightweight-charts").UTCTimestamp,
-          value: c.low,
-        })));
+          predLowLine.setData(predicted.map((c) => ({
+            time: c.time as import("lightweight-charts").UTCTimestamp,
+            value: c.low,
+          })));
+        }
       }
 
       chart.timeScale().fitContent();
@@ -202,7 +221,7 @@ export default function KronosClient() {
         chartInstance.current = null;
       }
     };
-  }, [candles, predicted]);
+  }, [candles, predicted, predView]);
 
   // Run prediction
   async function handlePredict() {
@@ -361,17 +380,33 @@ export default function KronosClient() {
         <div ref={chartRef} className={styles.chart} />
       </div>
 
-      {/* ── Legend ── */}
+      {/* ── Legend + view toggle ── */}
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span className={styles.legendDotHistorical} />
           Histórico
         </span>
         {predicted.length > 0 && (
-          <span className={styles.legendItem}>
-            <span className={styles.legendDotPrediction} />
-            Predicción Kronos
-          </span>
+          <>
+            <span className={styles.legendItem}>
+              <span className={styles.legendDotPrediction} />
+              Predicción Kronos
+            </span>
+            <div className={styles.viewToggle}>
+              <button
+                className={`${styles.viewBtn} ${predView === "candles" ? styles.viewBtnActive : ""}`}
+                onClick={() => setPredView("candles")}
+              >
+                Velas
+              </button>
+              <button
+                className={`${styles.viewBtn} ${predView === "line" ? styles.viewBtnActive : ""}`}
+                onClick={() => setPredView("line")}
+              >
+                Línea
+              </button>
+            </div>
+          </>
         )}
       </div>
 
