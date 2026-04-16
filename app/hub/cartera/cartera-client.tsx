@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type {
   PortfolioSummary,
   PositionEnriched,
@@ -77,6 +78,35 @@ export default function CarteraClient({
 }: Props) {
   const [tab, setTab] = useState<Tab>("posiciones");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
+  const [liveTrades, setLiveTrades] = useState<TradeEnriched[]>(trades);
+
+  // Realtime: subscribe to new trades
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("trades-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "trades" },
+        async (payload) => {
+          // Fetch the enriched version (with platform_name)
+          const { data } = await supabase
+            .from("trades_enriched")
+            .select("*")
+            .eq("id", payload.new.id)
+            .single();
+
+          if (data) {
+            setLiveTrades((prev) => [data as TradeEnriched, ...prev]);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const filteredPositions =
     platformFilter === "all"
@@ -85,8 +115,8 @@ export default function CarteraClient({
 
   const filteredTrades =
     platformFilter === "all"
-      ? trades
-      : trades.filter((t) => t.platform_name === platformFilter);
+      ? liveTrades
+      : liveTrades.filter((t) => t.platform_name === platformFilter);
 
   // Group positions by strategy
   const byStrategy = new Map<string, PositionEnriched[]>();

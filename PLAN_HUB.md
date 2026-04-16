@@ -657,7 +657,8 @@ Fase 5 — Consultorias (Modulo 5)                    ███░░░░░�
 Las migraciones SQL se aplican solo en dev (mdkejqbsfkhfhohhsljy). Antes de desplegar el Hub a produccion, ejecutar todas las migraciones pendientes en el SQL Editor del proyecto prod (hpyyuftotmpnzogaykgh), en orden cronologico:
 
 - [ ] `20260416_trades.sql` + fix del index (DROP parcial, ALTER trade_id NOT NULL, CREATE sin WHERE)
-- [ ] _(futuras migraciones se iran anadiendo aqui)_
+- [ ] Habilitar Realtime en tabla trades: `ALTER PUBLICATION supabase_realtime ADD TABLE public.trades;`
+- [ ] _(futuras migraciones y configs se iran anadiendo aqui)_
 
 ## Verificacion
 
