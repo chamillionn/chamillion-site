@@ -30,7 +30,7 @@ export async function GET() {
     }[];
 
     const totalCost = items.reduce((sum, item) => sum + parseFloat(item.Cost), 0);
-    const creditLimit = 5; // Modal free tier — update if plan changes
+    const creditLimit = 30; // Modal Starter plan: $30/month free compute
 
     return NextResponse.json({
       items,
