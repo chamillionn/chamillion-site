@@ -303,9 +303,9 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: stretch;
-  gap: 20px;
+  gap: 22px;
   margin-top: 36px;
-  padding: 22px;
+  padding: 24px 0 24px 24px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-card);
@@ -318,28 +318,29 @@
 }
 
 .chamillionCta:hover {
-  border-color: rgba(var(--steel-blue-rgb), 0.22);
+  border-color: rgba(var(--steel-blue-rgb), 0.28);
   transform: translateY(-1px);
 }
 
 .chamillionCta:hover .chamillionCover img {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
 .chamillionCta:hover .chamillionArrow {
   transform: translateX(3px);
 }
 
-.chamillionCta:hover .chamillionActionText {
-  color: var(--text-primary);
+.chamillionCta:hover .chamillionAction {
+  color: var(--steel-blue);
 }
 
 .chamillionLogo {
   display: inline-flex;
   flex-shrink: 0;
   align-self: flex-start;
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
+  margin-top: 2px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   border: 1px solid rgba(var(--steel-blue-rgb), 0.18);
@@ -412,43 +413,59 @@
   font-family: var(--font-jetbrains), monospace;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.chamillionActionText {
   color: var(--text-secondary);
   transition: color 0.3s ease;
 }
 
+.chamillionActionText {
+  /* kept for backwards compatibility */
+}
+
 .chamillionArrow {
-  color: var(--steel-blue);
+  color: currentColor;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Cover image (right side) ── */
+/* ── Cover image (bleeds to right edge, fades from card bg) ── */
 
 .chamillionCover {
   position: relative;
-  width: 180px;
-  min-height: 140px;
-  flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  border: 1px solid var(--border);
+  width: 240px;
   align-self: stretch;
+  margin: -24px 0;
+  overflow: hidden;
 }
 
 .chamillionCover img {
   object-fit: cover;
-  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Horizontal fade from card background into image */
+.chamillionCover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, var(--bg-card) 0%, rgba(var(--bg-card-rgb), 0.45) 35%, transparent 75%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Subtle top/bottom vignette for depth */
 .chamillionCover::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, var(--bg-card), transparent 20%);
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--bg-card-rgb), 0.2),
+    transparent 25%,
+    transparent 75%,
+    rgba(var(--bg-card-rgb), 0.2)
+  );
+  z-index: 1;
   pointer-events: none;
 }
 
