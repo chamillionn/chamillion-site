@@ -76,6 +76,7 @@ export default function SharedClient({
           textColor: isDark ? "#8B9099" : "#4a3f35",
           fontFamily: "var(--font-outfit), sans-serif",
           fontSize: 11,
+          attributionLogo: false,
         },
         grid: {
           vertLines: { color: isDark ? "#1E2229" : "#c9b89f" },

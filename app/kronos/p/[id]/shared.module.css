@@ -48,6 +48,14 @@
   color: var(--steel-blue);
 }
 
+.brandTool img {
+  filter: saturate(0.55) hue-rotate(-15deg) brightness(1.05);
+}
+
+[data-theme="light"] .brandTool img {
+  filter: saturate(0.45) hue-rotate(-20deg) brightness(0.9);
+}
+
 /* ── HEADER ── */
 
 .header {

@@ -182,6 +182,7 @@ export default function KronosClient() {
           textColor: isDark ? "#8B9099" : "#4a3f35",
           fontFamily: "var(--font-outfit), sans-serif",
           fontSize: 11,
+          attributionLogo: false,
         },
         grid: {
           vertLines: { color: isDark ? "#1E2229" : "#c9b89f" },
@@ -588,9 +589,6 @@ export default function KronosClient() {
       {/* ── Chart + side log ── */}
       <div className={styles.chartLayout}>
         <div className={styles.chartWrap}>
-          <div className={styles.chartMeta}>
-            <span className={styles.chartMetaAsset}>{currentBase}/USDT · {getTimeframeLabel(timeframe)}</span>
-          </div>
           <div ref={chartRef} className={styles.chart} />
         </div>
 
