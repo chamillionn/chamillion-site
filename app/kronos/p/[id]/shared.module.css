@@ -336,6 +336,42 @@
   transform: translateX(3px);
 }
 
+/* ── CREDITS ── */
+
+.credits {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+
+.creditsLabel {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.creditLink {
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--text-tertiary);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.creditLink:hover {
+  color: var(--steel-blue);
+  border-bottom-color: var(--steel-blue);
+}
+
 /* ══════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════ */

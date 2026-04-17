@@ -299,6 +299,39 @@ export default function SharedClient({
               </Link>
             </div>
           </div>
+          <div className={styles.credits}>
+            <span className={styles.creditsLabel}>Créditos</span>
+            <span>
+              Modelo{" "}
+              <a
+                href="https://huggingface.co/NeoQuasar/Kronos-small"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.creditLink}
+              >
+                NeoQuasar/Kronos-small
+              </a>
+              {" "}·{" "}
+              Código{" "}
+              <a
+                href="https://github.com/shiyu-coder/Kronos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.creditLink}
+              >
+                shiyu-coder/Kronos
+              </a>
+              {" "}(MIT) · Datos{" "}
+              <a
+                href="https://www.binance.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.creditLink}
+              >
+                Binance
+              </a>
+            </span>
+          </div>
         </footer>
       </div>
     </div>
