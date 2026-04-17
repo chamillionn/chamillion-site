@@ -728,29 +728,36 @@ export default function KronosClient() {
         </div>
       )}
 
-      {/* ── Substack CTA ── */}
-      <a
-        href="https://chamillion.substack.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className={styles.substackCta}
-      >
-        <span className={styles.substackIcon} aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z" />
-          </svg>
+      {/* ── Chamillion CTA ── */}
+      <Link href="/" className={styles.chamillionCta}>
+        <span className={styles.chamillionLogo} aria-hidden="true">
+          <Image
+            src="/assets/newsletter/logo.jpg"
+            alt=""
+            width={56}
+            height={56}
+            sizes="56px"
+          />
         </span>
-        <span className={styles.substackText}>
-          <span className={styles.substackKicker}>Lee la newsletter</span>
-          <span className={styles.substackTitle}>Pensamiento detrás de las herramientas</span>
-          <span className={styles.substackSubtext}>DeFi, mercados cripto y transparencia on-chain. Los reports que informan este tipo de análisis — en tu inbox.</span>
+        <span className={styles.chamillionBody}>
+          <span className={styles.chamillionKicker}>
+            <span className={styles.chamillionDot} />
+            Chamillion · Estudio
+          </span>
+          <span className={styles.chamillionTitle}>
+            Documentando la vanguardia de los mercados.
+          </span>
+          <span className={styles.chamillionSubtext}>
+            Cartera verificable en tiempo real, newsletter, herramientas como Kronos. <em>Con un ojo en cada pantalla.</em>
+          </span>
+          <span className={styles.chamillionAction}>
+            <span className={styles.chamillionActionText}>Descubrir</span>
+            <svg className={styles.chamillionArrow} width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 8h10M9 4l4 4-4 4" />
+            </svg>
+          </span>
         </span>
-        <span className={styles.substackArrow} aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 8h10M9 4l4 4-4 4" />
-          </svg>
-        </span>
-      </a>
+      </Link>
 
       {/* ── Credits ── */}
       <div className={styles.credits}>
