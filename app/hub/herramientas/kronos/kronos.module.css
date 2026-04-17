@@ -291,6 +291,15 @@
   margin-left: 2px;
 }
 
+/* ── ACTIONS GROUP (predict + save) ── */
+
+.actionsGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
 /* ── PREDICT BUTTON ── */
 
 .predictBtn {
@@ -307,7 +316,6 @@
   border-radius: var(--radius-xs);
   padding: 7px 16px;
   cursor: pointer;
-  margin-left: auto;
   transition: opacity var(--transition-fast);
 }
 
@@ -318,6 +326,44 @@
 .predictBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── SAVE BUTTON (next to predict) ── */
+
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.saveBtn:hover {
+  color: var(--steel-blue);
+  border-color: var(--steel-blue);
+  background: rgba(var(--steel-blue-rgb), 0.05);
+}
+
+.saveBtnDone {
+  color: var(--green);
+  border-color: rgba(91, 170, 124, 0.3);
+  background: rgba(91, 170, 124, 0.06);
+}
+
+.saveBtnDone:hover {
+  color: var(--green);
+  border-color: var(--green);
+  background: rgba(91, 170, 124, 0.1);
 }
 
 /* ── STATUS BAR ── */
@@ -447,37 +493,56 @@
   background: var(--steel-blue);
 }
 
-/* ── VIEW TOGGLE ── */
+/* ── VIEW TOGGLE (candles / line) ── */
 
 .viewToggle {
-  display: flex;
-  gap: 1px;
+  display: inline-flex;
+  gap: 2px;
   margin-left: auto;
-  background: var(--border);
-  border-radius: var(--radius-xs);
-  overflow: hidden;
+  padding: 2px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .viewBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-dm-mono), monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-muted);
-  background: var(--bg-dark);
+  background: none;
   border: none;
-  padding: 4px 10px;
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: color var(--transition-fast), background var(--transition-fast);
+  transition: color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.viewBtn svg {
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
 }
 
 .viewBtn:hover {
   color: var(--text-primary);
 }
 
-.viewBtnActive {
+.viewBtn:hover svg {
   color: var(--steel-blue);
-  background: rgba(var(--steel-blue-rgb), 0.08);
+}
+
+.viewBtnActive {
+  color: var(--text-primary);
+  background: var(--bg-dark);
+  box-shadow: 0 1px 2px var(--shadow-dropdown);
+}
+
+.viewBtnActive svg {
+  color: var(--steel-blue);
 }
 
 /* ── TERMINAL LOG ── */

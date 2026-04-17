@@ -504,26 +504,49 @@ export default function KronosClient() {
           })()}
         </div>
 
-        <button
-          className={styles.predictBtn}
-          onClick={handlePredict}
-          disabled={status === "predicting" || status === "loading-candles" || candles.length === 0}
-        >
-          {status === "predicting" ? (
-            <>
-              <span className={styles.spinner} />
-              Prediciendo...
-            </>
-          ) : (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              Predecir
-            </>
+        <div className={styles.actionsGroup}>
+          <button
+            className={styles.predictBtn}
+            onClick={handlePredict}
+            disabled={status === "predicting" || status === "loading-candles" || candles.length === 0}
+          >
+            {status === "predicting" ? (
+              <>
+                <span className={styles.spinner} />
+                Prediciendo...
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                Predecir
+              </>
+            )}
+          </button>
+
+          {predicted.length > 0 && (
+            <button
+              className={`${styles.saveBtn} ${savedId ? styles.saveBtnDone : ""}`}
+              onClick={() => setSaveOpen(!saveOpen)}
+              title={savedId ? "Guardada" : "Guardar predicción"}
+            >
+              {savedId ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+              )}
+              {savedId ? "Guardada" : "Guardar"}
+            </button>
           )}
-        </button>
+        </div>
       </div>
 
       {/* ── Status/Error ── */}
@@ -578,27 +601,31 @@ export default function KronosClient() {
               <button
                 className={`${styles.viewBtn} ${predView === "candles" ? styles.viewBtnActive : ""}`}
                 onClick={() => setPredView("candles")}
+                title="Ver como velas"
+                aria-label="Ver como velas"
               >
-                Velas
+                <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+                  <line x1="3" y1="1" x2="3" y2="11" />
+                  <rect x="1.5" y="3" width="3" height="6" fill="currentColor" fillOpacity="0.25" />
+                  <line x1="7" y1="0.5" x2="7" y2="11.5" />
+                  <rect x="5.5" y="2" width="3" height="8" fill="currentColor" fillOpacity="0.25" />
+                  <line x1="11" y1="2" x2="11" y2="10" />
+                  <rect x="9.5" y="4" width="3" height="4" fill="currentColor" fillOpacity="0.25" />
+                </svg>
+                <span>Velas</span>
               </button>
               <button
                 className={`${styles.viewBtn} ${predView === "line" ? styles.viewBtnActive : ""}`}
                 onClick={() => setPredView("line")}
+                title="Ver como línea"
+                aria-label="Ver como línea"
               >
-                Línea
+                <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1 9 4 6 7 7.5 10 3 13 4.5" />
+                </svg>
+                <span>Línea</span>
               </button>
             </div>
-            <button
-              className={styles.shareBtn}
-              onClick={() => setSaveOpen(!saveOpen)}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                <polyline points="17 21 17 13 7 13 7 21" />
-                <polyline points="7 3 7 8 15 8" />
-              </svg>
-              {savedId ? "Guardada" : "Guardar"}
-            </button>
           </>
         )}
       </div>
