@@ -45,6 +45,7 @@ export default function KronosClient() {
   const [symbol, setSymbol] = useState("BTCUSDT");
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
   const [model, setModel] = useState<KronosModel>("small");
+  const [hoveredModel, setHoveredModel] = useState<KronosModel | null>(null);
   const [search, setSearch] = useState("");
   const [assetOpen, setAssetOpen] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
@@ -473,17 +474,34 @@ export default function KronosClient() {
         </div>
 
         {/* Model selector */}
-        <div className={styles.modelGroup}>
-          {KRONOS_MODELS.map((m) => (
-            <button
-              key={m.id}
-              className={`${styles.modelBtn} ${m.id === model ? styles.modelBtnActive : ""}`}
-              onClick={() => setModel(m.id)}
-              title={`${m.description} — ${m.params} parámetros, contexto ${m.contextLen}`}
-            >
-              {m.label}
-            </button>
-          ))}
+        <div className={styles.modelSelector}>
+          <div className={styles.modelGroup}>
+            {KRONOS_MODELS.map((m) => (
+              <button
+                key={m.id}
+                className={`${styles.modelBtn} ${m.id === model ? styles.modelBtnActive : ""}`}
+                onClick={() => setModel(m.id)}
+                onMouseEnter={() => setHoveredModel(m.id)}
+                onMouseLeave={() => setHoveredModel(null)}
+                aria-label={m.label}
+              >
+                <ModelIcon model={m.id} />
+                <span className={styles.modelLabel}>{m.label}</span>
+              </button>
+            ))}
+          </div>
+          {(() => {
+            const active = KRONOS_MODELS.find((m) => m.id === (hoveredModel ?? model));
+            if (!active) return null;
+            return (
+              <div className={styles.modelInfo}>
+                <span className={styles.modelInfoParams}>{active.params}</span>
+                <span className={styles.modelInfoSep}>·</span>
+                <span className={styles.modelInfoCtx}>ctx {active.contextLen}</span>
+                <span className={styles.modelInfoDesc}>{active.description}</span>
+              </div>
+            );
+          })()}
         </div>
 
         <button
@@ -698,5 +716,101 @@ export default function KronosClient() {
         </span>
       </div>
     </div>
+  );
+}
+
+/**
+ * Visual representation of model complexity — nodes and connections
+ * suggesting increasing neural network density.
+ */
+function ModelIcon({ model }: { model: KronosModel }) {
+  if (model === "mini") {
+    // 2 layers, 2 nodes each: simplest
+    return (
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+        <circle cx="3" cy="3" r="1.3" />
+        <circle cx="3" cy="9" r="1.3" />
+        <circle cx="15" cy="3" r="1.3" />
+        <circle cx="15" cy="9" r="1.3" />
+        <line x1="4.3" y1="3" x2="13.7" y2="3" />
+        <line x1="4.3" y1="9" x2="13.7" y2="9" />
+        <line x1="4.3" y1="3" x2="13.7" y2="9" opacity="0.4" />
+        <line x1="4.3" y1="9" x2="13.7" y2="3" opacity="0.4" />
+      </svg>
+    );
+  }
+
+  if (model === "small") {
+    // 3 layers, 3 nodes each: medium
+    return (
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+        {[2, 9, 16].map((x) =>
+          [2, 6, 10].map((y) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.1" />)
+        )}
+        {[2, 6, 10].map((y1) =>
+          [2, 6, 10].map((y2) => (
+            <line
+              key={`a-${y1}-${y2}`}
+              x1="3"
+              y1={y1}
+              x2="8"
+              y2={y2}
+              opacity={y1 === y2 ? 1 : 0.35}
+            />
+          ))
+        )}
+        {[2, 6, 10].map((y1) =>
+          [2, 6, 10].map((y2) => (
+            <line
+              key={`b-${y1}-${y2}`}
+              x1="10"
+              y1={y1}
+              x2="15"
+              y2={y2}
+              opacity={y1 === y2 ? 1 : 0.35}
+            />
+          ))
+        )}
+      </svg>
+    );
+  }
+
+  // base — 4 layers, 4 nodes each: dense
+  return (
+    <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round">
+      {[1.5, 7, 12.5].map((x) =>
+        [1.5, 4.7, 7.9, 11].map((y) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r="0.9" fill="currentColor" fillOpacity="0.3" />
+        ))
+      )}
+      {[1.5, 4.7, 7.9, 11].map((y1) =>
+        [1.5, 4.7, 7.9, 11].map((y2) => (
+          <line
+            key={`a-${y1}-${y2}`}
+            x1="2.2"
+            y1={y1}
+            x2="6.3"
+            y2={y2}
+            opacity="0.55"
+          />
+        ))
+      )}
+      {[1.5, 4.7, 7.9, 11].map((y1) =>
+        [1.5, 4.7, 7.9, 11].map((y2) => (
+          <line
+            key={`b-${y1}-${y2}`}
+            x1="7.7"
+            y1={y1}
+            x2="11.8"
+            y2={y2}
+            opacity="0.55"
+          />
+        ))
+      )}
+      <circle cx="16" cy="6" r="1.1" fill="currentColor" fillOpacity="0.5" />
+      {[1.5, 4.7, 7.9, 11].map((y) => (
+        <line key={`out-${y}`} x1="13.2" y1={y} x2="15" y2="6" opacity="0.4" />
+      ))}
+    </svg>
   );
 }

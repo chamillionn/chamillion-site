@@ -194,6 +194,13 @@
 
 /* ── MODEL SELECTOR ── */
 
+.modelSelector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .modelGroup {
   display: flex;
   gap: 2px;
@@ -203,6 +210,9 @@
 }
 
 .modelBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-dm-mono), monospace;
   font-size: 11px;
   letter-spacing: 0.04em;
@@ -210,19 +220,75 @@
   color: var(--text-muted);
   background: none;
   border: none;
-  padding: 4px 10px;
+  padding: 4px 9px;
   border-radius: 2px;
   cursor: pointer;
   transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.modelBtn svg {
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
 }
 
 .modelBtn:hover {
   color: var(--text-primary);
 }
 
+.modelBtn:hover svg {
+  color: var(--steel-blue);
+}
+
 .modelBtnActive {
   color: var(--gold);
   background: rgba(var(--gold-rgb), 0.08);
+}
+
+.modelBtnActive svg {
+  color: var(--gold);
+}
+
+.modelLabel {
+  line-height: 1;
+}
+
+/* ── MODEL INFO PANEL ── */
+
+.modelInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  max-width: 340px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.modelInfoParams {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.modelInfoSep {
+  color: var(--text-tertiary);
+}
+
+.modelInfoCtx {
+  color: var(--text-secondary);
+}
+
+.modelInfoDesc {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+  letter-spacing: 0;
+  border-left: 1px solid var(--border);
+  padding-left: 8px;
+  margin-left: 2px;
 }
 
 /* ── PREDICT BUTTON ── */
