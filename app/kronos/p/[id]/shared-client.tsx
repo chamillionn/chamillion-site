@@ -388,7 +388,7 @@ export default function SharedClient({
 
         {/* ── Disclaimer (muted legal note) ── */}
         <p className={styles.disclaimer}>
-          No es consejo financiero. Kronos es experimental y puede equivocarse.
+          No es consejo financiero. Kronos es un experimento de modelado. Las predicciones pueden ser inexactas, sesgadas o equivocadas.
         </p>
       </div>
     </div>
