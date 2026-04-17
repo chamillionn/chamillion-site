@@ -52,6 +52,18 @@ export default function KronosClient() {
   const [predicted, setPredicted] = useState<Candle[]>([]);
   const [logs, setLogs] = useState<string[]>([]);
   const logRef = useRef<HTMLDivElement>(null);
+  const [isDark, setIsDark] = useState(true);
+
+  // Track theme via data-theme attribute on <html>
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.getAttribute("data-theme") !== "light");
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
 
   // Share form
   const [saveOpen, setSaveOpen] = useState(false);
@@ -158,31 +170,29 @@ export default function KronosClient() {
         chartInstance.current = null;
       }
 
-      const isDark = document.documentElement.getAttribute("data-theme") !== "light";
-
       const chart = createChart(chartRef.current, {
         width: chartRef.current.clientWidth,
         height: 420,
         layout: {
-          background: { type: ColorType.Solid, color: "transparent" },
-          textColor: isDark ? "#8B9099" : "#5d5044",
+          background: { type: ColorType.Solid, color: isDark ? "#0C0E11" : "#ede1d1" },
+          textColor: isDark ? "#8B9099" : "#4a3f35",
           fontFamily: "var(--font-outfit), sans-serif",
           fontSize: 11,
         },
         grid: {
-          vertLines: { color: isDark ? "#1E2229" : "#c9b89f40" },
-          horzLines: { color: isDark ? "#1E2229" : "#c9b89f40" },
+          vertLines: { color: isDark ? "#1E2229" : "#c9b89f" },
+          horzLines: { color: isDark ? "#1E2229" : "#c9b89f" },
         },
         crosshair: {
-          vertLine: { color: isDark ? "#6B8EA050" : "#2b5d7350" },
-          horzLine: { color: isDark ? "#6B8EA050" : "#2b5d7350" },
+          vertLine: { color: isDark ? "#6B8EA050" : "#2b5d7380" },
+          horzLine: { color: isDark ? "#6B8EA050" : "#2b5d7380" },
         },
         timeScale: {
-          borderColor: isDark ? "#1E2229" : "#c9b89f",
+          borderColor: isDark ? "#1E2229" : "#b5a48c",
           timeVisible: true,
         },
         rightPriceScale: {
-          borderColor: isDark ? "#1E2229" : "#c9b89f",
+          borderColor: isDark ? "#1E2229" : "#b5a48c",
         },
       });
 
@@ -277,7 +287,7 @@ export default function KronosClient() {
         chartInstance.current = null;
       }
     };
-  }, [candles, predicted, predView]);
+  }, [candles, predicted, predView, isDark]);
 
   const currentBase = pairs.find((p) => p.symbol === symbol)?.base ?? symbol.replace("USDT", "");
 

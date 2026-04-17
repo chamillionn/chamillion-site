@@ -31,6 +31,17 @@ export default function SharedClient({
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<ReturnType<typeof import("lightweight-charts").createChart> | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.getAttribute("data-theme") !== "light");
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
 
   const base = prediction.symbol.replace("USDT", "");
   const lastKnownClose = inputCandles[inputCandles.length - 1]?.close ?? 0;
@@ -55,31 +66,29 @@ export default function SharedClient({
         chartInstance.current = null;
       }
 
-      const isDark = document.documentElement.getAttribute("data-theme") !== "light";
-
       const chart = createChart(chartRef.current, {
         width: chartRef.current.clientWidth,
         height: 460,
         layout: {
-          background: { type: ColorType.Solid, color: "transparent" },
-          textColor: isDark ? "#8B9099" : "#5d5044",
+          background: { type: ColorType.Solid, color: isDark ? "#0C0E11" : "#ede1d1" },
+          textColor: isDark ? "#8B9099" : "#4a3f35",
           fontFamily: "var(--font-outfit), sans-serif",
           fontSize: 11,
         },
         grid: {
-          vertLines: { color: isDark ? "#1E2229" : "#c9b89f40" },
-          horzLines: { color: isDark ? "#1E2229" : "#c9b89f40" },
+          vertLines: { color: isDark ? "#1E2229" : "#c9b89f" },
+          horzLines: { color: isDark ? "#1E2229" : "#c9b89f" },
         },
         crosshair: {
-          vertLine: { color: isDark ? "#6B8EA050" : "#2b5d7350" },
-          horzLine: { color: isDark ? "#6B8EA050" : "#2b5d7350" },
+          vertLine: { color: isDark ? "#6B8EA050" : "#2b5d7380" },
+          horzLine: { color: isDark ? "#6B8EA050" : "#2b5d7380" },
         },
         timeScale: {
-          borderColor: isDark ? "#1E2229" : "#c9b89f",
+          borderColor: isDark ? "#1E2229" : "#b5a48c",
           timeVisible: true,
         },
         rightPriceScale: {
-          borderColor: isDark ? "#1E2229" : "#c9b89f",
+          borderColor: isDark ? "#1E2229" : "#b5a48c",
         },
       });
 
@@ -148,7 +157,7 @@ export default function SharedClient({
         chartInstance.current = null;
       }
     };
-  }, [inputCandles, predictedCandles, actualCandles]);
+  }, [inputCandles, predictedCandles, actualCandles, isDark]);
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(() => {
