@@ -45,6 +45,16 @@ export default function SharedClient({
     return () => observer.disconnect();
   }, []);
 
+  // Console easter egg for curious devs peeking at the page
+  useEffect(() => {
+    console.log(
+      "%cKronos%c\n%cEsta predicción está congelada en el tiempo. Las velas reales se van dibujando encima conforme pasa el mercado.\n\nEl análisis detrás: https://chamillion.substack.com",
+      "color:#6B8EA0;font-weight:700;font-size:20px;font-family:serif;",
+      "",
+      "color:#8B9099;font-size:11px;line-height:1.6;",
+    );
+  }, []);
+
   const base = prediction.symbol.replace("USDT", "");
   const lastKnownClose = inputCandles[inputCandles.length - 1]?.close ?? 0;
 
@@ -285,6 +295,32 @@ export default function SharedClient({
           </button>
         </div>
 
+        {/* ── Substack CTA ── */}
+        <a
+          href="https://chamillion.substack.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.substackCta}
+        >
+          <span className={styles.substackIcon} aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z" />
+            </svg>
+          </span>
+          <span className={styles.substackText}>
+            <span className={styles.substackKicker}>Lee la newsletter de Chamillion</span>
+            <span className={styles.substackTitle}>Pensamiento detrás de las herramientas</span>
+            <span className={styles.substackSubtext}>
+              DeFi, mercados cripto y transparencia on-chain. Los reports que informan este tipo de análisis — en tu inbox.
+            </span>
+          </span>
+          <span className={styles.substackArrow} aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 8h10M9 4l4 4-4 4" />
+            </svg>
+          </span>
+        </a>
+
         {/* ── Footer CTA ── */}
         <footer className={styles.footer}>
           <div className={styles.footerInner}>
@@ -299,9 +335,6 @@ export default function SharedClient({
             <div className={styles.footerLinks}>
               <Link href="/hub/herramientas/kronos" className={styles.footerLink}>
                 Prueba Kronos →
-              </Link>
-              <Link href="/newsletter" className={styles.footerLink}>
-                Newsletter de Chamillion →
               </Link>
             </div>
           </div>

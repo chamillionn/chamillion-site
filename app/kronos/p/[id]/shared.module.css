@@ -295,6 +295,112 @@
   color: var(--steel-blue);
 }
 
+/* ── SUBSTACK CTA ── */
+
+.substackCta {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition-normal), background var(--transition-normal);
+}
+
+.substackCta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--steel-blue) 30%, var(--gold) 70%, transparent);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.substackCta:hover {
+  border-color: rgba(var(--steel-blue-rgb), 0.4);
+  background: var(--bg-card);
+}
+
+.substackCta:hover::before {
+  opacity: 0.8;
+}
+
+.substackCta:hover .substackArrow {
+  transform: translateX(4px);
+  color: var(--steel-blue);
+}
+
+.substackCta:hover .substackIcon {
+  color: #FF6719;
+  transform: rotate(-3deg) scale(1.05);
+  background: rgba(255, 103, 25, 0.12);
+}
+
+.substackIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-xs);
+  background: rgba(var(--steel-blue-rgb), 0.08);
+  color: var(--steel-blue);
+  transition: color var(--transition-normal), transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), background var(--transition-normal);
+}
+
+.substackText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.substackKicker {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.substackTitle {
+  font-family: var(--font-playfair), serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.substackSubtext {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-top: 4px;
+  max-width: 480px;
+}
+
+.substackArrow {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  align-self: center;
+  flex-shrink: 0;
+  transition: transform var(--transition-normal), color var(--transition-normal);
+}
+
 /* ── FOOTER ── */
 
 .footer {
