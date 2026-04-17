@@ -728,6 +728,25 @@ export default function KronosClient() {
         </div>
       )}
 
+      {/* ── Credits ── */}
+      <div className={styles.credits}>
+        <span className={styles.creditsLabel}>Créditos</span>
+        <span>
+          Modelo{" "}
+          <a href={`https://huggingface.co/NeoQuasar/Kronos-${model}`} target="_blank" rel="noopener noreferrer" className={styles.creditLink}>
+            NeoQuasar/Kronos-{model}
+          </a>
+          {" "}·{" "}Código{" "}
+          <a href="https://github.com/shiyu-coder/Kronos" target="_blank" rel="noopener noreferrer" className={styles.creditLink}>
+            shiyu-coder/Kronos
+          </a>
+          {" "}(MIT) · Datos{" "}
+          <a href="https://www.binance.com" target="_blank" rel="noopener noreferrer" className={styles.creditLink}>
+            Binance
+          </a>
+        </span>
+      </div>
+
       {/* ── Chamillion CTA ── */}
       <Link href="/" className={styles.chamillionCta}>
         <span className={styles.chamillionLogo} aria-hidden="true">
@@ -767,37 +786,10 @@ export default function KronosClient() {
         </span>
       </Link>
 
-      {/* ── Credits ── */}
-      <div className={styles.credits}>
-        <span className={styles.creditsLabel}>Créditos</span>
-        <span>
-          Modelo{" "}
-          <a href={`https://huggingface.co/NeoQuasar/Kronos-${model}`} target="_blank" rel="noopener noreferrer" className={styles.creditLink}>
-            NeoQuasar/Kronos-{model}
-          </a>
-          {" "}·{" "}Código{" "}
-          <a href="https://github.com/shiyu-coder/Kronos" target="_blank" rel="noopener noreferrer" className={styles.creditLink}>
-            shiyu-coder/Kronos
-          </a>
-          {" "}(MIT) · Datos{" "}
-          <a href="https://www.binance.com" target="_blank" rel="noopener noreferrer" className={styles.creditLink}>
-            Binance
-          </a>
-        </span>
-      </div>
-
-      {/* ── Disclaimer ── */}
-      <div className={styles.disclaimer}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-        <span>
-          <strong>No es consejo financiero.</strong>{" "}
-          Kronos es un experimento de modelado: una forma de explorar qué <em>ve</em> un modelo de IA en el mercado. Las predicciones pueden ser inexactas, sesgadas o sencillamente equivocadas. No tomes decisiones de inversión basadas en esta herramienta.
-        </span>
-      </div>
+      {/* ── Disclaimer (muted legal note) ── */}
+      <p className={styles.disclaimer}>
+        No es consejo financiero. Kronos es un experimento de modelado. Las predicciones pueden ser inexactas, sesgadas o equivocadas.
+      </p>
     </div>
   );
 }

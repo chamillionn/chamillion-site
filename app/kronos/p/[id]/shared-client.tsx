@@ -295,46 +295,7 @@ export default function SharedClient({
           </button>
         </div>
 
-        {/* ── Chamillion CTA ── */}
-        <Link href="/" className={styles.chamillionCta}>
-          <span className={styles.chamillionLogo} aria-hidden="true">
-            <Image
-              src="/assets/newsletter/logo.jpg"
-              alt=""
-              width={52}
-              height={52}
-              sizes="52px"
-            />
-          </span>
-          <span className={styles.chamillionBody}>
-            <span className={styles.chamillionKicker}>
-              <span className={styles.chamillionDot} />
-              Chamillion · Estudio
-            </span>
-            <span className={styles.chamillionTitle}>
-              Documentando la vanguardia de los mercados.
-            </span>
-            <span className={styles.chamillionSubtext}>
-              Cartera verificable en tiempo real, newsletter, herramientas como Kronos. <em>Con un ojo en cada pantalla.</em>
-            </span>
-            <span className={styles.chamillionAction}>
-              <span className={styles.chamillionActionText}>Descubrir Chamillion</span>
-              <svg className={styles.chamillionArrow} width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 8h10M9 4l4 4-4 4" />
-              </svg>
-            </span>
-          </span>
-          <span className={styles.chamillionCover} aria-hidden="true">
-            <Image
-              src="/assets/newsletter/banner-post-01.jpeg"
-              alt=""
-              fill
-              sizes="200px"
-            />
-          </span>
-        </Link>
-
-        {/* ── Footer CTA ── */}
+        {/* ── Footer info + credits ── */}
         <footer className={styles.footer}>
           <div className={styles.footerInner}>
             <div>
@@ -386,18 +347,49 @@ export default function SharedClient({
           </div>
         </footer>
 
-        {/* ── Disclaimer ── */}
-        <div className={styles.disclaimer}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          <span>
-            <strong>No es consejo financiero.</strong>{" "}
-            Kronos es un experimento de modelado: una forma de explorar qué <em>ve</em> un modelo de IA en el mercado. Las predicciones pueden ser inexactas, sesgadas o sencillamente equivocadas. No tomes decisiones de inversión basadas en esta herramienta.
+        {/* ── Chamillion CTA ── */}
+        <Link href="/" className={styles.chamillionCta}>
+          <span className={styles.chamillionLogo} aria-hidden="true">
+            <Image
+              src="/assets/newsletter/logo.jpg"
+              alt=""
+              width={52}
+              height={52}
+              sizes="52px"
+            />
           </span>
-        </div>
+          <span className={styles.chamillionBody}>
+            <span className={styles.chamillionKicker}>
+              <span className={styles.chamillionDot} />
+              Chamillion · Estudio
+            </span>
+            <span className={styles.chamillionTitle}>
+              Documentando la vanguardia de los mercados.
+            </span>
+            <span className={styles.chamillionSubtext}>
+              Cartera verificable en tiempo real, newsletter, herramientas como Kronos. <em>Con un ojo en cada pantalla.</em>
+            </span>
+            <span className={styles.chamillionAction}>
+              <span className={styles.chamillionActionText}>Descubrir Chamillion</span>
+              <svg className={styles.chamillionArrow} width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 8h10M9 4l4 4-4 4" />
+              </svg>
+            </span>
+          </span>
+          <span className={styles.chamillionCover} aria-hidden="true">
+            <Image
+              src="/assets/newsletter/banner-post-01.jpeg"
+              alt=""
+              fill
+              sizes="240px"
+            />
+          </span>
+        </Link>
+
+        {/* ── Disclaimer (muted legal note) ── */}
+        <p className={styles.disclaimer}>
+          No es consejo financiero. Kronos es un experimento de modelado. Las predicciones pueden ser inexactas, sesgadas o equivocadas.
+        </p>
       </div>
     </div>
   );
