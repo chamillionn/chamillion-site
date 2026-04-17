@@ -19,23 +19,12 @@ El Hub es la plataforma premium de chamillion.site. Actualmente `/hub` es un pla
 
 **Directriz de UI:** Para toda creacion de UI nueva, usar siempre el comando `/impeccable` (skill de design taste).
 
-**Ya construido en esta iteracion:**
-- ✅ Email transaccional (Resend) — `lib/email.ts`
-- ✅ Supabase Realtime — en tabla `trades`
-- ✅ Supabase Storage — bucket `software-releases` (privado)
-- ✅ Hub shell (observatory design) — `app/hub/`
-- ✅ Trade fetchers (Hyperliquid, Polymarket, on-chain) — `lib/sync/trades/`
-- ✅ Cartera page (prototipo) — `app/hub/cartera/`
-- ✅ Premium widgets con admin edit mode — `app/widgets/`
-- ✅ Software catalog con signed URL downloads — `app/hub/software/`
-- ✅ Consultorías estructura + UI — `app/hub/consultorias/`
-- ✅ Daily digest cron (inactivo) — `app/api/cron/daily-digest/`
-
-**Pendiente de construir:**
-- Landing publica del Hub (Fase 0.4)
-- Kronos prediccion de velas (Fase 2.2)
-- Mi Cartera — user-scoped portfolio (Fase 4, diferida)
-- Consultorías — Stripe checkout, calendar picker, emails (Fase 5, parcial)
+**Lo que NO existe y hay que crear:**
+- Email transaccional (Resend) — solo hay Supabase native emails
+- Supabase Realtime — zero uso actual
+- Supabase Storage — no hay buckets configurados
+- Booking/calendario — nada
+- User-scoped portfolio data — solo existe el de chamillion
 
 ---
 
@@ -204,16 +193,15 @@ Nuevos fetchers independientes del sync engine (no modifican posiciones, solo ca
 
 ### 1.7 Orden de construccion
 
-1. ~~Crear tabla `trades` + RLS + Realtime + index de dedup~~ ✅
-2. ~~Crear trade fetcher para Hyperliquid (`userFillsByTime`)~~ ✅
-3. ~~Crear trade fetcher para Polymarket (`/trades`)~~ ✅ (820 trades sincronizados)
-4. ~~Crear trade fetcher para on-chain swaps (Moralis + agrupacion por txHash)~~ ✅
-5. ~~Crear ruta `app/api/sync/trades/route.ts`~~ ✅
-6. ~~Crear vista `trades_enriched`~~ ✅
-7. ~~Pagina de cartera (prototipo: posiciones, trades, chart rendimiento)~~ ✅
-8. ~~Feed de trades con Supabase Realtime~~ ✅
-9. ~~Email preferences + daily digest cron (inactivo)~~ ✅
-10. ~~Auditoria Fase 1: 5 bugs corregidos~~ ✅
+1. Crear tabla `trades` + RLS + Realtime + index de dedup
+2. Crear trade fetcher para Hyperliquid (`userFillsByTime`)
+3. Crear trade fetcher para Polymarket (`/trades`)
+4. Crear trade fetcher para on-chain swaps (Moralis `getWalletTokenTransfers` + agrupacion por txHash)
+5. Crear ruta `app/api/sync/trades/route.ts`
+6. Crear vista `trades_enriched`
+7. Pagina de cartera con datos estaticos (positions, snapshots, strategies)
+8. Anadir feed de trades con Realtime
+9. Email preferences + daily digest cron
 
 ---
 
@@ -258,21 +246,60 @@ Nuevos fetchers independientes del sync engine (no modifican posiciones, solo ca
 
 ### 2.2 Orden de construccion
 
-1. ~~Convertir `page.tsx` a Server Component con fetch de premium slugs + user role~~ ✅
-2. ~~Crear `actions.ts` con server action `toggleWidgetPremium`~~ ✅
-3. ~~Modificar `widgets-client.tsx`: props nuevas, admin edit mode, premium lock~~ ✅
-4. ~~Estilos CSS para premium lock overlay, edit toggle, admin badge~~ ✅
-5. ~~Link "Suscribete para acceder" lleva a `/suscribirse`~~ ✅
+1. Convertir `page.tsx` a Server Component con fetch de premium slugs + user role
+2. Crear `actions.ts` con server action `toggleWidgetPremium`
+3. Modificar `widgets-client.tsx`: props nuevas, admin edit mode, premium lock
+4. Estilos CSS para premium lock overlay, edit toggle, admin badge
 
-### 2.6 Kronos — Analisis financiero (futuro)
+### 2.6 Kronos — Prediccion de velas
 
-Herramienta de prediccion de velas financieras, ya desplegada como servicio:
+**Contexto:** Endpoint ya desplegado en Modal. Acepta OHLCV, devuelve forecast. Falta la UI.
 
-- **Endpoint Modal:** `https://chamillionn--kronos-predictor-kronosservice-api.modal.run`
-- **Script de deploy:** `scripts/kronos_modal.py`
-- **Funcionamiento:** Acepta POST con datos OHLCV (open/high/low/close + timestamps) y devuelve forecast de velas futuras
-- **UI pendiente:** Selector de activo/timeframe, chart de velas predichas
-- **Integracion:** Se construira como herramienta premium dentro del Hub, con un componente React que llame al endpoint y renderice el chart (no widget vanilla — necesita interaccion con API)
+**Flujo del usuario:**
+1. Se presenta chart de BTCUSDT por defecto (velas 1h)
+2. Selector de activo (catalogo amplio) + selector de timeframe
+3. Al pulsar "Predecir", se envian las velas historicas al endpoint de Kronos
+4. La prediccion se renderiza animadamente en el chart, diferenciada visualmente
+
+**Fuente de datos OHLCV: Binance Public API**
+- Endpoint: `https://data-api.binance.vision/api/v3/klines?symbol={PAIR}&interval={TF}&limit=512`
+- Sin API key, sin auth, 1000 velas/request, 1200 req/min
+- Timeframes: 1m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w
+- Para el catalogo de pares: `GET /api/v3/exchangeInfo` (filtrar USDT pairs activos)
+
+**Endpoint Kronos:**
+- URL: `https://chamillionn--kronos-predictor-kronosservice-api.modal.run`
+- POST body: `{ "ohlcv": { "columns": ["open","high","low","close"], "data": [[o,h,l,c],...], "timestamps": ["ISO",...] }, "prediction_length": 24 }`
+- Respuesta: mismo formato con las velas predichas
+- Script de deploy: `scripts/kronos_modal.py`
+- Modelo: Kronos-small (GPU T4, scaledown 300s)
+
+**Chart: lightweight-charts (TradingView OSS)**
+- `npm install lightweight-charts` (~40KB)
+- Candlestick series para historicas
+- Segunda series (distinto color/opacidad) para prediccion
+- Animacion: las velas predichas aparecen una a una con delay
+
+**Archivos a crear:**
+- `app/hub/herramientas/kronos/page.tsx` — Server Component (metadata)
+- `app/hub/herramientas/kronos/kronos-client.tsx` — Client Component (chart + selectores + fetch)
+- `app/hub/herramientas/kronos/kronos.module.css` — Estilos
+- `lib/kronos.ts` — Helper para llamar al endpoint de Kronos
+- `lib/binance.ts` — Helper para fetch de velas + lista de pares
+
+**Timeframes ofrecidos al usuario:**
+Solo los que tengan sentido para prediccion: 1h, 4h, 1d (los sub-horarios son demasiado ruidosos para el modelo)
+
+**Catalogo de activos:**
+Fetch dinamico desde Binance `exchangeInfo`, filtrar pares USDT con status TRADING. Cache en memoria (no cambia a menudo). Mostrar los ~20 mas populares como "favoritos" y el resto en un buscador.
+
+**Orden de construccion:**
+1. `npm install lightweight-charts`
+2. Crear `lib/binance.ts` — fetch klines + fetch pairs
+3. Crear `lib/kronos.ts` — POST al endpoint de Modal
+4. Crear pagina `/hub/herramientas/kronos/` con chart + selectores
+5. Implementar animacion de prediccion
+6. Usar `/impeccable` para todo el UI
 
 ---
 
@@ -600,29 +627,28 @@ El webhook actual (`app/api/stripe/webhook/route.ts`) maneja solo subscriptions.
 ## Orden global de construccion
 
 ```
-Fase 0 — Infraestructura                        ██████████ ✅
-  0.1 Resend email ✅
-  0.2 Hub layout + route restructure ✅ (observatory design)
-  0.3 Middleware — sin cambios necesarios ✅
-  0.4 Landing publica para no autenticados — PENDIENTE
+Fase 0 — Infraestructura                        ██░░░░░░░░
+  0.1 Resend email
+  0.2 Hub layout + route restructure
+  0.3 Middleware adjustments
 
-Fase 1 — Cartera Ampliada (Modulo 1)             ██████████ ✅
-  Trades API-based (no diff), Realtime, digest (inactivo)
-  Pagina de cartera (prototipo — necesita mas analiticas)
+Fase 1 — Cartera Ampliada (Modulo 1)             ████░░░░░░
+  Maximo valor inmediato, establece patrones UI
 
-Fase 2 — Herramientas Premium (Modulo 2)          ████████░░
-  2.1 Premium widgets con admin edit mode ✅
-  2.2 Kronos (prediccion de velas) — PENDIENTE
+Fase 2 — Herramientas Premium (Modulo 2)          █░░░░░░░░░
+  Quick win, bajo esfuerzo, reutiliza infra existente
+  (puede ir en paralelo con back-end de Fase 1)
 
-Fase 3 — Software & Bots (Modulo 4)               ██████████ ✅
-  Tablas, API download con signed URL, pagina Hub, empty state
+Fase 3 — Software & Bots (Modulo 4)               ██░░░░░░░░
+  Relativamente aislado, introduce Storage
 
-Fase 4 — Mi Cartera (Modulo 3)                     ░░░░░░░░░░
+Fase 4 — Mi Cartera (Modulo 3)                     ████░░░░░░
   El mas complejo — sync refactor, user-scoped data
+  Se beneficia de componentes de Modulo 1
 
-Fase 5 — Consultorias (Modulo 5)                    ████░░░░░░
-  Estructura basica + UI (tablas, tipos, pagina Hub)
-  Pendiente: Stripe checkout, webhook, calendar picker, disponibilidad admin, emails
+Fase 5 — Consultorias (Modulo 5)                    ███░░░░░░░
+  Requiere toda la infra (Resend, Stripe extension)
+  Puede diferirse hasta que haya demanda
 ```
 
 ---
@@ -657,41 +683,16 @@ Fase 5 — Consultorias (Modulo 5)                    ████░░░░�
 
 ---
 
-## Archivos criticos (ya modificados o creados)
+## Archivos criticos a modificar
 
-| Archivo | Estado |
+| Archivo | Cambio |
 |---------|--------|
-| `app/hub/` (layout, shell, overview, cartera, software, consultorias) | ✅ Creado |
-| `lib/sync/trades/` (hyperliquid, polymarket, onchain, types) | ✅ Creado |
-| `app/api/sync/trades/route.ts` | ✅ Creado |
-| `app/api/software/download/route.ts` | ✅ Creado |
-| `app/api/cron/daily-digest/route.ts` | ✅ Creado (inactivo) |
-| `app/widgets/` (page, client, actions, css) | ✅ Modificado (premium system) |
-| `lib/supabase/types.ts` | ✅ Modificado (todos los tipos nuevos) |
-| `lib/email.ts` | ✅ Creado |
-| `app/api/stripe/webhook/route.ts` | Pendiente (extender para consultorias) |
-| `lib/sync/engine.ts` | Pendiente (refactor para Mi Cartera, diferido) |
-
----
-
-## Pre-deploy a produccion
-
-Las migraciones SQL se aplican solo en dev (mdkejqbsfkhfhohhsljy). Antes de desplegar el Hub a produccion, ejecutar en el SQL Editor del proyecto prod (hpyyuftotmpnzogaykgh):
-
-- [ ] `20260416_trades.sql` + fix index (DROP parcial, ALTER trade_id NOT NULL, CREATE sin WHERE)
-- [ ] `ALTER PUBLICATION supabase_realtime ADD TABLE public.trades;`
-- [ ] `20260416_email_preferences.sql`
-- [ ] `20260416_software.sql`
-- [ ] Crear bucket `software-releases` en Supabase Storage (privado)
-- [ ] Configurar Vercel Cron para daily-digest
-- [ ] `20260416_consultations.sql`
-- [ ] _(futuras migraciones se iran anadiendo aqui)_
-
-## Tareas pendientes (construido pero no activado)
-
-- [ ] **Daily digest**: cron endpoint existe pero no hay Vercel Cron ni UI toggle
-- [ ] **Landing publica del Hub** (Fase 0.4)
-- [ ] **Kronos** (Fase 2.2): UI de prediccion de velas
+| [app/(home)/hub/](app/(home)/hub/) | Mover a `app/hub/`, reescribir como layout + modulos |
+| [lib/sync/engine.ts](lib/sync/engine.ts) | Extender para loguear operations en diffs. Refactorizar para soporte user-scoped |
+| [lib/supabase/types.ts](lib/supabase/types.ts) | Anadir tipos de todas las tablas nuevas |
+| [app/api/stripe/webhook/route.ts](app/api/stripe/webhook/route.ts) | Extender para `mode === 'payment'` (consultorias) |
+| [middleware.ts](middleware.ts) | Ajustes menores si hay sub-rutas publicas del Hub |
+| [lib/supabase/auth.ts](lib/supabase/auth.ts) | Ya tiene `requireMember()`, no necesita cambios |
 
 ---
 
