@@ -362,6 +362,7 @@ export default function KronosClient() {
         body: JSON.stringify({
           symbol,
           timeframe,
+          model,
           email: saveEmail.trim() || undefined,
           comment: saveComment.trim() || undefined,
           inputCandles: candles,
@@ -577,12 +578,41 @@ export default function KronosClient() {
         </div>
       )}
 
-      {/* ── Chart ── */}
-      <div className={styles.chartWrap}>
-        <div className={styles.chartMeta}>
-          <span className={styles.chartMetaAsset}>{currentBase}/USDT · {getTimeframeLabel(timeframe)}</span>
+      {/* ── Chart + side log ── */}
+      <div className={styles.chartLayout}>
+        <div className={styles.chartWrap}>
+          <div className={styles.chartMeta}>
+            <span className={styles.chartMetaAsset}>{currentBase}/USDT · {getTimeframeLabel(timeframe)}</span>
+          </div>
+          <div ref={chartRef} className={styles.chart} />
         </div>
-        <div ref={chartRef} className={styles.chart} />
+
+        {/* Terminal log — shown beside chart on desktop, below on mobile */}
+        {logs.length > 0 && (
+          <div className={`${styles.terminal} ${styles.terminalSide}`}>
+            <div className={styles.terminalHeader}>
+              <span className={styles.terminalTitle}>Log</span>
+              <button className={styles.terminalClear} onClick={() => setLogs([])}>
+                Limpiar
+              </button>
+            </div>
+            <div ref={logRef} className={styles.terminalBody}>
+              {logs.map((line, i) => (
+                <div
+                  key={i}
+                  className={`${styles.terminalLine} ${line.includes("ERROR") ? styles.terminalError : ""} ${line.includes("──") ? styles.terminalSeparator : ""}`}
+                >
+                  {line}
+                </div>
+              ))}
+              {status === "predicting" && (
+                <div className={styles.terminalLine}>
+                  <span className={styles.terminalCursor}>_</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Legend + view toggle + share ── */}
@@ -667,33 +697,6 @@ export default function KronosClient() {
         </div>
       )}
 
-      {/* ── Terminal log ── */}
-      {logs.length > 0 && (
-        <div className={styles.terminal}>
-          <div className={styles.terminalHeader}>
-            <span className={styles.terminalTitle}>Log</span>
-            <button className={styles.terminalClear} onClick={() => setLogs([])}>
-              Limpiar
-            </button>
-          </div>
-          <div ref={logRef} className={styles.terminalBody}>
-            {logs.map((line, i) => (
-              <div
-                key={i}
-                className={`${styles.terminalLine} ${line.includes("ERROR") ? styles.terminalError : ""} ${line.includes("──") ? styles.terminalSeparator : ""}`}
-              >
-                {line}
-              </div>
-            ))}
-            {status === "predicting" && (
-              <div className={styles.terminalLine}>
-                <span className={styles.terminalCursor}>_</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* ── History ── */}
       {history.length > 0 && (
         <div className={styles.historyBlock}>
@@ -729,8 +732,8 @@ export default function KronosClient() {
         <span className={styles.creditsLabel}>Créditos</span>
         <span>
           Modelo{" "}
-          <a href="https://huggingface.co/NeoQuasar/Kronos-small" target="_blank" rel="noopener noreferrer" className={styles.creditLink}>
-            NeoQuasar/Kronos-small
+          <a href={`https://huggingface.co/NeoQuasar/Kronos-${model}`} target="_blank" rel="noopener noreferrer" className={styles.creditLink}>
+            NeoQuasar/Kronos-{model}
           </a>
           {" "}·{" "}Código{" "}
           <a href="https://github.com/shiyu-coder/Kronos" target="_blank" rel="noopener noreferrer" className={styles.creditLink}>

@@ -76,6 +76,7 @@ export default async function SharedPredictionPage({ params }: PageProps) {
         id: prediction.id,
         symbol: prediction.symbol,
         timeframe: prediction.timeframe as Timeframe,
+        model: prediction.model || "small",
         comment: prediction.comment,
         createdAt: prediction.created_at,
       }}

@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 interface SavePayload {
   symbol: string;
   timeframe: string;
+  model?: string;
   email?: string;
   comment?: string;
   inputCandles: unknown[];
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
     .insert({
       symbol: body.symbol,
       timeframe: body.timeframe,
+      model: body.model || "small",
       email: body.email || null,
       comment: body.comment || null,
       input_candles: body.inputCandles,

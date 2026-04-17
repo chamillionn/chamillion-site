@@ -427,12 +427,22 @@
   background: color-mix(in srgb, var(--red) 10%, transparent);
 }
 
+/* ── CHART LAYOUT (chart + side log) ── */
+
+.chartLayout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 12px;
+  align-items: stretch;
+}
+
 /* ── CHART ── */
 
 .chartWrap {
   border: 1px solid var(--border);
   overflow: hidden;
   position: relative;
+  min-width: 0;
 }
 
 .chartMeta {
@@ -551,6 +561,19 @@
   margin-top: 20px;
   border: 1px solid var(--border);
   overflow: hidden;
+}
+
+.terminalSide {
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.terminalSide .terminalBody {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
 }
 
 .terminalHeader {
@@ -907,14 +930,33 @@
    RESPONSIVE
    ══════════════════════════════════════════ */
 
+/* Tablet and below: stack log below chart */
+@media (max-width: 900px) {
+  .chartLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .terminalSide {
+    margin-top: 0;
+  }
+
+  .terminalSide .terminalBody {
+    max-height: 200px;
+  }
+}
+
 @media (max-width: 640px) {
   .controls {
     gap: 8px;
   }
 
-  .predictBtn {
+  .actionsGroup {
     margin-left: 0;
     width: 100%;
+  }
+
+  .predictBtn {
+    flex: 1;
     justify-content: center;
   }
 

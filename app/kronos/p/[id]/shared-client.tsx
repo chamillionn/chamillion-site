@@ -11,6 +11,7 @@ interface PredictionMeta {
   id: string;
   symbol: string;
   timeframe: Timeframe;
+  model: string;
   comment: string | null;
   createdAt: string;
 }
@@ -304,12 +305,12 @@ export default function SharedClient({
             <span>
               Modelo{" "}
               <a
-                href="https://huggingface.co/NeoQuasar/Kronos-small"
+                href={`https://huggingface.co/NeoQuasar/Kronos-${prediction.model}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.creditLink}
               >
-                NeoQuasar/Kronos-small
+                NeoQuasar/Kronos-{prediction.model}
               </a>
               {" "}·{" "}
               Código{" "}

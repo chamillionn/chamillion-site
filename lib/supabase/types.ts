@@ -209,6 +209,7 @@ export interface KronosPrediction {
   id: string;
   symbol: string;
   timeframe: string;
+  model: string;
   email: string | null;
   comment: string | null;
   input_candles: unknown;
@@ -392,7 +393,7 @@ export type Database = {
       };
       kronos_predictions: {
         Row: Flatten<KronosPrediction>;
-        Insert: Flatten<Omit<KronosPrediction, "id" | "created_at" | "email" | "comment" | "input_range_start" | "input_range_end" | "pred_range_start" | "pred_range_end"> & { id?: string; created_at?: string; email?: string | null; comment?: string | null; input_range_start?: string | null; input_range_end?: string | null; pred_range_start?: string | null; pred_range_end?: string | null }>;
+        Insert: Flatten<Omit<KronosPrediction, "id" | "created_at" | "model" | "email" | "comment" | "input_range_start" | "input_range_end" | "pred_range_start" | "pred_range_end"> & { id?: string; created_at?: string; model?: string; email?: string | null; comment?: string | null; input_range_start?: string | null; input_range_end?: string | null; pred_range_start?: string | null; pred_range_end?: string | null }>;
         Update: Flatten<Partial<KronosPrediction>>;
         Relationships: [];
       };
