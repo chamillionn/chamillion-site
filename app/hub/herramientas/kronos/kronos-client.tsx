@@ -734,9 +734,9 @@ export default function KronosClient() {
           <Image
             src="/assets/newsletter/logo.jpg"
             alt=""
-            width={56}
-            height={56}
-            sizes="56px"
+            width={48}
+            height={48}
+            sizes="48px"
           />
         </span>
         <span className={styles.chamillionBody}>
@@ -756,6 +756,14 @@ export default function KronosClient() {
               <path d="M3 8h10M9 4l4 4-4 4" />
             </svg>
           </span>
+        </span>
+        <span className={styles.chamillionCover} aria-hidden="true">
+          <Image
+            src="/assets/newsletter/banner-post-01.jpeg"
+            alt=""
+            fill
+            sizes="180px"
+          />
         </span>
       </Link>
 

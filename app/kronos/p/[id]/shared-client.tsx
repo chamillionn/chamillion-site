@@ -301,9 +301,9 @@ export default function SharedClient({
             <Image
               src="/assets/newsletter/logo.jpg"
               alt=""
-              width={64}
-              height={64}
-              sizes="64px"
+              width={52}
+              height={52}
+              sizes="52px"
             />
           </span>
           <span className={styles.chamillionBody}>
@@ -323,6 +323,14 @@ export default function SharedClient({
                 <path d="M3 8h10M9 4l4 4-4 4" />
               </svg>
             </span>
+          </span>
+          <span className={styles.chamillionCover} aria-hidden="true">
+            <Image
+              src="/assets/newsletter/banner-post-01.jpeg"
+              alt=""
+              fill
+              sizes="200px"
+            />
           </span>
         </Link>
 

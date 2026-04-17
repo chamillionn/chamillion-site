@@ -852,15 +852,16 @@
 /* ── FOOTER CTA ── */
 
 /* ══════════════════════════════════════════
-   CHAMILLION CTA — editorial, elegant, invites discovery
+   CHAMILLION CTA — editorial, elegant, restrained
    ══════════════════════════════════════════ */
 
 .chamillionCta {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+  gap: 18px;
   margin-top: 36px;
-  padding: 24px 26px;
+  padding: 20px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-card);
@@ -868,58 +869,21 @@
   position: relative;
   overflow: hidden;
   transition:
-    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 0.4s ease,
-    box-shadow 0.4s ease;
-}
-
-/* Hairline accent on the left — subtle vertical rhythm */
-.chamillionCta::before {
-  content: "";
-  position: absolute;
-  top: 20%;
-  bottom: 20%;
-  left: 0;
-  width: 2px;
-  background: linear-gradient(to bottom, transparent, var(--steel-blue), transparent);
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-/* Floating grain texture hint — steel-blue radial at hover */
-.chamillionCta::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 60%;
-  height: 200%;
-  background: radial-gradient(ellipse at center, rgba(var(--steel-blue-rgb), 0.08), transparent 60%);
-  opacity: 0;
-  transition: opacity 0.6s ease;
-  pointer-events: none;
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s ease;
 }
 
 .chamillionCta:hover {
-  border-color: rgba(var(--steel-blue-rgb), 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(var(--steel-blue-rgb), 0.04);
+  border-color: rgba(var(--steel-blue-rgb), 0.22);
+  transform: translateY(-1px);
 }
 
-.chamillionCta:hover::before {
-  opacity: 1;
-}
-
-.chamillionCta:hover::after {
-  opacity: 1;
-}
-
-.chamillionCta:hover .chamillionLogo img {
-  transform: scale(1.04);
+.chamillionCta:hover .chamillionCover img {
+  transform: scale(1.03);
 }
 
 .chamillionCta:hover .chamillionArrow {
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
 
 .chamillionCta:hover .chamillionActionText {
@@ -931,19 +895,18 @@
 .chamillionLogo {
   display: inline-flex;
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
+  align-self: flex-start;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  border: 1px solid rgba(var(--steel-blue-rgb), 0.2);
-  box-shadow: 0 0 0 3px rgba(var(--steel-blue-rgb), 0.06);
+  border: 1px solid rgba(var(--steel-blue-rgb), 0.18);
 }
 
 .chamillionLogo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Body ── */
@@ -958,55 +921,77 @@
 .chamillionKicker {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   font-family: var(--font-jetbrains), monospace;
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--steel-blue);
-  margin-bottom: 10px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
 
 .chamillionDot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--steel-blue);
-  box-shadow: 0 0 6px rgba(var(--steel-blue-rgb), 0.5);
-  animation: chamillionPulse 3s ease-in-out infinite;
-}
-
-@keyframes chamillionPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
+  opacity: 0.7;
 }
 
 .chamillionTitle {
   font-family: var(--font-playfair), serif;
-  font-size: clamp(19px, 2.2vw, 22px);
+  font-size: clamp(18px, 2vw, 20px);
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.015em;
-  line-height: 1.25;
-  margin-bottom: 10px;
-  max-width: 480px;
+  line-height: 1.3;
+  margin-bottom: 8px;
+  max-width: 420px;
 }
 
 .chamillionSubtext {
   font-family: var(--font-outfit), sans-serif;
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 14px;
-  max-width: 480px;
+  line-height: 1.55;
+  margin-bottom: 12px;
+  max-width: 420px;
 }
 
 .chamillionSubtext em {
   font-family: var(--font-playfair), serif;
   font-style: italic;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12.5px;
+}
+
+/* ── Cover image (right side) ── */
+
+.chamillionCover {
+  position: relative;
+  width: 160px;
+  height: 100%;
+  min-height: 130px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  align-self: stretch;
+}
+
+.chamillionCover img {
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Subtle gradient fade from card color into cover for editorial feel */
+.chamillionCover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, var(--bg-card), transparent 20%);
+  pointer-events: none;
 }
 
 .chamillionAction {
@@ -1144,8 +1129,12 @@
   }
 
   .chamillionCta {
-    flex-direction: column;
+    grid-template-columns: auto 1fr;
     gap: 14px;
-    padding: 20px;
+    padding: 18px;
+  }
+
+  .chamillionCover {
+    display: none;
   }
 }
