@@ -144,6 +144,7 @@ interface DailyData {
   date: string;
   day: string;
   total: number;
+  cost?: number;
 }
 
 export interface HomeProps {
@@ -157,7 +158,6 @@ export interface HomeProps {
   totalValue: number;
   dailyData: DailyData[];
   capitalInvested: number | null;
-  costBasisTimeline?: { date: string; cumulative: number }[];
   isDemo?: boolean;
   platformColorsLight?: string[];
   recentPosts?: {
@@ -1121,7 +1121,7 @@ function formatLabel(d: DailyData, range: ChartRange): string {
   return dt.toLocaleDateString("es", { day: "numeric", month: "short" });
 }
 
-function PortfolioChart({ dailyData, costBasisTimeline }: { dailyData: DailyData[]; costBasisTimeline?: { date: string; cumulative: number }[] }) {
+function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [range, setRange] = useState<ChartRange>("7d");
   const chartRef = useRef<HTMLDivElement>(null);
@@ -1145,23 +1145,13 @@ function PortfolioChart({ dailyData, costBasisTimeline }: { dailyData: DailyData
   const padBottom = 24;
   const chartH = H - padTop - padBottom;
 
-  // Compute cost basis value for each visible day
-  const costBasisValues = visibleData.map((d) => {
-    if (!costBasisTimeline || costBasisTimeline.length === 0) return null;
-    // Find the last flow on or before this date
-    let val = 0;
-    for (const f of costBasisTimeline) {
-      if (f.date <= d.date) val = f.cumulative;
-      else break;
-    }
-    return val;
-  });
-  const hasCostBasis = costBasisValues.some((v) => v !== null && v > 0);
+  // Cost basis from snapshot data
+  const hasCostBasis = visibleData.some((d) => d.cost != null && d.cost > 0);
 
   // Calculate Y range with 5% padding (include cost basis in range)
   const totals = visibleData.map(d => d.total);
   const allValues = hasCostBasis
-    ? [...totals, ...costBasisValues.filter((v): v is number => v !== null && v > 0)]
+    ? [...totals, ...visibleData.filter((d) => d.cost != null && d.cost > 0).map((d) => d.cost!)]
     : totals;
   const minVal = Math.min(...allValues);
   const maxVal = Math.max(...allValues);
@@ -1176,20 +1166,15 @@ function PortfolioChart({ dailyData, costBasisTimeline }: { dailyData: DailyData
     y: padTop + chartH - ((d.total - yMin) / (yMax - yMin)) * chartH,
   }));
 
-  // Cost basis line points
-  const costBasisPoints = hasCostBasis
-    ? visibleData.map((_, i) => {
-        const val = costBasisValues[i];
-        if (val === null || val <= 0) return null;
-        return {
-          x: padX + (i / (visibleData.length - 1)) * (W - padX * 2),
-          y: padTop + chartH - ((val - yMin) / (yMax - yMin)) * chartH,
-        };
-      })
-    : null;
-
-  const costBasisPath = costBasisPoints
-    ? costBasisPoints
+  // Cost basis line path
+  const costBasisPath = hasCostBasis
+    ? visibleData
+        .map((d, i) => {
+          if (d.cost == null || d.cost <= 0) return null;
+          const x = padX + (i / (visibleData.length - 1)) * (W - padX * 2);
+          const y = padTop + chartH - ((d.cost - yMin) / (yMax - yMin)) * chartH;
+          return { x, y };
+        })
         .filter((p): p is { x: number; y: number } => p !== null)
         .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
         .join(" ")
@@ -1451,9 +1436,9 @@ function PortfolioChart({ dailyData, costBasisTimeline }: { dailyData: DailyData
                 {hoveredData.total >= prevTotal ? "+" : ""}{(hoveredData.total - prevTotal).toFixed(2)} €
               </div>
             )}
-            {hasCostBasis && hoveredDay !== null && costBasisValues[hoveredDay] != null && costBasisValues[hoveredDay]! > 0 && (
+            {hasCostBasis && hoveredData.cost != null && hoveredData.cost > 0 && (
               <div style={{ fontSize: 9, color: V.gold, opacity: 0.7, marginTop: 2 }}>
-                Invertido: {costBasisValues[hoveredDay]!.toFixed(0)} €
+                Invertido: {hoveredData.cost.toFixed(0)} €
               </div>
             )}
           </div>
@@ -1464,7 +1449,7 @@ function PortfolioChart({ dailyData, costBasisTimeline }: { dailyData: DailyData
   );
 }
 
-export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, costBasisTimeline, isDemo, platformColorsLight, recentPosts }: HomeProps) {
+export default function Home({ summary, platforms, totalValue, dailyData, capitalInvested, isDemo, platformColorsLight, recentPosts }: HomeProps) {
   const [loaded, setLoaded] = useState(false);
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
   const [navDropdown, setNavDropdown] = useState(false);
@@ -2279,7 +2264,7 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
           </div>
 
           {/* Portfolio chart */}
-          {dailyData.length > 1 && <PortfolioChart dailyData={dailyData} costBasisTimeline={costBasisTimeline} />}
+          {dailyData.length > 1 && <PortfolioChart dailyData={dailyData} />}
 
           {/* Disclaimer */}
           <div

@@ -79,12 +79,23 @@ export async function captureSnapshot(eurUsdRate?: number): Promise<SnapshotResu
     allocation_pct: p.allocation_pct ?? 0,
   }));
 
-  // 3. Insert snapshot for this 15-min slot (skip if already exists)
+  // 3. Compute cost basis from capital_flows (net invested capital)
+  const { data: flows } = await supabase
+    .from("capital_flows")
+    .select("type, amount_eur");
+  let invested = 0, withdrawn = 0;
+  for (const f of (flows ?? []) as { type: string; amount_eur: number }[]) {
+    if (f.type === "buy" || f.type === "deposit_fiat") invested += f.amount_eur;
+    else withdrawn += f.amount_eur;
+  }
+  const netCost = invested - withdrawn;
+
+  // 4. Insert snapshot for this 15-min slot (skip if already exists)
   const { error: insertErr } = await supabase.from("snapshots").upsert(
     {
       snapshot_date: slotISO,
       total_value: s.total_value ?? 0,
-      total_cost: s.total_cost ?? 0,
+      total_cost: netCost,
       eurusd_rate: eurUsdRate ?? null,
       positions_data: positionsData,
       notes: `Auto: ${s.total_positions ?? 0} pos, ${(s.total_value ?? 0).toFixed(2)}€`,
