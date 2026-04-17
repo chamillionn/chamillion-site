@@ -24,7 +24,8 @@
   margin: 0 0 6px;
 }
 
-.title svg {
+.title svg,
+.titleLogo {
   flex-shrink: 0;
 }
 

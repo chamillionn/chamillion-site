@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { fetchCandles, fetchPairs, TIMEFRAMES, getTimeframeLabel } from "@/lib/binance";
 import { predict, resultToCandles, KRONOS_MODELS } from "@/lib/kronos";
 import type { Candle, Timeframe, TradingPair } from "@/lib/binance";
@@ -400,7 +401,14 @@ export default function KronosClient() {
     <div className={`page-transition ${styles.page}`}>
       <header className={styles.header}>
         <h1 className={styles.title}>
-          <KronosMark />
+          <Image
+            src="/kronos/logo.svg"
+            alt="Kronos"
+            width={36}
+            height={36}
+            className={styles.titleLogo}
+            priority
+          />
           <span>Kronos</span>
         </h1>
         <p className={styles.subtitle}>
@@ -857,46 +865,4 @@ function ModelIcon({ model }: { model: KronosModel }) {
   );
 }
 
-/**
- * Kronos mark — abstract K formed by curved strokes, with an orbital dot
- * hinting at the temporal/predictive concept. Stroke-based so it inherits currentColor.
- */
-function KronosMark() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="kronosGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="var(--steel-blue)" />
-          <stop offset="100%" stopColor="var(--gold)" />
-        </linearGradient>
-      </defs>
-      {/* Vertical stem of the K */}
-      <path
-        d="M8 5 L8 27"
-        stroke="url(#kronosGrad)"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      {/* Upper arm — curved, organic */}
-      <path
-        d="M8 16 C 14 14, 18 10, 22 6"
-        stroke="url(#kronosGrad)"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Lower arm — mirrored curve */}
-      <path
-        d="M8 16 C 14 18, 18 22, 22 26"
-        stroke="url(#kronosGrad)"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Orbital dot — the predictive/temporal hint */}
-      <circle cx="26" cy="16" r="1.8" fill="var(--gold)" opacity="0.9" />
-      <circle cx="26" cy="16" r="3.5" stroke="var(--gold)" strokeWidth="0.8" strokeOpacity="0.35" fill="none" />
-    </svg>
-  );
-}
 
