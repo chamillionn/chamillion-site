@@ -629,14 +629,14 @@ export default function KronosClient() {
           </div>
           <div className={styles.historyList}>
             {history.map((h) => (
-              <div key={h.id} className={styles.historyItem}>
+              <Link key={h.id} href={`/kronos/p/${h.id}`} className={styles.historyItem}>
                 <span className={styles.historyAsset}>{h.symbol.replace("USDT", "")}/USDT</span>
                 <span className={styles.historyTf}>{h.timeframe}</span>
                 {h.comment && <span className={styles.historyComment}>&ldquo;{h.comment}&rdquo;</span>}
                 <span className={styles.historyDate}>
                   {new Date(h.created_at).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

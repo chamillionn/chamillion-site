@@ -46,6 +46,32 @@ export async function fetchCandles(
   }));
 }
 
+/**
+ * Fetch OHLCV candles for a specific time range.
+ * Binance klines accepts startTime/endTime in milliseconds.
+ * If endTime > now, Binance returns up to now (useful for partially-elapsed periods).
+ */
+export async function fetchCandlesByRange(
+  symbol: string,
+  interval: Timeframe,
+  startTimeMs: number,
+  endTimeMs: number,
+): Promise<Candle[]> {
+  const url = `${BINANCE_API}/klines?symbol=${symbol}&interval=${interval}&startTime=${startTimeMs}&endTime=${endTimeMs}&limit=1000`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Binance: HTTP ${res.status}`);
+
+  const raw: unknown[][] = await res.json();
+
+  return raw.map((k) => ({
+    time: Math.floor((k[0] as number) / 1000),
+    open: parseFloat(k[1] as string),
+    high: parseFloat(k[2] as string),
+    low: parseFloat(k[3] as string),
+    close: parseFloat(k[4] as string),
+  }));
+}
+
 export interface TradingPair {
   symbol: string; // e.g. "BTCUSDT"
   base: string;   // e.g. "BTC"
