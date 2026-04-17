@@ -399,13 +399,12 @@ export default function KronosClient() {
   return (
     <div className={`page-transition ${styles.page}`}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Kronos</h1>
+        <h1 className={styles.title}>
+          <KronosMark />
+          <span>Kronos</span>
+        </h1>
         <p className={styles.subtitle}>
           Transformer entrenado en series OHLCV. Hasta 2048 velas de contexto, 24 hacia adelante. Tres tamaños de modelo: <code>mini</code>, <code>small</code>, <code>base</code>.
-          <br />
-          <span className={styles.subtitleMuted}>
-            No es consejo financiero. Una forma de explorar qué <em>ve</em> un modelo en el mercado.
-          </span>
         </p>
       </header>
 
@@ -745,6 +744,19 @@ export default function KronosClient() {
           </a>
         </span>
       </div>
+
+      {/* ── Disclaimer ── */}
+      <div className={styles.disclaimer}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span>
+          <strong>No es consejo financiero.</strong>{" "}
+          Kronos es un experimento de modelado: una forma de explorar qué <em>ve</em> un modelo de IA en el mercado. Las predicciones pueden ser inexactas, sesgadas o sencillamente equivocadas. No tomes decisiones de inversión basadas en esta herramienta.
+        </span>
+      </div>
     </div>
   );
 }
@@ -844,3 +856,47 @@ function ModelIcon({ model }: { model: KronosModel }) {
     </svg>
   );
 }
+
+/**
+ * Kronos mark — abstract K formed by curved strokes, with an orbital dot
+ * hinting at the temporal/predictive concept. Stroke-based so it inherits currentColor.
+ */
+function KronosMark() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="kronosGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="var(--steel-blue)" />
+          <stop offset="100%" stopColor="var(--gold)" />
+        </linearGradient>
+      </defs>
+      {/* Vertical stem of the K */}
+      <path
+        d="M8 5 L8 27"
+        stroke="url(#kronosGrad)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      {/* Upper arm — curved, organic */}
+      <path
+        d="M8 16 C 14 14, 18 10, 22 6"
+        stroke="url(#kronosGrad)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Lower arm — mirrored curve */}
+      <path
+        d="M8 16 C 14 18, 18 22, 22 26"
+        stroke="url(#kronosGrad)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Orbital dot — the predictive/temporal hint */}
+      <circle cx="26" cy="16" r="1.8" fill="var(--gold)" opacity="0.9" />
+      <circle cx="26" cy="16" r="3.5" stroke="var(--gold)" strokeWidth="0.8" strokeOpacity="0.35" fill="none" />
+    </svg>
+  );
+}
+

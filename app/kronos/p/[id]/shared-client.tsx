@@ -186,7 +186,10 @@ export default function SharedClient({
           <div className={styles.brandBar}>
             <Link href="/" className={styles.brand}>Chamillion</Link>
             <span className={styles.brandDivider}>/</span>
-            <span className={styles.brandTool}>Kronos</span>
+            <span className={styles.brandTool}>
+              <KronosMark size={14} />
+              Kronos
+            </span>
           </div>
           <h1 className={styles.title}>
             <span className={styles.titleAsset}>{base}/USDT</span>
@@ -334,8 +337,43 @@ export default function SharedClient({
             </span>
           </div>
         </footer>
+
+        {/* ── Disclaimer ── */}
+        <div className={styles.disclaimer}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>
+            <strong>No es consejo financiero.</strong>{" "}
+            Kronos es un experimento de modelado: una forma de explorar qué <em>ve</em> un modelo de IA en el mercado. Las predicciones pueden ser inexactas, sesgadas o sencillamente equivocadas. No tomes decisiones de inversión basadas en esta herramienta.
+          </span>
+        </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Kronos mark — abstract K formed by curved strokes with an orbital dot
+ * (temporal/predictive hint). Stroke-based, inherits currentColor.
+ */
+function KronosMark({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id={`kronosGradShared${size}`} x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="var(--steel-blue)" />
+          <stop offset="100%" stopColor="var(--gold)" />
+        </linearGradient>
+      </defs>
+      <path d="M8 5 L8 27" stroke={`url(#kronosGradShared${size})`} strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M8 16 C 14 14, 18 10, 22 6" stroke={`url(#kronosGradShared${size})`} strokeWidth="2.4" strokeLinecap="round" fill="none" />
+      <path d="M8 16 C 14 18, 18 22, 22 26" stroke={`url(#kronosGradShared${size})`} strokeWidth="2.4" strokeLinecap="round" fill="none" />
+      <circle cx="26" cy="16" r="1.8" fill="var(--gold)" opacity="0.9" />
+      <circle cx="26" cy="16" r="3.5" stroke="var(--gold)" strokeWidth="0.8" strokeOpacity="0.35" fill="none" />
+    </svg>
   );
 }
 
