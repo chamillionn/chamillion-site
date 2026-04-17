@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { fetchCandles, fetchPairs, TIMEFRAMES, getTimeframeLabel } from "@/lib/binance";
-import { predict, resultToCandles } from "@/lib/kronos";
+import { predict, resultToCandles, KRONOS_MODELS } from "@/lib/kronos";
 import type { Candle, Timeframe, TradingPair } from "@/lib/binance";
+import type { KronosModel } from "@/lib/kronos";
 import styles from "./kronos.module.css";
 
 type Status = "idle" | "loading-candles" | "predicting" | "done" | "error";
@@ -43,6 +44,7 @@ export default function KronosClient() {
   const [pairs, setPairs] = useState<TradingPair[]>([]);
   const [symbol, setSymbol] = useState("BTCUSDT");
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
+  const [model, setModel] = useState<KronosModel>("small");
   const [search, setSearch] = useState("");
   const [assetOpen, setAssetOpen] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
@@ -304,9 +306,12 @@ export default function KronosClient() {
     log(`────── predict() ──────`);
     log(`Asset: ${currentBase}/USDT`);
     log(`Timeframe: ${timeframe} (${getTimeframeLabel(timeframe)})`);
-    log(`Contexto: ${candles.length} velas OHLCV`);
+    const modelInfo = KRONOS_MODELS.find((m) => m.id === model)!;
+    const contextUsed = Math.min(candles.length, modelInfo.contextLen);
+
+    log(`Contexto: ${contextUsed} velas OHLCV (max ${modelInfo.contextLen})`);
     log(`Último cierre: $${lastPrice.toLocaleString("es-ES", { maximumFractionDigits: 2 })}`);
-    log(`Modelo: Kronos-small (transformer, max_context=512)`);
+    log(`Modelo: Kronos-${model} (${modelInfo.params} params, max_context=${modelInfo.contextLen})`);
     log(`Parámetros: pred_len=24, T=1.0, top_p=0.9`);
     log(`Tokenizando input...`);
     log(`POST /api/kronos/predict → modal.run (GPU T4)`);
@@ -314,7 +319,7 @@ export default function KronosClient() {
     const t0 = performance.now();
 
     try {
-      const result = await predict(candles, 24);
+      const result = await predict(candles, 24, model);
       const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
       const predCandles = resultToCandles(result);
 
@@ -394,7 +399,7 @@ export default function KronosClient() {
       <header className={styles.header}>
         <h1 className={styles.title}>Kronos</h1>
         <p className={styles.subtitle}>
-          Transformer entrenado en series OHLCV. 512 velas de contexto, 24 hacia adelante.
+          Transformer entrenado en series OHLCV. Hasta 2048 velas de contexto, 24 hacia adelante. Tres tamaños de modelo: <code>mini</code>, <code>small</code>, <code>base</code>.
           <br />
           <span className={styles.subtitleMuted}>
             No es consejo financiero. Una forma de explorar qué <em>ve</em> un modelo en el mercado.
@@ -463,6 +468,20 @@ export default function KronosClient() {
               onClick={() => setTimeframe(tf)}
             >
               {getTimeframeLabel(tf)}
+            </button>
+          ))}
+        </div>
+
+        {/* Model selector */}
+        <div className={styles.modelGroup}>
+          {KRONOS_MODELS.map((m) => (
+            <button
+              key={m.id}
+              className={`${styles.modelBtn} ${m.id === model ? styles.modelBtnActive : ""}`}
+              onClick={() => setModel(m.id)}
+              title={`${m.description} — ${m.params} parámetros, contexto ${m.contextLen}`}
+            >
+              {m.label}
             </button>
           ))}
         </div>

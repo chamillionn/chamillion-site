@@ -3,10 +3,45 @@ import type { Candle } from "./binance";
 /** Calls our own proxy route, which forwards to Modal server-side. */
 const KRONOS_URL = "/api/kronos/predict";
 
+export type KronosModel = "mini" | "small" | "base";
+
+export interface KronosModelInfo {
+  id: KronosModel;
+  label: string;
+  params: string;
+  contextLen: number;
+  description: string;
+}
+
+export const KRONOS_MODELS: KronosModelInfo[] = [
+  {
+    id: "mini",
+    label: "Mini",
+    params: "4.1M",
+    contextLen: 2048,
+    description: "Ligero, contexto extenso (2048 velas). Ideal para tendencias largas.",
+  },
+  {
+    id: "small",
+    label: "Small",
+    params: "24.7M",
+    contextLen: 512,
+    description: "Balance entre velocidad y precisión. El modelo por defecto.",
+  },
+  {
+    id: "base",
+    label: "Base",
+    params: "102.3M",
+    contextLen: 512,
+    description: "Modelo grande, mayor precisión. Mas lento y costoso.",
+  },
+];
+
 export interface KronosResult {
   columns: string[];
   data: number[][];
   timestamps: string[];
+  model?: string;
 }
 
 /**
@@ -16,6 +51,7 @@ export interface KronosResult {
 export async function predict(
   candles: Candle[],
   predictionLength = 24,
+  model: KronosModel = "small",
 ): Promise<KronosResult> {
   const body = {
     ohlcv: {
@@ -26,6 +62,7 @@ export async function predict(
       ),
     },
     prediction_length: predictionLength,
+    model_size: model,
   };
 
   const res = await fetch(KRONOS_URL, {
