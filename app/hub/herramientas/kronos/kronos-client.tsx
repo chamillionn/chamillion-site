@@ -593,31 +593,35 @@ export default function KronosClient() {
         </div>
 
         {/* Terminal log — shown beside chart on desktop, below on mobile */}
-        {logs.length > 0 && (
-          <div className={`${styles.terminal} ${styles.terminalSide}`}>
-            <div className={styles.terminalHeader}>
-              <span className={styles.terminalTitle}>Log</span>
+        <div className={`${styles.terminal} ${styles.terminalSide}`}>
+          <div className={styles.terminalHeader}>
+            <span className={styles.terminalTitle}>Log</span>
+            {logs.length > 0 && (
               <button className={styles.terminalClear} onClick={() => setLogs([])}>
                 Limpiar
               </button>
-            </div>
-            <div ref={logRef} className={styles.terminalBody}>
-              {logs.map((line, i) => (
+            )}
+          </div>
+          <div ref={logRef} className={styles.terminalBody}>
+            {logs.length === 0 ? (
+              <div className={styles.terminalEmpty}>Log vacío</div>
+            ) : (
+              logs.map((line, i) => (
                 <div
                   key={i}
                   className={`${styles.terminalLine} ${line.includes("ERROR") ? styles.terminalError : ""} ${line.includes("──") ? styles.terminalSeparator : ""}`}
                 >
                   {line}
                 </div>
-              ))}
-              {status === "predicting" && (
-                <div className={styles.terminalLine}>
-                  <span className={styles.terminalCursor}>_</span>
-                </div>
-              )}
-            </div>
+              ))
+            )}
+            {status === "predicting" && (
+              <div className={styles.terminalLine}>
+                <span className={styles.terminalCursor}>_</span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* ── Legend + view toggle + share ── */}

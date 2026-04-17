@@ -621,6 +621,14 @@
   word-break: break-word;
 }
 
+.terminalEmpty {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.4;
+  padding: 4px 0;
+}
+
 .terminalError {
   color: var(--red);
 }
