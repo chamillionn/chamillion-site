@@ -1960,6 +1960,18 @@
     padding: 16px;
   }
 
+  /* iOS Safari autozooms inputs with font-size <16px on focus;
+     lock to 16px so the layout doesn't jump + stays readable */
+  .saveInput,
+  .saveTextarea {
+    font-size: 16px;
+  }
+
+  .saveTextarea {
+    min-height: 90px;
+    line-height: 1.4;
+  }
+
   .saveClose {
     padding: 6px 10px;
     font-size: 22px;
