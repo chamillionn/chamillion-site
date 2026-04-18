@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="18"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- ═════════════════════════════════════════════════════════
+           SCENE: Background grid (always visible)
+           ═════════════════════════════════════════════════════════ -->
+      <div class="bg-grid clip" data-start="0" data-duration="18" data-track-index="0"></div>
+      <div class="bg-vignette clip" data-start="0" data-duration="18" data-track-index="1"></div>
+
+      <!-- Chamillion brand (top-right, persistent) -->
+      <div class="brand-tr clip" data-start="0" data-duration="17.4" data-track-index="8">
+        <img src="assets/chamillion-logo.jpg" class="brand-tr-logo" alt="" />
+        <div class="brand-tr-text">
+          <div class="brand-tr-kicker">CHAMILLION</div>
+          <div class="brand-tr-url">/kronos</div>
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════
+           SCENE 1 · Intro (0-3s)
+           ═════════════════════════════════════════════════════════ -->
+      <div class="intro clip" data-start="0" data-duration="17.6" data-track-index="2">
+        <div class="intro-head">
+          <div class="title-row">
+            <img src="assets/kronos-logo.svg" class="k-logo" alt="" />
+            <h1 class="title" id="kronos-title">Kronos</h1>
+          </div>
+          <p class="subtitle" id="kronos-subtitle">
+            Modelo fundacional en series <em>OHLCV</em>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls bar (persists 1.8s+) -->
+      <div class="controls clip" data-start="1.8" data-duration="15.8" data-track-index="3">
+        <div class="control-chip" id="c-asset">
+          <span class="chip-label">BTC/USDT</span>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 4L5 6.5L7.5 4"/></svg>
+        </div>
+        <div class="control-group" id="c-tf">
+          <span class="tf-btn tf-active">1 Hora</span>
+          <span class="tf-btn">4 Horas</span>
+          <span class="tf-btn">1 Día</span>
+        </div>
+        <div class="control-group model-group" id="c-model">
+          <span class="model-btn model-active">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+              <circle cx="3" cy="3" r="1.3"/><circle cx="3" cy="9" r="1.3"/>
+              <circle cx="15" cy="3" r="1.3"/><circle cx="15" cy="9" r="1.3"/>
+              <line x1="4.3" y1="3" x2="13.7" y2="3"/><line x1="4.3" y1="9" x2="13.7" y2="9"/>
+              <line x1="4.3" y1="3" x2="13.7" y2="9" opacity="0.4"/>
+              <line x1="4.3" y1="9" x2="13.7" y2="3" opacity="0.4"/>
+            </svg>
+            <span>MINI</span>
+          </span>
+          <span class="model-btn model-locked"><span>SMALL</span><span class="star">★</span></span>
+          <span class="model-btn model-locked"><span>BASE</span><span class="star">★</span></span>
+        </div>
+        <div class="predict-spacer"></div>
+        <div class="predict-btn" id="predict-btn">
+          <div class="predict-inner" id="predict-inner">
+            <svg class="predict-idle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="predict-label" id="predict-label">PREDECIR</span>
+          </div>
+          <div class="predict-shimmer" id="predict-shimmer"></div>
+          <div class="predict-progress" id="predict-progress"></div>
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════
+           SCENE 2 · Chart layout (persists through main action)
+           ═════════════════════════════════════════════════════════ -->
+      <div class="chart-wrap clip" data-start="3.0" data-duration="14.6" data-track-index="4">
+        <svg id="chart-svg" viewBox="0 0 1260 560" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <clipPath id="chart-clip">
+              <rect x="0" y="0" width="1260" height="560"/>
+            </clipPath>
+            <linearGradient id="predGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6B8EA0" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#6B8EA0" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <g clip-path="url(#chart-clip)">
+            <g id="grid-lines"></g>
+            <g id="hist-candles"></g>
+            <g id="pred-candles"></g>
+            <g id="separator"></g>
+            <g id="last-line"></g>
+            <g id="axis-y"></g>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Terminal log -->
+      <div class="terminal clip" data-start="3.0" data-duration="14.6" data-track-index="5">
+        <div class="term-head">
+          <span class="term-title">LOG</span>
+          <span class="term-clock">00:00</span>
+        </div>
+        <div class="term-body" id="term-body">
+          <div class="term-line" id="term-line-0">&gt; Conectando a Binance data-api...</div>
+          <div class="term-line" id="term-line-1">&gt; GET /klines?symbol=BTCUSDT&interval=1h&limit=512</div>
+          <div class="term-line" id="term-line-2">&gt; ← 512 velas (0.82s) | 7 días de contexto</div>
+          <div class="term-line term-sep" id="term-line-3">────── predict() ──────</div>
+          <div class="term-line" id="term-line-4">&gt; Asset: BTC/USDT · Timeframe: 1h (1 Hora)</div>
+          <div class="term-line" id="term-line-5">&gt; Modelo: Kronos-mini (4.1M params, ctx 2048)</div>
+          <div class="term-line" id="term-line-6">&gt; Parámetros: pred_len=24, T=1.0, top_p=0.9</div>
+          <div class="term-line" id="term-line-7">&gt; POST /api/kronos/predict → modal.run (GPU T4)</div>
+          <div class="term-line term-wait" id="term-wait">
+            <span class="wait-dot"></span>
+            <span class="wait-msg">ejecutando inferencia — forward pass</span>
+            <span class="wait-ticks"><span></span><span></span><span></span><span></span><span></span></span>
+            <span class="wait-clock" id="wait-clock">0.0s</span>
+          </div>
+          <div class="term-line term-done" id="term-done">&gt; ← 24 velas predichas (4.7s total)</div>
+          <div class="term-line term-delta" id="term-delta">&gt; Delta: <strong id="delta-val">+4.92%</strong> a 24 velas · cierre final $<span id="close-final">79.911</span></div>
+        </div>
+      </div>
+
+      <!-- Result card -->
+      <div class="result-card clip" data-start="14.5" data-duration="2.7" data-track-index="6">
+        <div class="result-inner">
+          <div class="result-kicker">
+            <span class="kicker-dot"></span>
+            <span>Kronos · BTC/USDT · 1h</span>
+          </div>
+          <div class="result-value">
+            <span class="result-delta" id="result-delta">+3.39%</span>
+            <span class="result-sub">predicho en 24 horas</span>
+          </div>
+          <div class="result-url">chamillion.site/kronos</div>
+        </div>
+      </div>
+
+      <!-- Outro -->
+      <div class="outro clip" data-start="17.0" data-duration="1.0" data-track-index="7">
+        <div class="outro-fade"></div>
+        <div class="outro-content">
+          <img src="assets/chamillion-logo.jpg" class="cham-logo" alt="" />
+          <div class="outro-text">
+            <div class="outro-title">Chamillion</div>
+            <div class="outro-url">chamillion.site/kronos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Synchronous stub so the linter always finds a registered timeline.
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+    <script src="timeline.js"></script>
+  </body>
+</html>
