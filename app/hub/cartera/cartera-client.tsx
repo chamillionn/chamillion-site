@@ -64,6 +64,7 @@ interface Props {
   snapshots: Snapshot[];
   platforms: Platform[];
   strategies: Strategy[];
+  capitalInvested: number;
 }
 
 type Tab = "posiciones" | "trades" | "rendimiento";
@@ -75,6 +76,7 @@ export default function CarteraClient({
   snapshots,
   platforms,
   strategies,
+  capitalInvested,
 }: Props) {
   const [tab, setTab] = useState<Tab>("posiciones");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
@@ -148,43 +150,43 @@ export default function CarteraClient({
       </header>
 
       {/* ── Summary strip ── */}
-      {summary && (
-        <div className={styles.strip}>
-          <div className={styles.metric}>
-            <span className={styles.metricLabel}>Valor</span>
-            <span className={styles.metricValue}>
-              {fmt(summary.total_value, 0)}€
-            </span>
+      {summary && (() => {
+        const pnl = summary.total_value - capitalInvested;
+        const roi = capitalInvested > 0 ? (pnl / capitalInvested) * 100 : 0;
+        return (
+          <div className={styles.strip}>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Valor</span>
+              <span className={styles.metricValue}>
+                {fmt(summary.total_value, 0)}€
+              </span>
+            </div>
+            <div className={styles.metricDivider} />
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Invertido</span>
+              <span className={styles.metricValue}>
+                {fmt(capitalInvested, 0)}€
+              </span>
+            </div>
+            <div className={styles.metricDivider} />
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>PnL</span>
+              <span className={`${styles.metricValue} ${pnlClass(pnl)}`}>
+                {pnl >= 0 ? "+" : ""}
+                {fmt(pnl, 0)}€
+              </span>
+            </div>
+            <div className={styles.metricDivider} />
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>ROI</span>
+              <span className={`${styles.metricValue} ${pnlClass(roi)}`}>
+                {roi >= 0 ? "+" : ""}
+                {fmt(roi, 1)}%
+              </span>
+            </div>
           </div>
-          <div className={styles.metricDivider} />
-          <div className={styles.metric}>
-            <span className={styles.metricLabel}>Coste</span>
-            <span className={styles.metricValue}>
-              {fmt(summary.total_cost, 0)}€
-            </span>
-          </div>
-          <div className={styles.metricDivider} />
-          <div className={styles.metric}>
-            <span className={styles.metricLabel}>PnL</span>
-            <span
-              className={`${styles.metricValue} ${pnlClass(summary.total_pnl)}`}
-            >
-              {summary.total_pnl >= 0 ? "+" : ""}
-              {fmt(summary.total_pnl, 0)}€
-            </span>
-          </div>
-          <div className={styles.metricDivider} />
-          <div className={styles.metric}>
-            <span className={styles.metricLabel}>ROI</span>
-            <span
-              className={`${styles.metricValue} ${pnlClass(summary.total_roi_pct)}`}
-            >
-              {summary.total_roi_pct >= 0 ? "+" : ""}
-              {fmt(summary.total_roi_pct, 1)}%
-            </span>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── Tabs + filter ── */}
       <div className={styles.controls}>

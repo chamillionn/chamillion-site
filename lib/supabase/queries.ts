@@ -133,7 +133,7 @@ export async function getCostBasis(client?: DataClient): Promise<{ invested: num
   let withdrawn = 0;
   for (const f of flows) {
     if (f.type === "buy" || f.type === "deposit_fiat") invested += f.amount_eur;
-    else withdrawn += f.amount_eur;
+    else if (f.type === "sell" || f.type === "withdraw_fiat") withdrawn += f.amount_eur;
   }
   return { invested, withdrawn, net: invested - withdrawn };
 }

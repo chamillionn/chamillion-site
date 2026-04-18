@@ -155,7 +155,7 @@ export default function Dashboard({ summary, positions, platforms, prevSnapshot,
   const prev = prevSnapshot;
   const prevCost = capitalInvested ?? (prev ? prev.total_cost : null);
   const prevPnl = prev && prevCost != null ? prev.total_value - prevCost : null;
-  const prevRoi = prev && prevCost && prevCost > 0 ? ((prev.total_value - prevCost) / prevCost) * 100 : null;
+  const prevRoi = prev && prevCost != null && prevCost > 0 ? ((prev.total_value - prevCost) / prevCost) * 100 : null;
 
   function delta(current: number | undefined, previous: number | null): string | null {
     if (current == null || previous == null) return null;
@@ -171,13 +171,10 @@ export default function Dashboard({ summary, positions, platforms, prevSnapshot,
     return `${d >= 0 ? "+" : ""}${d.toFixed(1)}pp`;
   }
 
-  const effectiveCost = hasData ? (capitalInvested ?? summary.total_cost) : 0;
-  const adjustedPnl = hasData ? (capitalInvested ? summary.total_value - capitalInvested : summary.total_pnl) : 0;
-  const adjustedRoiPct = hasData
-    ? capitalInvested && capitalInvested > 0
-      ? ((summary.total_value - capitalInvested) / capitalInvested) * 100
-      : summary.total_roi_pct
-    : 0;
+  const invested = capitalInvested ?? 0;
+  const effectiveCost = hasData ? invested : 0;
+  const adjustedPnl = hasData ? summary.total_value - invested : 0;
+  const adjustedRoiPct = hasData && invested > 0 ? (adjustedPnl / invested) * 100 : 0;
 
   const stats = [
     {
@@ -186,9 +183,9 @@ export default function Dashboard({ summary, positions, platforms, prevSnapshot,
       delta: hasData ? delta(summary.total_value, prev?.total_value ?? null) : null,
     },
     {
-      label: capitalInvested ? "Invertido" : "Coste total",
+      label: "Invertido",
       value: hasData ? fmt(effectiveCost) : "—",
-      delta: !capitalInvested && hasData ? delta(summary.total_cost, prev?.total_cost ?? null) : null,
+      delta: null,
     },
     {
       label: "PnL",

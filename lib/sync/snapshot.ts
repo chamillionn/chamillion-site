@@ -79,14 +79,14 @@ export async function captureSnapshot(eurUsdRate?: number): Promise<SnapshotResu
     allocation_pct: p.allocation_pct ?? 0,
   }));
 
-  // 3. Compute cost basis from capital_flows (net invested capital)
+  // 3. Compute cost basis from capital_flows (net invested capital).
   const { data: flows } = await supabase
     .from("capital_flows")
     .select("type, amount_eur");
   let invested = 0, withdrawn = 0;
   for (const f of (flows ?? []) as { type: string; amount_eur: number }[]) {
     if (f.type === "buy" || f.type === "deposit_fiat") invested += f.amount_eur;
-    else withdrawn += f.amount_eur;
+    else if (f.type === "sell" || f.type === "withdraw_fiat") withdrawn += f.amount_eur;
   }
   const netCost = invested - withdrawn;
 

@@ -1470,14 +1470,10 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
   }, [platforms, theme, platformColorsLight]);
 
   const hasSummary = summary && summary.totalValue != null;
-  const adjustedPnl = hasSummary
-    ? capitalInvested ? summary.totalValue - capitalInvested : summary.totalPnl
-    : 0;
-  const adjustedRoiPct = hasSummary
-    ? capitalInvested && capitalInvested > 0
-      ? ((summary.totalValue - capitalInvested) / capitalInvested) * 100
-      : summary.totalRoiPct
-    : 0;
+  const invested = capitalInvested ?? 0;
+  const adjustedPnl = hasSummary ? summary.totalValue - invested : 0;
+  const adjustedRoiPct =
+    hasSummary && invested > 0 ? (adjustedPnl / invested) * 100 : 0;
   const pnlPositive = adjustedPnl >= 0;
 
   useEffect(() => {
@@ -2143,10 +2139,10 @@ export default function Home({ summary, platforms, totalValue, dailyData, capita
                 >
                   <div>
                     <div style={{ fontSize: 10, color: V.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "var(--font-jetbrains), monospace", marginBottom: 2 }}>
-                      {capitalInvested ? "Invertido" : "Coste"}
+                      Invertido
                     </div>
                     <div style={{ fontSize: 13, fontFamily: "var(--font-jetbrains), monospace", color: V.textSecondary }}>
-                      {(capitalInvested ?? summary.totalCost).toFixed(2)} €
+                      {(capitalInvested ?? 0).toFixed(2)} €
                     </div>
                   </div>
                   <div>

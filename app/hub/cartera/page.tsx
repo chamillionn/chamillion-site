@@ -4,6 +4,7 @@ import {
   getDailySnapshots,
   getPlatforms,
   getStrategies,
+  getCostBasis,
 } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import type { TradeEnriched } from "@/lib/supabase/types";
@@ -22,7 +23,7 @@ async function getRecentTrades(limit = 50): Promise<TradeEnriched[]> {
 }
 
 export default async function CarteraPage() {
-  const [summary, positions, trades, snapshots, platforms, strategies] =
+  const [summary, positions, trades, snapshots, platforms, strategies, costBasis] =
     await Promise.all([
       getPortfolioSummary(),
       getPositions(),
@@ -30,6 +31,7 @@ export default async function CarteraPage() {
       getDailySnapshots(90),
       getPlatforms(),
       getStrategies(),
+      getCostBasis(),
     ]);
 
   return (
@@ -40,6 +42,7 @@ export default async function CarteraPage() {
       snapshots={snapshots}
       platforms={platforms}
       strategies={strategies}
+      capitalInvested={costBasis.net}
     />
   );
 }
