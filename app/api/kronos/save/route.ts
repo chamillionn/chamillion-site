@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import {
+  checkAndBumpSaveLimit,
+  getClientIp,
+  sanitizeComment,
+  validateSaveInput,
+} from "@/lib/kronos-rate-limit";
 
 interface SavePayload {
   symbol: string;
@@ -14,16 +20,30 @@ interface SavePayload {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as SavePayload;
+  // IP rate limit first (cheap)
+  const ip = getClientIp(request);
+  const limit = checkAndBumpSaveLimit(ip);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "RATE_LIMITED", message: "Demasiados guardados desde tu red. Vuelve a intentarlo más tarde.", resetsAt: limit.resetsAt },
+      { status: 429 },
+    );
+  }
 
-  if (!body.symbol || !body.timeframe || !body.inputCandles || !body.predictedCandles) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  const body = (await request.json().catch(() => null)) as SavePayload | null;
+  if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+
+  const validation = validateSaveInput(body);
+  if (!validation.ok) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
   // Basic email validation if provided
   if (body.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   }
+
+  const cleanComment = sanitizeComment(body.comment);
 
   const supabase = createServiceClient();
   const { data, error } = await supabase
@@ -33,7 +53,7 @@ export async function POST(request: Request) {
       timeframe: body.timeframe,
       model: body.model || "small",
       email: body.email || null,
-      comment: body.comment || null,
+      comment: cleanComment,
       input_candles: body.inputCandles,
       predicted_candles: body.predictedCandles,
       input_range_start: body.inputRange.start,
