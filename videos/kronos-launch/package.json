@@ -1,0 +1,17 @@
+{
+  "name": "kronos-launch",
+  "version": "1.0.0",
+  "description": "Hyperframes composition for the Kronos launch tweet (18s MP4 + OG image).",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "hyperframes render --fps 30 --quality standard --workers 1",
+    "preview": "hyperframes preview",
+    "lint": "hyperframes lint",
+    "render:og": "node scripts/render-og.mjs",
+    "data:refresh": "node scripts/generate-data.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.41.0"
+  }
+}

@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @font-face {
+        font-family: "Playfair";
+        font-weight: 700;
+        src: url("fonts/PlayfairDisplay-700.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Playfair";
+        font-weight: 400;
+        font-style: italic;
+        src: url("fonts/PlayfairDisplay-400i.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Outfit";
+        font-weight: 400;
+        src: url("fonts/Outfit-400.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "DM Mono";
+        font-weight: 500;
+        src: url("fonts/DMMono-500.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        font-weight: 600;
+        src: url("fonts/JetBrainsMono-600.woff2") format("woff2");
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1200px;
+        height: 675px;
+        background: #0C0E11;
+        color: #E8E8E8;
+        font-family: "Outfit", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+      }
+
+      .og {
+        position: relative;
+        width: 1200px;
+        height: 675px;
+        padding: 56px 72px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 28px;
+      }
+
+      /* ── Subtle grid background ── */
+      .og::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(rgba(30, 34, 41, 0.5) 1px, transparent 1px) 0 0 / 80px 80px,
+          linear-gradient(90deg, rgba(30, 34, 41, 0.5) 1px, transparent 1px) 0 0 / 80px 80px;
+        mask-image: radial-gradient(ellipse at center, black 40%, transparent 85%);
+        pointer-events: none;
+      }
+
+      .og::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse at top left, rgba(107, 142, 160, 0.08), transparent 55%),
+          radial-gradient(ellipse at bottom right, rgba(201, 184, 159, 0.06), transparent 55%);
+        pointer-events: none;
+      }
+
+      /* ── Header ── */
+      .header {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+
+      .k-logo {
+        width: 96px;
+        height: 96px;
+        filter: saturate(0.55) hue-rotate(-15deg) brightness(1.05);
+      }
+
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      h1 {
+        font-family: "Playfair", serif;
+        font-weight: 700;
+        font-size: 108px;
+        letter-spacing: -0.035em;
+        color: #F5F3EF;
+        line-height: 0.95;
+      }
+
+      .subtitle {
+        font-family: "Outfit", sans-serif;
+        font-size: 26px;
+        color: #9AA0A8;
+        line-height: 1.2;
+      }
+
+      .subtitle em {
+        color: #C9B89F;
+        font-style: italic;
+        font-family: "Playfair", serif;
+      }
+
+      .cham {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .cham-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 1px solid rgba(201, 184, 159, 0.3);
+      }
+
+      .cham-txt {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+        line-height: 1;
+      }
+
+      .cham-kicker {
+        font-family: "DM Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        color: #F5F3EF;
+      }
+
+      .cham-url {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: #C9B89F;
+        letter-spacing: 0.05em;
+      }
+
+      /* ── Chart ── */
+      .chart-wrap {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      #chart-svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        overflow: hidden;
+      }
+
+      /* ── Footer ── */
+      .footer {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+
+      .asset {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .asset-kicker {
+        font-family: "DM Mono", monospace;
+        font-size: 14px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #9AA0A8;
+      }
+
+      .asset-pair {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 24px;
+        font-weight: 600;
+        color: #F5F3EF;
+        letter-spacing: 0.02em;
+      }
+
+      .result {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+      }
+
+      .result-delta {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 600;
+        font-size: 68px;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+
+      .result-delta.down { color: #C7555A; }
+      .result-delta.up { color: #5BAA7C; }
+
+      .result-sub {
+        font-family: "Playfair", serif;
+        font-style: italic;
+        font-size: 22px;
+        color: #9AA0A8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="og">
+      <header class="header">
+        <div class="brand">
+          <img class="k-logo" src="assets/kronos-logo.svg" alt="" />
+          <div class="brand-text">
+            <h1>Kronos</h1>
+            <p class="subtitle">Modelo fundacional en series <em>OHLCV</em>.</p>
+          </div>
+        </div>
+        <div class="cham">
+          <img class="cham-logo" src="assets/chamillion-logo.jpg" alt="" />
+          <div class="cham-txt">
+            <span class="cham-kicker">CHAMILLION</span>
+            <span class="cham-url">/kronos</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="chart-wrap">
+        <svg id="chart-svg" viewBox="0 0 1056 320" preserveAspectRatio="none"></svg>
+      </div>
+
+      <footer class="footer">
+        <div class="asset">
+          <span class="asset-kicker">Bitcoin · 1 hora · 24 velas predichas</span>
+          <span class="asset-pair">BTC/USDT</span>
+        </div>
+        <div class="result">
+          <span class="result-delta down" id="delta">-1.09%</span>
+          <span class="result-sub">predicho para las próximas 24 horas</span>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module">
+      const [history, prediction] = await Promise.all([
+        fetch("data/btc-history.json").then((r) => r.json()),
+        fetch("data/btc-prediction.json").then((r) => r.json()),
+      ]);
+
+      // Show only the last 30 historical candles for a cleaner, bigger look
+      const histDisplay = history.slice(-30);
+
+      // SVG chart
+      const W = 1056, H = 320;
+      const padTop = 6, padBottom = 6, padLeft = 0, padRight = 60; // right padding for price labels
+      const chartW = W - padLeft - padRight;
+      const chartH = H - padTop - padBottom;
+
+      const total = histDisplay.length + prediction.length;
+      const gap = 3;
+      const candleW = (chartW - gap * (total - 1)) / total;
+      const step = candleW + gap;
+
+      const all = [...histDisplay, ...prediction];
+      let minP = Infinity, maxP = -Infinity;
+      for (const c of all) {
+        if (c.l < minP) minP = c.l;
+        if (c.h > maxP) maxP = c.h;
+      }
+      const range = maxP - minP || 1;
+      minP -= range * 0.08;
+      maxP += range * 0.08;
+      const yScale = (p) => padTop + ((maxP - p) / (maxP - minP)) * chartH;
+
+      const svg = document.getElementById("chart-svg");
+      const svgNS = "http://www.w3.org/2000/svg";
+
+      // Grid lines
+      const NLINES = 4;
+      for (let i = 0; i <= NLINES; i++) {
+        const y = padTop + (chartH * i) / NLINES;
+        const line = document.createElementNS(svgNS, "line");
+        line.setAttribute("x1", padLeft);
+        line.setAttribute("x2", W - padRight);
+        line.setAttribute("y1", y);
+        line.setAttribute("y2", y);
+        line.setAttribute("stroke", "#1E2229");
+        line.setAttribute("stroke-width", "1");
+        svg.appendChild(line);
+
+        const p = maxP - ((maxP - minP) * i) / NLINES;
+        const lbl = document.createElementNS(svgNS, "text");
+        lbl.setAttribute("x", W - 4);
+        lbl.setAttribute("y", y - 4);
+        lbl.setAttribute("text-anchor", "end");
+        lbl.setAttribute("font-family", "JetBrains Mono, monospace");
+        lbl.setAttribute("font-size", "11");
+        lbl.setAttribute("fill", "#6B7078");
+        lbl.textContent = `$${p.toLocaleString("es-ES", { maximumFractionDigits: 0 })}`;
+        svg.appendChild(lbl);
+      }
+
+      // Separator
+      const sepX = padLeft + histDisplay.length * step - gap / 2;
+      const sep = document.createElementNS(svgNS, "line");
+      sep.setAttribute("x1", sepX);
+      sep.setAttribute("x2", sepX);
+      sep.setAttribute("y1", padTop);
+      sep.setAttribute("y2", H - padBottom);
+      sep.setAttribute("stroke", "#C9B89F");
+      sep.setAttribute("stroke-width", "1");
+      sep.setAttribute("stroke-dasharray", "4 4");
+      sep.setAttribute("opacity", "0.5");
+      svg.appendChild(sep);
+
+      // Last historical close reference
+      const lastHist = histDisplay[histDisplay.length - 1];
+      const lastY = yScale(lastHist.c);
+      const refLine = document.createElementNS(svgNS, "line");
+      refLine.setAttribute("x1", padLeft);
+      refLine.setAttribute("x2", W - padRight);
+      refLine.setAttribute("y1", lastY);
+      refLine.setAttribute("y2", lastY);
+      refLine.setAttribute("stroke", "rgba(201, 184, 159, 0.35)");
+      refLine.setAttribute("stroke-width", "1");
+      refLine.setAttribute("stroke-dasharray", "3 4");
+      svg.appendChild(refLine);
+
+      // Draw candles
+      function drawCandle(c, index, colorUp, colorDown) {
+        const x = padLeft + index * step;
+        const up = c.c >= c.o;
+        const color = up ? colorUp : colorDown;
+        const bodyTop = yScale(Math.max(c.o, c.c));
+        const bodyBot = yScale(Math.min(c.o, c.c));
+        const bodyH = Math.max(1, bodyBot - bodyTop);
+        const wickX = x + candleW / 2;
+
+        const wick = document.createElementNS(svgNS, "line");
+        wick.setAttribute("x1", wickX);
+        wick.setAttribute("x2", wickX);
+        wick.setAttribute("y1", yScale(c.h));
+        wick.setAttribute("y2", yScale(c.l));
+        wick.setAttribute("stroke", color);
+        wick.setAttribute("stroke-width", "1.5");
+        svg.appendChild(wick);
+
+        const body = document.createElementNS(svgNS, "rect");
+        body.setAttribute("x", x);
+        body.setAttribute("y", bodyTop);
+        body.setAttribute("width", candleW);
+        body.setAttribute("height", bodyH);
+        body.setAttribute("fill", color);
+        svg.appendChild(body);
+      }
+
+      histDisplay.forEach((c, i) => drawCandle(c, i, "#5BAA7C", "#C7555A"));
+      prediction.forEach((c, i) =>
+        drawCandle(c, histDisplay.length + i, "#6B8EA0", "#4A6E80"),
+      );
+
+      // Delta number
+      const lastPred = prediction[prediction.length - 1].c;
+      const delta = ((lastPred - lastHist.c) / lastHist.c) * 100;
+      const sign = delta >= 0 ? "+" : "";
+      const deltaEl = document.getElementById("delta");
+      deltaEl.textContent = `${sign}${delta.toFixed(2)}%`;
+      deltaEl.classList.toggle("up", delta >= 0);
+      deltaEl.classList.toggle("down", delta < 0);
+
+      // Signal readiness for screenshot
+      window.__READY = true;
+    </script>
+
+  </body>
+</html>

@@ -13,14 +13,21 @@ and a real Kronos-mini prediction from the Modal endpoint.
 ## Commands
 
 ```bash
-npx hyperframes preview                   # live-reload browser editor
-npx hyperframes lint                      # validate composition
-npx hyperframes render --quality standard # final MP4 → renders/
-npx hyperframes snapshot --at 6,12        # capture PNG frames for debug
+npm run preview           # live-reload browser editor (npx hyperframes preview)
+npm run lint              # validate composition
+npm run render            # final MP4 → renders/kronos-launch_*.mp4
+npm run render:og         # regenerate public/kronos/og-image.png (1200×675)
+npm run data:refresh      # fetch fresh Binance + Kronos prediction
 ```
 
-Output goes to `renders/` by default. For the tweet asset, use
-`--output dist/kronos-launch.mp4`.
+Requires Node 22+ (Hyperframes) and ffmpeg on PATH.
+
+Chrome binary used by the OG screenshot script is the one bundled by
+Hyperframes (under `~/.cache/hyperframes/chrome/…`). Install it once:
+
+```bash
+npx hyperframes browser ensure
+```
 
 ## Regenerating the data
 

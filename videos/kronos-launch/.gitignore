@@ -1,4 +1,5 @@
 renders/
 snapshots/
 node_modules/
+package-lock.json
 *.log
