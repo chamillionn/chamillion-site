@@ -1391,10 +1391,13 @@
 
   .terminalSide {
     margin-top: 0;
+    height: auto;
+    max-height: 240px;
   }
 
   .terminalSide .terminalBody {
     max-height: 200px;
+    flex: none;
   }
 }
 
