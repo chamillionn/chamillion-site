@@ -6,7 +6,7 @@ import styles from "./public-header.module.css";
 
 const TITLE = "Kronos — Modelo fundacional en OHLCV";
 const DESCRIPTION =
-  "Predice las próximas 24 velas sobre BTC, ETH, oro, S&P 500, EUR/USD y más. 3 predicciones gratis por día.";
+  "Predice las próximas 24 velas sobre BTC, ETH, oro, S&P 500, EUR/USD y más.";
 const PAGE_URL = "https://chamillion.site/kronos";
 const IMAGE = "https://chamillion.site/kronos/og-image.png";
 
