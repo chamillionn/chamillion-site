@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { fetchCandles, fetchPairs, TIMEFRAMES, getTimeframeLabel } from "@/lib/binance";
+import { getTimeframeLabel } from "@/lib/binance";
 import { predict, resultToCandles, KRONOS_MODELS } from "@/lib/kronos";
-import type { Candle, Timeframe, TradingPair } from "@/lib/binance";
+import type { Candle, Timeframe } from "@/lib/binance";
 import type { KronosModel } from "@/lib/kronos";
+import {
+  CATALOG,
+  FREE_ASSETS,
+  PREMIUM_CRYPTO_FAVORITES,
+  categoryLabel,
+  type AssetCategory,
+  type AssetMeta,
+} from "@/lib/assets";
 import styles from "./kronos.module.css";
 
 type Status = "idle" | "loading-candles" | "predicting" | "done" | "error";
@@ -38,8 +46,16 @@ function friendlyError(msg: string): string {
   return msg;
 }
 
+function formatHistorySymbol(symbol: string): string {
+  if (/USDT$/.test(symbol)) return `${symbol.replace("USDT", "")}/USDT`;
+  // Known catalog match gets a pretty label
+  const asset = CATALOG.find((a) => a.symbol === symbol);
+  if (asset) return asset.label;
+  return symbol;
+}
+
 function buildDefaultComment(
-  base: string,
+  asset: AssetMeta,
   timeframe: string,
   model: string,
   candles: Candle[],
@@ -54,7 +70,7 @@ function buildDefaultComment(
     n >= 1000
       ? n.toLocaleString("es-ES", { maximumFractionDigits: 0 })
       : n.toLocaleString("es-ES", { maximumFractionDigits: 4 });
-  return `Predicción de ${base}/USDT en ${timeframe} con Kronos-${model}. Último cierre $${fmt(lastPrice)} → cierre predicho $${fmt(lastPred)} (${sign}${delta.toFixed(2)}%) a 24 velas.`;
+  return `Predicción de ${asset.label} en ${timeframe} con Kronos-${model}. Último cierre ${fmt(lastPrice)} → cierre predicho ${fmt(lastPred)} (${sign}${delta.toFixed(2)}%) a 24 velas.`;
 }
 
 export type KronosMode = "member" | "anon";
@@ -66,6 +82,8 @@ interface StatusInfo {
   remaining: number | null;
   resetsAt: string | null;
   max: number | null;
+  twelveDataBlocked?: boolean;
+  twelveDataUntil?: string | null;
 }
 
 export default function KronosClient({
@@ -77,8 +95,9 @@ export default function KronosClient({
   const chartInstance = useRef<ReturnType<typeof import("lightweight-charts").createChart> | null>(null);
   const assetSelectorRef = useRef<HTMLDivElement>(null);
 
-  const [pairs, setPairs] = useState<TradingPair[]>([]);
-  const [symbol, setSymbol] = useState("BTCUSDT");
+  const [extraAssets, setExtraAssets] = useState<AssetMeta[]>([]);
+  const [assetId, setAssetId] = useState("btc");
+  const [categoryFilter, setCategoryFilter] = useState<AssetCategory | "all">("all");
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
   const [model, setModel] = useState<KronosModel>(isAnon ? "mini" : "small");
   const [statusInfo, setStatusInfo] = useState<StatusInfo | null>(null);
@@ -95,6 +114,19 @@ export default function KronosClient({
   const logRef = useRef<HTMLDivElement>(null);
   const [isDark, setIsDark] = useState(true);
   const [predictElapsed, setPredictElapsed] = useState(0);
+
+  const allAssets = useMemo<AssetMeta[]>(() => [...CATALOG, ...extraAssets], [extraAssets]);
+  const currentAsset = useMemo<AssetMeta>(
+    () => allAssets.find((a) => a.id === assetId) ?? FREE_ASSETS[0],
+    [allAssets, assetId],
+  );
+
+  // If user switches to an asset whose TFs exclude the current one, snap to 1h
+  useEffect(() => {
+    if (!currentAsset.timeframes.includes(timeframe)) {
+      setTimeframe(currentAsset.timeframes[0] ?? "1h");
+    }
+  }, [currentAsset, timeframe]);
 
   // Tick elapsed time while predicting (0.1s resolution)
   useEffect(() => {
@@ -138,18 +170,41 @@ export default function KronosClient({
     });
   }
 
-  // Load pairs on mount
+  // Load Binance extra pairs — only for members (anon has the curated free list + premium teasers)
   useEffect(() => {
+    if (isAnon) return;
     log(`Conectando a Binance data-api.binance.vision...`);
-    fetchPairs().then((p) => {
-      setPairs(p);
-      log(`${p.length} pares USDT activos encontrados (status=TRADING)`);
-    }).catch((e) => {
-      log(`ERROR Binance exchangeInfo: ${e.message}`);
-      setError("No se pudieron cargar los pares de Binance. Comprueba tu conexión.");
-    });
+    fetch("https://data-api.binance.vision/api/v3/exchangeInfo?permissions=SPOT")
+      .then((r) => r.json())
+      .then((data: { symbols: { symbol: string; baseAsset: string; quoteAsset: string; status: string }[] }) => {
+        const reserved = new Set(CATALOG.filter((a) => a.source === "binance").map((a) => a.symbol));
+        const favSet = new Set(PREMIUM_CRYPTO_FAVORITES);
+        const extras: AssetMeta[] = data.symbols
+          .filter((s) => s.quoteAsset === "USDT" && s.status === "TRADING" && !reserved.has(s.symbol))
+          .map((s) => ({
+            id: `bnb-${s.baseAsset.toLowerCase()}`,
+            symbol: s.symbol,
+            source: "binance" as const,
+            label: s.baseAsset,
+            sublabel: `${s.baseAsset}/USDT`,
+            category: "crypto" as const,
+            tier: "premium" as const,
+            timeframes: ["1h", "4h", "1d"] as Timeframe[],
+          }))
+          .sort((a, b) => {
+            const aFav = favSet.has(a.label) ? 0 : 1;
+            const bFav = favSet.has(b.label) ? 0 : 1;
+            if (aFav !== bFav) return aFav - bFav;
+            return a.label.localeCompare(b.label);
+          });
+        setExtraAssets(extras);
+        log(`${extras.length} pares USDT extra cargados (premium)`);
+      })
+      .catch((e) => {
+        log(`ERROR Binance exchangeInfo: ${e.message}`);
+      });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAnon]);
 
   // Load history on mount
   useEffect(() => {
@@ -192,21 +247,31 @@ export default function KronosClient({
     return () => document.removeEventListener("keydown", onKey);
   }, [assetOpen]);
 
-  const loadCandles = useCallback(async (sym: string, tf: Timeframe) => {
+  const loadCandles = useCallback(async (asset: AssetMeta, tf: Timeframe) => {
     setStatus("loading-candles");
     setError(null);
     setPredicted([]);
     setSavedId(null);
-    log(`GET /klines?symbol=${sym}&interval=${tf}&limit=512`);
+    const qs = asset.id.startsWith("bnb-")
+      ? `bnb=${encodeURIComponent(asset.symbol)}&tf=${tf}&limit=512`
+      : `id=${asset.id}&tf=${tf}&limit=512`;
+    log(`GET /api/kronos/candles?${qs}  (source=${asset.source})`);
     const t0 = performance.now();
     try {
-      const data = await fetchCandles(sym, tf, 512);
+      const res = await fetch(`/api/kronos/candles?${qs}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(body.message || body.error || `HTTP ${res.status}`);
+      }
+      const payload = (await res.json()) as { candles: Candle[] };
+      const data = payload.candles;
       const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+      if (data.length === 0) throw new Error("Proveedor devolvió 0 velas");
       setCandles(data);
       const first = new Date(data[0].time * 1000);
       const last = new Date(data[data.length - 1].time * 1000);
       log(`← ${data.length} velas (${elapsed}s) | ${first.toLocaleDateString("es-ES")} ${first.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })} → ${last.toLocaleDateString("es-ES")} ${last.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`);
-      log(`Rango de precio: $${Math.min(...data.map(c=>c.low)).toLocaleString("es-ES", {maximumFractionDigits:2})} — $${Math.max(...data.map(c=>c.high)).toLocaleString("es-ES", {maximumFractionDigits:2})}`);
+      log(`Rango de precio: ${Math.min(...data.map(c=>c.low)).toLocaleString("es-ES", {maximumFractionDigits:2})} — ${Math.max(...data.map(c=>c.high)).toLocaleString("es-ES", {maximumFractionDigits:2})}`);
       setStatus("idle");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "fallo en fetch";
@@ -218,8 +283,8 @@ export default function KronosClient({
   }, []);
 
   useEffect(() => {
-    loadCandles(symbol, timeframe);
-  }, [symbol, timeframe, loadCandles]);
+    loadCandles(currentAsset, timeframe);
+  }, [currentAsset, timeframe, loadCandles]);
 
   // Render chart
   useEffect(() => {
@@ -357,8 +422,6 @@ export default function KronosClient({
     };
   }, [candles, predicted, predView, isDark]);
 
-  const currentBase = pairs.find((p) => p.symbol === symbol)?.base ?? symbol.replace("USDT", "");
-
   async function handlePredict() {
     if (candles.length === 0) return;
     setStatus("predicting");
@@ -366,8 +429,8 @@ export default function KronosClient({
     setPredicted([]);
     setSavedId(null);
 
-    // Snapshot config — if user changes symbol/tf/model mid-flight we discard the result
-    const reqSymbol = symbol;
+    // Snapshot config — if user changes asset/tf/model mid-flight we discard the result
+    const reqAssetId = assetId;
     const reqTimeframe = timeframe;
     const reqModel = model;
 
@@ -375,7 +438,7 @@ export default function KronosClient({
     const lastPrice = lastCandle.close;
 
     log(`────── predict() ──────`);
-    log(`Asset: ${currentBase}/USDT`);
+    log(`Asset: ${currentAsset.label} (${currentAsset.sublabel ?? currentAsset.symbol}) · ${currentAsset.source}`);
     log(`Timeframe: ${timeframe} (${getTimeframeLabel(timeframe)})`);
     const modelInfo = KRONOS_MODELS.find((m) => m.id === model);
     if (!modelInfo) {
@@ -398,10 +461,9 @@ export default function KronosClient({
       const result = await predict(candles, 24, model);
 
       // Drift guard — user changed asset/tf/model mid-flight; discard
-      if (reqSymbol !== symbol || reqTimeframe !== timeframe || reqModel !== model) {
+      if (reqAssetId !== assetId || reqTimeframe !== timeframe || reqModel !== model) {
         log(`(resultado descartado — cambiaste de activo/TF/modelo)`);
-        // loadCandles will reset status if symbol/tf changed; otherwise reset here
-        if (reqSymbol === symbol && reqTimeframe === timeframe) {
+        if (reqAssetId === assetId && reqTimeframe === timeframe) {
           setStatus("idle");
         }
         return;
@@ -466,9 +528,11 @@ export default function KronosClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          symbol,
+          symbol: currentAsset.symbol,
           timeframe,
           model,
+          source: currentAsset.source,
+          assetLabel: currentAsset.label,
           email: saveEmail.trim() || undefined,
           comment: saveComment.trim() || undefined,
           inputCandles: candles,
@@ -497,10 +561,6 @@ export default function KronosClient({
       setSaving(false);
     }
   }
-
-  const filteredPairs = search.trim()
-    ? pairs.filter((p) => p.base.toLowerCase().includes(search.trim().toLowerCase()))
-    : pairs.slice(0, 30);
 
   return (
     <div className={`page-transition ${styles.page}`}>
@@ -531,7 +591,10 @@ export default function KronosClient({
             aria-expanded={assetOpen}
             aria-haspopup="listbox"
           >
-            <span className={styles.assetName}>{currentBase}/USDT</span>
+            <span className={styles.assetName}>{currentAsset.label}</span>
+            {currentAsset.sublabel && (
+              <span className={styles.assetSub}>{currentAsset.sublabel}</span>
+            )}
             <svg className={styles.assetChevron} width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M2.5 4L5 6.5L7.5 4" />
             </svg>
@@ -548,26 +611,102 @@ export default function KronosClient({
                 spellCheck={false}
                 autoFocus
               />
+              <div className={styles.assetCats}>
+                {(["all","crypto","stock","index","forex","commodity"] as const).map((c) => (
+                  <button
+                    key={c}
+                    className={`${styles.assetCatBtn} ${categoryFilter === c ? styles.assetCatBtnActive : ""}`}
+                    onClick={() => setCategoryFilter(c)}
+                  >
+                    {c === "all" ? "Todo" : categoryLabel(c)}
+                  </button>
+                ))}
+              </div>
               <div className={styles.assetList} role="listbox">
-                {filteredPairs.length === 0 ? (
-                  <span className={styles.assetEmpty}>Sin resultados</span>
-                ) : (
-                  filteredPairs.map((p) => (
-                    <button
-                      key={p.symbol}
-                      role="option"
-                      aria-selected={p.symbol === symbol}
-                      className={`${styles.assetOption} ${p.symbol === symbol ? styles.assetOptionActive : ""}`}
-                      onClick={() => {
-                        setSymbol(p.symbol);
-                        setSearch("");
-                        setAssetOpen(false);
-                      }}
-                    >
-                      {p.base}
-                    </button>
-                  ))
-                )}
+                {(() => {
+                  const q = search.trim().toLowerCase();
+                  const filtered = allAssets.filter((a) => {
+                    if (categoryFilter !== "all" && a.category !== categoryFilter) return false;
+                    if (!q) return true;
+                    return (
+                      a.label.toLowerCase().includes(q) ||
+                      a.symbol.toLowerCase().includes(q) ||
+                      (a.sublabel?.toLowerCase().includes(q) ?? false)
+                    );
+                  });
+                  // Free first, then premium (preserving within-group order)
+                  const free = filtered.filter((a) => a.tier === "free");
+                  const premium = filtered.filter((a) => a.tier === "premium");
+                  const ordered = [...free, ...premium];
+                  if (ordered.length === 0) {
+                    return <span className={styles.assetEmpty}>Sin resultados</span>;
+                  }
+                  return ordered.map((a) => {
+                    const locked = isAnon && a.tier === "premium";
+                    const tdDown = !!statusInfo?.twelveDataBlocked && a.source === "twelvedata";
+                    const isActive = a.id === assetId;
+                    const inner = (
+                      <>
+                        <span className={styles.assetOptionLabel}>{a.label}</span>
+                        {a.sublabel && (
+                          <span className={styles.assetOptionSub}>{a.sublabel}</span>
+                        )}
+                        {tdDown && (
+                          <span className={styles.assetOptionDown} title="Datos temporalmente no disponibles" aria-hidden="true">
+                            offline
+                          </span>
+                        )}
+                        {!tdDown && a.tier === "premium" && (
+                          <span className={styles.assetOptionBadge} aria-hidden="true">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2l2.8 6.3 6.9.6-5.2 4.7 1.6 6.8L12 16.9 5.9 20.4l1.6-6.8L2.3 8.9l6.9-.6L12 2z" />
+                            </svg>
+                            Premium
+                          </span>
+                        )}
+                      </>
+                    );
+                    if (locked) {
+                      return (
+                        <Link
+                          key={a.id}
+                          href="/suscribirse"
+                          className={`${styles.assetOption} ${styles.assetOptionLocked}`}
+                          aria-label={`${a.label} — suscríbete para acceder`}
+                        >
+                          {inner}
+                        </Link>
+                      );
+                    }
+                    if (tdDown) {
+                      return (
+                        <button
+                          key={a.id}
+                          disabled
+                          className={`${styles.assetOption} ${styles.assetOptionDisabled}`}
+                          aria-label={`${a.label} — datos temporalmente no disponibles`}
+                        >
+                          {inner}
+                        </button>
+                      );
+                    }
+                    return (
+                      <button
+                        key={a.id}
+                        role="option"
+                        aria-selected={isActive}
+                        className={`${styles.assetOption} ${isActive ? styles.assetOptionActive : ""}`}
+                        onClick={() => {
+                          setAssetId(a.id);
+                          setSearch("");
+                          setAssetOpen(false);
+                        }}
+                      >
+                        {inner}
+                      </button>
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}
@@ -575,7 +714,7 @@ export default function KronosClient({
 
         {/* Timeframe */}
         <div className={styles.tfGroup}>
-          {TIMEFRAMES.map((tf) => (
+          {currentAsset.timeframes.map((tf) => (
             <button
               key={tf}
               className={`${styles.tfBtn} ${tf === timeframe ? styles.tfBtnActive : ""}`}
@@ -727,7 +866,7 @@ export default function KronosClient({
               className={`${styles.saveBtn} ${savedId ? styles.saveBtnDone : ""}`}
               onClick={() => {
                 if (!saveOpen && !saveComment) {
-                  setSaveComment(buildDefaultComment(currentBase, timeframe, model, candles, predicted));
+                  setSaveComment(buildDefaultComment(currentAsset, timeframe, model, candles, predicted));
                 }
                 setSaveOpen(!saveOpen);
               }}
@@ -809,7 +948,7 @@ export default function KronosClient({
             className={styles.retryBtn}
             onClick={() => {
               if (status === "error" && candles.length === 0) {
-                loadCandles(symbol, timeframe);
+                loadCandles(currentAsset, timeframe);
               } else {
                 handlePredict();
               }
@@ -994,7 +1133,7 @@ export default function KronosClient({
                       title={inProgress ? "En progreso — aún dentro del rango predicho" : "Finalizada — el rango predicho ya pasó"}
                       aria-label={inProgress ? "En progreso" : "Finalizada"}
                     />
-                    <span className={styles.historyAsset}>{h.symbol.replace("USDT", "")}/USDT</span>
+                    <span className={styles.historyAsset}>{formatHistorySymbol(h.symbol)}</span>
                     <span className={styles.historyTf}>{h.timeframe}</span>
                     {h.model && <span className={styles.historyModel}>{h.model}</span>}
                     {h.comment && <span className={styles.historyComment}>&ldquo;{h.comment}&rdquo;</span>}

@@ -11,6 +11,7 @@ import {
   resetsAt,
 } from "@/lib/kronos-rate-limit";
 import { isKronosEnabled } from "@/lib/kronos-status";
+import { isTwelveBlocked } from "@/lib/twelvedata-usage";
 
 export async function GET() {
   const killSwitch = await isKronosEnabled();
@@ -24,6 +25,8 @@ export async function GET() {
       : null;
   const globalResetsAt = gStatus.tripped ? gStatus.resetsAt : null;
 
+  const tdBlock = isTwelveBlocked();
+
   const ctx = await getOptionalUser();
 
   if (ctx && (ctx.profile.role === "member" || ctx.profile.role === "admin")) {
@@ -35,6 +38,8 @@ export async function GET() {
       resetsAt: null,
       max: null,
       mode: "member",
+      twelveDataBlocked: tdBlock.blocked,
+      twelveDataUntil: tdBlock.blocked ? new Date(tdBlock.untilTs).toISOString() : null,
     });
   }
 
@@ -50,5 +55,7 @@ export async function GET() {
     resetsAt: resetsAt(counter),
     max: KRONOS_ANON_MAX,
     mode: "anon",
+    twelveDataBlocked: tdBlock.blocked,
+    twelveDataUntil: tdBlock.blocked ? new Date(tdBlock.untilTs).toISOString() : null,
   });
 }

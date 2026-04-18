@@ -5,8 +5,16 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Candle, Timeframe } from "@/lib/binance";
 import { getTimeframeLabel } from "@/lib/binance";
+import { CATALOG } from "@/lib/assets";
 import { computeAllMetrics } from "@/lib/kronos-metrics";
 import styles from "./shared.module.css";
+
+function prettyLabel(symbol: string): string {
+  const asset = CATALOG.find((a) => a.symbol === symbol);
+  if (asset) return asset.label;
+  if (/USDT$/.test(symbol)) return `${symbol.replace("USDT", "")}/USDT`;
+  return symbol;
+}
 
 interface PredictionMeta {
   id: string;
@@ -55,7 +63,7 @@ export default function SharedClient({
     );
   }, []);
 
-  const base = prediction.symbol.replace("USDT", "");
+  const base = prettyLabel(prediction.symbol);
   const lastKnownClose = inputCandles[inputCandles.length - 1]?.close ?? 0;
 
   const metrics = actualCandles.length > 0
@@ -180,7 +188,7 @@ export default function SharedClient({
   }
 
   const tweetText = encodeURIComponent(
-    `Predicción Kronos para ${base}/USDT (${getTimeframeLabel(prediction.timeframe)}) — ${prediction.comment ? `"${prediction.comment}"` : "ver resultado"}`,
+    `Predicción Kronos para ${base} (${getTimeframeLabel(prediction.timeframe)}) — ${prediction.comment ? `"${prediction.comment}"` : "ver resultado"}`,
   );
   const tweetUrl = typeof window !== "undefined"
     ? `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(window.location.href)}`
@@ -204,7 +212,7 @@ export default function SharedClient({
             </span>
           </div>
           <h1 className={styles.title}>
-            <span className={styles.titleAsset}>{base}/USDT</span>
+            <span className={styles.titleAsset}>{base}</span>
             <span className={styles.titleSep}>·</span>
             <span className={styles.titleTf}>{getTimeframeLabel(prediction.timeframe)}</span>
           </h1>

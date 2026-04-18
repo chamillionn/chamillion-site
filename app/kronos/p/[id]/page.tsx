@@ -3,7 +3,26 @@ import { createServiceClient } from "@/lib/supabase/server";
 import type { KronosPrediction } from "@/lib/supabase/types";
 import type { Candle, Timeframe } from "@/lib/binance";
 import { fetchCandlesByRange } from "@/lib/binance";
+import { fetchTwelveCandlesByRange } from "@/lib/twelvedata";
+import { CATALOG } from "@/lib/assets";
 import SharedClient from "./shared-client";
+
+/** Best-effort source detection from the stored symbol. Catalog-known
+ *  symbols use their declared source; pairs ending in USDT fall back to
+ *  Binance; everything else routes to Twelve Data. */
+function detectSource(symbol: string): "binance" | "twelvedata" {
+  const fromCatalog = CATALOG.find((a) => a.symbol === symbol);
+  if (fromCatalog) return fromCatalog.source;
+  if (/USDT$/.test(symbol) && /^[A-Z0-9]+$/.test(symbol)) return "binance";
+  return "twelvedata";
+}
+
+function prettyLabel(symbol: string): string {
+  const asset = CATALOG.find((a) => a.symbol === symbol);
+  if (asset) return asset.label;
+  if (/USDT$/.test(symbol)) return `${symbol.replace("USDT", "")}/USDT`;
+  return symbol;
+}
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -21,9 +40,9 @@ export async function generateMetadata({ params }: PageProps) {
   const p = data as { symbol: string; timeframe: string; comment: string | null } | null;
   if (!p) return { title: "Predicción no encontrada" };
 
-  const asset = p.symbol.replace("USDT", "");
-  const title = `Kronos — ${asset}/USDT (${p.timeframe})`;
-  const description = p.comment || `Predicción de velas con Kronos para ${asset}/USDT en timeframe ${p.timeframe}.`;
+  const label = prettyLabel(p.symbol);
+  const title = `Kronos — ${label} (${p.timeframe})`;
+  const description = p.comment || `Predicción de velas con Kronos para ${label} en timeframe ${p.timeframe}.`;
 
   return {
     title,
@@ -57,14 +76,16 @@ export default async function SharedPredictionPage({ params }: PageProps) {
     // Only fetch if the prediction period has started
     if (Date.now() > startMs) {
       try {
-        actualCandles = await fetchCandlesByRange(
+        const source = detectSource(prediction.symbol);
+        const fetcher = source === "twelvedata" ? fetchTwelveCandlesByRange : fetchCandlesByRange;
+        actualCandles = await fetcher(
           prediction.symbol,
           prediction.timeframe as Timeframe,
           startMs,
           endMs,
         );
       } catch {
-        // If Binance fails, continue without actual data
+        // If provider fails, continue without actual data
         actualCandles = [];
       }
     }
