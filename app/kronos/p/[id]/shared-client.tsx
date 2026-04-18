@@ -361,13 +361,13 @@ export default function SharedClient({
           <span className={styles.chamillionBody}>
             <span className={styles.chamillionKicker}>
               <span className={styles.chamillionDot} />
-              Chamillion · Estudio
+              Chamillion
             </span>
             <span className={styles.chamillionTitle}>
-              Documentando la vanguardia de los mercados.
+              Documentando la vanguardia de los mercados financieros.
             </span>
             <span className={styles.chamillionSubtext}>
-              Cartera verificable en tiempo real, newsletter, herramientas como Kronos. <em>Con un ojo en cada pantalla.</em>
+              <em>Con un ojo en cada pantalla.</em>
             </span>
             <span className={styles.chamillionAction}>
               <span className={styles.chamillionActionText}>Descubrir Chamillion</span>
