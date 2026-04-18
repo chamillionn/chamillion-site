@@ -43,6 +43,19 @@ const SERVICES: ServiceInfo[] = [
     ],
   },
   {
+    name: "Twelve Data",
+    plan: "Basic (Free)",
+    icon: "M3 12h18M3 6h18M3 18h18",
+    dashboardUrl: "https://twelvedata.com/account/usage",
+    limits: [
+      { label: "Requests/día", value: "800" },
+      { label: "Requests/minuto", value: "8" },
+      { label: "Activos", value: "Acciones, índices, forex, commodities" },
+    ],
+    liveUsage: true,
+    notes: "Usado para activos no-crypto en Kronos. El tier free es compartido entre todos los usuarios.",
+  },
+  {
     name: "Modal",
     plan: "Free Tier",
     icon: "M4 6h16M4 12h16M4 18h16",
@@ -93,9 +106,23 @@ interface ModalUsage {
   items: { Description: string; Cost: string; "Interval Start": string }[];
 }
 
+interface TwelveUsage {
+  available: boolean;
+  usage?: {
+    currentUsage: number;
+    planLimit: number;
+    dailyUsage: number;
+    planDailyLimit: number;
+    planCategory: string;
+  };
+  block: { blocked: boolean; untilTs: number };
+}
+
 export default function RecursosClient({ dbCounts, totalRows, kronosEnabled }: Props) {
   const [modal, setModal] = useState<ModalUsage | null>(null);
   const [modalLoading, setModalLoading] = useState(true);
+  const [twelve, setTwelve] = useState<TwelveUsage | null>(null);
+  const [twelveLoading, setTwelveLoading] = useState(true);
   const [kronosOn, setKronosOn] = useState(kronosEnabled);
   const [pending, startTransition] = useTransition();
 
@@ -116,6 +143,14 @@ export default function RecursosClient({ dbCounts, totalRows, kronosEnabled }: P
       })
       .catch(() => {})
       .finally(() => setModalLoading(false));
+
+    fetch("/api/admin/twelvedata-usage")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.error) setTwelve(data);
+      })
+      .catch(() => {})
+      .finally(() => setTwelveLoading(false));
   }, []);
 
   return (
@@ -193,6 +228,55 @@ export default function RecursosClient({ dbCounts, totalRows, kronosEnabled }: P
                   </div>
                 ))}
               </div>
+
+              {svc.liveUsage && svc.name === "Twelve Data" && (
+                <div className={styles.usageBlock}>
+                  {twelveLoading ? (
+                    <span className={styles.usageLoading}>Cargando uso...</span>
+                  ) : twelve?.available && twelve.usage ? (
+                    <>
+                      <div className={styles.usageHeader}>
+                        <span className={styles.usageLabel}>Hoy</span>
+                        <span className={styles.usageValue}>
+                          {twelve.usage.dailyUsage} / {twelve.usage.planDailyLimit}
+                        </span>
+                      </div>
+                      <div className={styles.progressBar}>
+                        <div
+                          className={styles.progressFill}
+                          style={{ width: `${Math.min((twelve.usage.dailyUsage / twelve.usage.planDailyLimit) * 100, 100)}%` }}
+                        />
+                      </div>
+                      <div className={styles.usageHeader} style={{ marginTop: 8 }}>
+                        <span className={styles.usageLabel}>Este minuto</span>
+                        <span className={styles.usageValue}>
+                          {twelve.usage.currentUsage} / {twelve.usage.planLimit}
+                        </span>
+                      </div>
+                      <div className={styles.progressBar}>
+                        <div
+                          className={styles.progressFill}
+                          style={{ width: `${Math.min((twelve.usage.currentUsage / twelve.usage.planLimit) * 100, 100)}%` }}
+                        />
+                      </div>
+                      {twelve.block.blocked && (
+                        <p className={styles.serviceNotes} style={{ color: "#c7555a" }}>
+                          ⚠ Bloqueado hasta{" "}
+                          {new Date(twelve.block.untilTs).toLocaleTimeString("es-ES", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}{" "}
+                          — activos non-crypto temporalmente desactivados en /kronos.
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <span className={styles.usageLoading}>
+                      No se pudo obtener el uso (TWELVEDATA_API_KEY no configurada o API caída)
+                    </span>
+                  )}
+                </div>
+              )}
 
               {svc.liveUsage && svc.name === "Modal" && (
                 <>
