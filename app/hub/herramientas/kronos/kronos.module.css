@@ -869,14 +869,36 @@
 
 /* ── SAVE FORM ── */
 
-.saveBlock {
-  margin-top: 12px;
+.saveBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.saveDialog {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  padding: 14px;
+  border-radius: var(--radius-sm);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  animation: fadeIn 0.2s ease-out;
+  gap: 10px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: saveDialogIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes saveDialogIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .saveHeader {
@@ -1926,6 +1948,16 @@
   .tfBtn {
     padding: 9px 12px;
     font-size: 13px;
+  }
+
+  .saveBackdrop {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .saveDialog {
+    max-width: 100%;
+    padding: 16px;
   }
 
   .saveClose {

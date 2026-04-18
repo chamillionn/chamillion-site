@@ -159,6 +159,21 @@ export default function KronosClient({
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
 
+  // Lock body scroll + Esc-to-close while the save dialog is open
+  useEffect(() => {
+    if (!saveOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSaveOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [saveOpen]);
+
   // History
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
@@ -1078,40 +1093,50 @@ export default function KronosClient({
         </div>
       )}
 
-      {/* ── Save form ── */}
+      {/* ── Save dialog (modal) ── */}
       {saveOpen && (
-        <div className={styles.saveBlock}>
-          <div className={styles.saveHeader}>
-            <span>Guardar predicción</span>
+        <div
+          className={styles.saveBackdrop}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="save-dialog-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSaveOpen(false);
+          }}
+        >
+          <div className={styles.saveDialog}>
+            <div className={styles.saveHeader}>
+              <span id="save-dialog-title">Guardar predicción</span>
+              <button
+                className={styles.saveClose}
+                onClick={() => setSaveOpen(false)}
+                aria-label="Cerrar"
+              >
+                ×
+              </button>
+            </div>
+            <input
+              type="email"
+              className={styles.saveInput}
+              placeholder="Email (opcional, para recibir actualizaciones)"
+              value={saveEmail}
+              onChange={(e) => setSaveEmail(e.target.value)}
+            />
+            <textarea
+              className={styles.saveTextarea}
+              placeholder="Comentario (opcional): ¿qué ves? ¿qué esperas?"
+              value={saveComment}
+              onChange={(e) => setSaveComment(e.target.value)}
+              rows={3}
+            />
             <button
-              className={styles.saveClose}
-              onClick={() => setSaveOpen(false)}
-              aria-label="Cerrar"
+              className={styles.savePrimary}
+              onClick={handleSave}
+              disabled={saving}
             >
-              ×
+              {saving ? "Guardando..." : "Guardar predicción"}
             </button>
           </div>
-          <input
-            type="email"
-            className={styles.saveInput}
-            placeholder="Email (opcional, para recibir actualizaciones)"
-            value={saveEmail}
-            onChange={(e) => setSaveEmail(e.target.value)}
-          />
-          <textarea
-            className={styles.saveTextarea}
-            placeholder="Comentario (opcional): ¿qué ves? ¿qué esperas?"
-            value={saveComment}
-            onChange={(e) => setSaveComment(e.target.value)}
-            rows={2}
-          />
-          <button
-            className={styles.savePrimary}
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? "Guardando..." : "Guardar predicción"}
-          </button>
         </div>
       )}
 
