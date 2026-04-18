@@ -11,6 +11,15 @@ const TOOLS = [
     status: "activo",
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
   },
+  {
+    slug: "prediction-analyzer",
+    href: "/hub/herramientas/prediction-analyzer",
+    label: "Prediction Analyzer",
+    tag: "Polymarket · APR",
+    desc: "Calcula el APR estimado de una posición en un mercado de Polymarket según el precio de entrada y la fecha de resolución.",
+    status: "activo",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><path d="M3 12h2M19 12h2M12 3v2M12 19v2"/></svg>`,
+  },
 ] as const;
 
 function StatusIndicator({ status }: { status: string }) {
@@ -65,11 +74,6 @@ export default function HerramientasPage() {
         ))}
       </div>
 
-      {TOOLS.length === 1 && (
-        <p className={styles.hint}>
-          Nuevas herramientas se irán añadiendo progresivamente.
-        </p>
-      )}
     </div>
   );
 }
