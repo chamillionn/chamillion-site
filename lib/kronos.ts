@@ -73,7 +73,11 @@ export async function predict(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.detail || err.error || `Kronos: HTTP ${res.status}`);
+    const code = err.error ?? `HTTP_${res.status}`;
+    const msg = err.message || err.detail || err.error || `Kronos: HTTP ${res.status}`;
+    const e = new Error(`[${code}] ${msg}`);
+    (e as Error & { code?: string }).code = code;
+    throw e;
   }
 
   return res.json();

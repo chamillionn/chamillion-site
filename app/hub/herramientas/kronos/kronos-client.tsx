@@ -15,6 +15,7 @@ interface HistoryItem {
   id: string;
   symbol: string;
   timeframe: string;
+  model: string | null;
   comment: string | null;
   pred_range_start: string;
   pred_range_end: string;
@@ -37,7 +38,41 @@ function friendlyError(msg: string): string {
   return msg;
 }
 
-export default function KronosClient() {
+function buildDefaultComment(
+  base: string,
+  timeframe: string,
+  model: string,
+  candles: Candle[],
+  predicted: Candle[],
+): string {
+  if (candles.length === 0 || predicted.length === 0) return "";
+  const lastPrice = candles[candles.length - 1].close;
+  const lastPred = predicted[predicted.length - 1].close;
+  const delta = ((lastPred - lastPrice) / lastPrice) * 100;
+  const sign = delta >= 0 ? "+" : "";
+  const fmt = (n: number) =>
+    n >= 1000
+      ? n.toLocaleString("es-ES", { maximumFractionDigits: 0 })
+      : n.toLocaleString("es-ES", { maximumFractionDigits: 4 });
+  return `Predicción de ${base}/USDT en ${timeframe} con Kronos-${model}. Último cierre $${fmt(lastPrice)} → cierre predicho $${fmt(lastPred)} (${sign}${delta.toFixed(2)}%) a 24 velas.`;
+}
+
+export type KronosMode = "member" | "anon";
+
+interface StatusInfo {
+  enabled: boolean;
+  reason: "kill_switch" | "global_cap" | null;
+  globalResetsAt: string | null;
+  remaining: number | null;
+  resetsAt: string | null;
+  max: number | null;
+}
+
+export default function KronosClient({
+  mode = "member",
+  isAdmin = false,
+}: { mode?: KronosMode; isAdmin?: boolean } = {}) {
+  const isAnon = mode === "anon";
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<ReturnType<typeof import("lightweight-charts").createChart> | null>(null);
   const assetSelectorRef = useRef<HTMLDivElement>(null);
@@ -45,7 +80,9 @@ export default function KronosClient() {
   const [pairs, setPairs] = useState<TradingPair[]>([]);
   const [symbol, setSymbol] = useState("BTCUSDT");
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
-  const [model, setModel] = useState<KronosModel>("small");
+  const [model, setModel] = useState<KronosModel>(isAnon ? "mini" : "small");
+  const [statusInfo, setStatusInfo] = useState<StatusInfo | null>(null);
+  const [offline, setOffline] = useState(false);
   const [hoveredModel, setHoveredModel] = useState<KronosModel | null>(null);
   const [search, setSearch] = useState("");
   const [assetOpen, setAssetOpen] = useState(false);
@@ -57,6 +94,20 @@ export default function KronosClient() {
   const [logs, setLogs] = useState<string[]>([]);
   const logRef = useRef<HTMLDivElement>(null);
   const [isDark, setIsDark] = useState(true);
+  const [predictElapsed, setPredictElapsed] = useState(0);
+
+  // Tick elapsed time while predicting (0.1s resolution)
+  useEffect(() => {
+    if (status !== "predicting") {
+      setPredictElapsed(0);
+      return;
+    }
+    const start = performance.now();
+    const id = setInterval(() => {
+      setPredictElapsed((performance.now() - start) / 1000);
+    }, 100);
+    return () => clearInterval(id);
+  }, [status]);
 
   // Track theme via data-theme attribute on <html>
   useEffect(() => {
@@ -95,6 +146,7 @@ export default function KronosClient() {
       log(`${p.length} pares USDT activos encontrados (status=TRADING)`);
     }).catch((e) => {
       log(`ERROR Binance exchangeInfo: ${e.message}`);
+      setError("No se pudieron cargar los pares de Binance. Comprueba tu conexión.");
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -104,6 +156,17 @@ export default function KronosClient() {
     fetch("/api/kronos/history")
       .then((r) => r.json())
       .then((d) => setHistory(d.items ?? []))
+      .catch(() => {});
+  }, [savedId]);
+
+  // Load status (enabled + remaining) — always
+  useEffect(() => {
+    fetch("/api/kronos/predict/status")
+      .then((r) => r.json())
+      .then((d: StatusInfo) => {
+        setStatusInfo(d);
+        setOffline(!d.enabled);
+      })
       .catch(() => {});
   }, [savedId]);
 
@@ -303,13 +366,23 @@ export default function KronosClient() {
     setPredicted([]);
     setSavedId(null);
 
+    // Snapshot config — if user changes symbol/tf/model mid-flight we discard the result
+    const reqSymbol = symbol;
+    const reqTimeframe = timeframe;
+    const reqModel = model;
+
     const lastCandle = candles[candles.length - 1];
     const lastPrice = lastCandle.close;
 
     log(`────── predict() ──────`);
     log(`Asset: ${currentBase}/USDT`);
     log(`Timeframe: ${timeframe} (${getTimeframeLabel(timeframe)})`);
-    const modelInfo = KRONOS_MODELS.find((m) => m.id === model)!;
+    const modelInfo = KRONOS_MODELS.find((m) => m.id === model);
+    if (!modelInfo) {
+      setError("Modelo no válido.");
+      setStatus("error");
+      return;
+    }
     const contextUsed = Math.min(candles.length, modelInfo.contextLen);
 
     log(`Contexto: ${contextUsed} velas OHLCV (max ${modelInfo.contextLen})`);
@@ -323,8 +396,27 @@ export default function KronosClient() {
 
     try {
       const result = await predict(candles, 24, model);
+
+      // Drift guard — user changed asset/tf/model mid-flight; discard
+      if (reqSymbol !== symbol || reqTimeframe !== timeframe || reqModel !== model) {
+        log(`(resultado descartado — cambiaste de activo/TF/modelo)`);
+        // loadCandles will reset status if symbol/tf changed; otherwise reset here
+        if (reqSymbol === symbol && reqTimeframe === timeframe) {
+          setStatus("idle");
+        }
+        return;
+      }
+
       const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
       const predCandles = resultToCandles(result);
+
+      if (isAnon) {
+        // Refresh remaining counter after successful prediction
+        fetch("/api/kronos/predict/status")
+          .then((r) => r.json())
+          .then((d: StatusInfo) => setStatusInfo(d))
+          .catch(() => {});
+      }
 
       if (Number(elapsed) > 15) log(`Cold start detectado (${elapsed}s) — modelo cargado`);
       log(`← ${predCandles.length} velas predichas (${elapsed}s total)`);
@@ -349,13 +441,25 @@ export default function KronosClient() {
       const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
       const msg = e instanceof Error ? e.message : "Error desconocido";
       log(`ERROR tras ${elapsed}s: ${msg}`);
-      setError(friendlyError(msg));
+
+      if (/KRONOS_OFFLINE/i.test(msg) || /Kronos está temporalmente offline|no responde/i.test(msg)) {
+        setOffline(true);
+        setError("Kronos está temporalmente offline. Vuelve a intentarlo en unos momentos.");
+      } else if (/RATE_LIMITED/i.test(msg) || /3 predicciones/i.test(msg)) {
+        setError("Has usado tus 3 predicciones de hoy. Regístrate gratis para seguir.");
+        if (isAnon) {
+          // Force remaining to 0
+          setStatusInfo((prev) => prev ? { ...prev, remaining: 0 } : prev);
+        }
+      } else {
+        setError(friendlyError(msg));
+      }
       setStatus("error");
     }
   }
 
   async function handleSave() {
-    if (predicted.length === 0) return;
+    if (predicted.length === 0 || saving) return;
     setSaving(true);
     try {
       const res = await fetch("/api/kronos/save", {
@@ -485,19 +589,58 @@ export default function KronosClient() {
         {/* Model selector */}
         <div className={styles.modelSelector}>
           <div className={styles.modelGroup}>
-            {KRONOS_MODELS.map((m) => (
-              <button
-                key={m.id}
-                className={`${styles.modelBtn} ${m.id === model ? styles.modelBtnActive : ""}`}
-                onClick={() => setModel(m.id)}
-                onMouseEnter={() => setHoveredModel(m.id)}
-                onMouseLeave={() => setHoveredModel(null)}
-                aria-label={m.label}
-              >
-                <ModelIcon model={m.id} />
-                <span className={styles.modelLabel}>{m.label}</span>
-              </button>
-            ))}
+            {KRONOS_MODELS.map((m) => {
+              const locked = isAnon && m.id !== "mini";
+              if (locked) {
+                return (
+                  <Link
+                    key={m.id}
+                    href="/suscribirse"
+                    className={`${styles.modelBtn} ${styles.modelBtnLocked}`}
+                    onMouseEnter={() => setHoveredModel(m.id)}
+                    onMouseLeave={() => setHoveredModel(null)}
+                    aria-label={`${m.label} — modelo premium`}
+                  >
+                    <ModelIcon model={m.id} />
+                    <span className={styles.modelLabel}>{m.label}</span>
+                    <svg
+                      className={styles.modelLock}
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="4" y="11" width="16" height="10" rx="2" />
+                      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                    </svg>
+                    <span className={styles.modelPremiumBadge} aria-hidden="true">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2l2.8 6.3 6.9.6-5.2 4.7 1.6 6.8L12 16.9 5.9 20.4l1.6-6.8L2.3 8.9l6.9-.6L12 2z" />
+                      </svg>
+                      Premium
+                    </span>
+                  </Link>
+                );
+              }
+              return (
+                <button
+                  key={m.id}
+                  className={`${styles.modelBtn} ${m.id === model ? styles.modelBtnActive : ""}`}
+                  onClick={() => setModel(m.id)}
+                  onMouseEnter={() => setHoveredModel(m.id)}
+                  onMouseLeave={() => setHoveredModel(null)}
+                  aria-label={m.label}
+                >
+                  <ModelIcon model={m.id} />
+                  <span className={styles.modelLabel}>{m.label}</span>
+                </button>
+              );
+            })}
           </div>
           {(() => {
             const active = KRONOS_MODELS.find((m) => m.id === (hoveredModel ?? model));
@@ -514,15 +657,56 @@ export default function KronosClient() {
         </div>
 
         <div className={styles.actionsGroup}>
+          {isAnon && statusInfo && statusInfo.remaining !== null && (
+            <span
+              className={styles.anonCounter}
+              title="Predicciones gratuitas disponibles hoy"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="12 2 15.1 8.6 22 9.3 16.8 14 18.3 21 12 17.5 5.7 21 7.2 14 2 9.3 8.9 8.6 12 2" />
+              </svg>
+              <span>
+                <strong>{statusInfo.remaining}</strong>
+                <span className={styles.anonCounterSlash}>/</span>
+                {statusInfo.max ?? 3} gratis hoy
+              </span>
+            </span>
+          )}
+          {(() => {
+            const disabled =
+              status === "predicting" ||
+              status === "loading-candles" ||
+              candles.length === 0 ||
+              offline ||
+              (isAnon && statusInfo?.remaining === 0);
+            const ready =
+              !disabled &&
+              predicted.length === 0 &&
+              candles.length > 0;
+            return (
           <button
-            className={styles.predictBtn}
+            className={`${styles.predictBtn} ${ready ? styles.predictBtnReady : ""}`}
             onClick={handlePredict}
-            disabled={status === "predicting" || status === "loading-candles" || candles.length === 0}
+            disabled={disabled}
           >
             {status === "predicting" ? (
               <>
-                <span className={styles.spinner} />
-                Prediciendo...
+                <span className={styles.predictSpinner} aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M12 2a10 10 0 1 0 10 10" />
+                  </svg>
+                </span>
+                <span className={styles.predictLoadingText}>
+                  Prediciendo
+                  <span className={styles.predictDots} aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                </span>
+                <span className={styles.predictElapsed} aria-live="polite">
+                  {predictElapsed.toFixed(1)}s
+                </span>
               </>
             ) : (
               <>
@@ -533,12 +717,20 @@ export default function KronosClient() {
                 Predecir
               </>
             )}
+            {status === "predicting" && <span className={styles.predictProgress} aria-hidden="true" />}
           </button>
+            );
+          })()}
 
           {predicted.length > 0 && (
             <button
               className={`${styles.saveBtn} ${savedId ? styles.saveBtnDone : ""}`}
-              onClick={() => setSaveOpen(!saveOpen)}
+              onClick={() => {
+                if (!saveOpen && !saveComment) {
+                  setSaveComment(buildDefaultComment(currentBase, timeframe, model, candles, predicted));
+                }
+                setSaveOpen(!saveOpen);
+              }}
               title={savedId ? "Guardada" : "Guardar predicción"}
             >
               {savedId ? (
@@ -558,14 +750,60 @@ export default function KronosClient() {
         </div>
       </div>
 
+      {/* ── Offline banner ── */}
+      {offline && (
+        <div className={styles.offlineBanner} role="status" aria-live="polite">
+          <span className={styles.offlineDot} aria-hidden="true" />
+          <span className={styles.offlineText}>
+            {statusInfo?.reason === "global_cap" ? (
+              <>
+                Kronos ha alcanzado el <strong>límite de uso de hoy</strong> para proteger los créditos de inferencia.{" "}
+                {statusInfo.globalResetsAt
+                  ? `Volverá disponible a las ${new Date(statusInfo.globalResetsAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}.`
+                  : "Vuelve mañana."}{" "}
+                {isAnon && (
+                  <>
+                    Mientras tanto, <Link href="/" className={styles.offlineLink}>explora Chamillion</Link>.
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                Kronos está temporalmente offline.{" "}
+                {isAnon ? (
+                  <>Mientras tanto, <Link href="/" className={styles.offlineLink}>explora Chamillion</Link>.</>
+                ) : (
+                  <>Vuelve a intentarlo en unos momentos.</>
+                )}
+              </>
+            )}
+          </span>
+        </div>
+      )}
+
+      {/* ── Rate limit banner (anon only) ── */}
+      {isAnon && statusInfo?.remaining === 0 && !offline && (
+        <div className={styles.rateLimitBanner}>
+          <span className={styles.rateLimitText}>
+            Has agotado tus predicciones gratuitas de hoy.
+          </span>
+          <Link href="/suscribirse" className={styles.rateLimitCta}>
+            Regístrate gratis
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" />
+            </svg>
+          </Link>
+        </div>
+      )}
+
       {/* ── Status/Error ── */}
       {status === "loading-candles" && (
-        <div className={styles.statusBar}>
+        <div className={styles.statusBar} role="status" aria-live="polite">
           <span className={styles.spinner} /> Cargando velas...
         </div>
       )}
       {error && (
-        <div className={styles.errorBar}>
+        <div className={styles.errorBar} role="alert" aria-live="assertive">
           <span className={styles.errorText}>{error}</span>
           <button
             className={styles.retryBtn}
@@ -616,8 +854,27 @@ export default function KronosClient() {
               ))
             )}
             {status === "predicting" && (
-              <div className={styles.terminalLine}>
-                <span className={styles.terminalCursor}>_</span>
+              <div className={`${styles.terminalLine} ${styles.terminalWaitLine}`}>
+                <span className={styles.terminalWaitDot} aria-hidden="true" />
+                <span className={styles.terminalWaitMsg}>
+                  {predictElapsed < 5
+                    ? "waiting for modal.run response"
+                    : predictElapsed < 15
+                      ? "cold start en GPU (T4) — cargando modelo"
+                      : predictElapsed < 30
+                        ? "ejecutando inferencia — forward pass"
+                        : "aún trabajando — cold start puede tardar hasta 60s"}
+                </span>
+                <span className={styles.terminalWaitTicks} aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                <span className={styles.terminalWaitClock}>
+                  {predictElapsed.toFixed(1)}s
+                </span>
               </div>
             )}
           </div>
@@ -669,6 +926,19 @@ export default function KronosClient() {
         )}
       </div>
 
+      {/* ── Saved link (share) ── */}
+      {savedId && (
+        <div className={styles.savedLink}>
+          <span className={styles.savedLinkLabel}>Predicción guardada</span>
+          <Link href={`/kronos/p/${savedId}`} className={styles.savedLinkAnchor}>
+            Ver y compartir
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" />
+            </svg>
+          </Link>
+        </div>
+      )}
+
       {/* ── Save form ── */}
       {saveOpen && (
         <div className={styles.saveBlock}>
@@ -714,16 +984,52 @@ export default function KronosClient() {
             <span className={styles.historyCount}>{history.length}</span>
           </div>
           <div className={styles.historyList}>
-            {history.map((h) => (
-              <Link key={h.id} href={`/kronos/p/${h.id}`} className={styles.historyItem}>
-                <span className={styles.historyAsset}>{h.symbol.replace("USDT", "")}/USDT</span>
-                <span className={styles.historyTf}>{h.timeframe}</span>
-                {h.comment && <span className={styles.historyComment}>&ldquo;{h.comment}&rdquo;</span>}
-                <span className={styles.historyDate}>
-                  {new Date(h.created_at).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                </span>
-              </Link>
-            ))}
+            {history.map((h) => {
+              const inProgress = new Date(h.pred_range_end).getTime() > Date.now();
+              return (
+                <div key={h.id} className={styles.historyRow}>
+                  <Link href={`/kronos/p/${h.id}`} className={styles.historyItem}>
+                    <span
+                      className={`${styles.historyStatus} ${inProgress ? styles.historyStatusLive : styles.historyStatusDone}`}
+                      title={inProgress ? "En progreso — aún dentro del rango predicho" : "Finalizada — el rango predicho ya pasó"}
+                      aria-label={inProgress ? "En progreso" : "Finalizada"}
+                    />
+                    <span className={styles.historyAsset}>{h.symbol.replace("USDT", "")}/USDT</span>
+                    <span className={styles.historyTf}>{h.timeframe}</span>
+                    {h.model && <span className={styles.historyModel}>{h.model}</span>}
+                    {h.comment && <span className={styles.historyComment}>&ldquo;{h.comment}&rdquo;</span>}
+                    <span className={styles.historyDate}>
+                      {new Date(h.created_at).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </Link>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className={styles.historyDelete}
+                      onClick={async () => {
+                        if (!confirm(`¿Eliminar predicción ${h.symbol} (${h.timeframe})?`)) return;
+                        const res = await fetch("/api/kronos/delete", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ id: h.id }),
+                        });
+                        if (res.ok) {
+                          setHistory((prev) => prev.filter((x) => x.id !== h.id));
+                        }
+                      }}
+                      title="Borrar (admin)"
+                      aria-label="Borrar predicción"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6M14 11v6" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -747,7 +1053,8 @@ export default function KronosClient() {
         </span>
       </div>
 
-      {/* ── Chamillion CTA ── */}
+      {/* ── Chamillion CTA (public demo only) ── */}
+      {isAnon && (
       <Link href="/" className={styles.chamillionCta}>
         <span className={styles.chamillionLogo} aria-hidden="true">
           <Image
@@ -761,13 +1068,13 @@ export default function KronosClient() {
         <span className={styles.chamillionBody}>
           <span className={styles.chamillionKicker}>
             <span className={styles.chamillionDot} />
-            Chamillion · Estudio
+            Chamillion
           </span>
           <span className={styles.chamillionTitle}>
-            Documentando la vanguardia de los mercados.
+            Documentando la vanguardia de los mercados financieros.
           </span>
           <span className={styles.chamillionSubtext}>
-            Cartera verificable en tiempo real, newsletter, herramientas como Kronos. <em>Con un ojo en cada pantalla.</em>
+            <em>Con un ojo en cada pantalla.</em>
           </span>
           <span className={styles.chamillionAction}>
             <span className={styles.chamillionActionText}>Descubrir</span>
@@ -785,6 +1092,7 @@ export default function KronosClient() {
           />
         </span>
       </Link>
+      )}
 
       {/* ── Disclaimer (muted legal note) ── */}
       <p className={styles.disclaimer}>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PublicKronosHeader from "./public-header";
 
 export const metadata: Metadata = {
   title: { template: "%s — Kronos", default: "Kronos" },
@@ -9,5 +10,10 @@ export default function KronosPublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <PublicKronosHeader />
+      {children}
+    </>
+  );
 }
