@@ -25,10 +25,19 @@ export default async function RecursosPage() {
   // Total rows
   const totalRows = Object.values(counts).reduce((a, b) => a + b, 0);
 
+  // Kronos kill switch
+  const { data: kronosFlag } = await supabase
+    .from("site_settings")
+    .select("value")
+    .eq("key", "kronos_enabled")
+    .maybeSingle();
+  const kronosEnabled = kronosFlag?.value !== false;
+
   return (
     <RecursosClient
       dbCounts={counts}
       totalRows={totalRows}
+      kronosEnabled={kronosEnabled}
     />
   );
 }

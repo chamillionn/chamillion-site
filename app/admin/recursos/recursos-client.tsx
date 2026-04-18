@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
+import { toggleKronosEnabled } from "./actions";
 import styles from "./recursos.module.css";
 
 interface ServiceInfo {
@@ -82,6 +83,7 @@ const SERVICES: ServiceInfo[] = [
 interface Props {
   dbCounts: Record<string, number>;
   totalRows: number;
+  kronosEnabled: boolean;
 }
 
 interface ModalUsage {
@@ -91,9 +93,20 @@ interface ModalUsage {
   items: { Description: string; Cost: string; "Interval Start": string }[];
 }
 
-export default function RecursosClient({ dbCounts, totalRows }: Props) {
+export default function RecursosClient({ dbCounts, totalRows, kronosEnabled }: Props) {
   const [modal, setModal] = useState<ModalUsage | null>(null);
   const [modalLoading, setModalLoading] = useState(true);
+  const [kronosOn, setKronosOn] = useState(kronosEnabled);
+  const [pending, startTransition] = useTransition();
+
+  function handleToggleKronos() {
+    const next = !kronosOn;
+    setKronosOn(next);
+    startTransition(async () => {
+      const res = await toggleKronosEnabled(next);
+      if (res.error) setKronosOn(!next);
+    });
+  }
 
   useEffect(() => {
     fetch("/api/admin/modal-usage")
@@ -182,29 +195,53 @@ export default function RecursosClient({ dbCounts, totalRows }: Props) {
               </div>
 
               {svc.liveUsage && svc.name === "Modal" && (
-                <div className={styles.usageBlock}>
-                  {modalLoading ? (
-                    <span className={styles.usageLoading}>Cargando uso...</span>
-                  ) : modal ? (
-                    <>
-                      <div className={styles.usageHeader}>
-                        <span className={styles.usageLabel}>Uso este mes</span>
-                        <span className={styles.usageValue}>
-                          ${modal.totalCost} / ${modal.creditLimit}
-                        </span>
-                      </div>
-                      <div className={styles.progressBar}>
-                        <div
-                          className={styles.progressFill}
-                          style={{ width: `${Math.min(parseFloat(modal.usedPct), 100)}%` }}
-                        />
-                      </div>
-                      <span className={styles.usagePct}>{modal.usedPct}%</span>
-                    </>
-                  ) : (
-                    <span className={styles.usageLoading}>No se pudo obtener el uso</span>
-                  )}
-                </div>
+                <>
+                  <div className={styles.usageBlock}>
+                    {modalLoading ? (
+                      <span className={styles.usageLoading}>Cargando uso...</span>
+                    ) : modal ? (
+                      <>
+                        <div className={styles.usageHeader}>
+                          <span className={styles.usageLabel}>Uso este mes</span>
+                          <span className={styles.usageValue}>
+                            ${modal.totalCost} / ${modal.creditLimit}
+                          </span>
+                        </div>
+                        <div className={styles.progressBar}>
+                          <div
+                            className={styles.progressFill}
+                            style={{ width: `${Math.min(parseFloat(modal.usedPct), 100)}%` }}
+                          />
+                        </div>
+                        <span className={styles.usagePct}>{modal.usedPct}%</span>
+                      </>
+                    ) : (
+                      <span className={styles.usageLoading}>No se pudo obtener el uso</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.killSwitch}
+                    onClick={handleToggleKronos}
+                    disabled={pending}
+                    aria-pressed={kronosOn}
+                  >
+                    <span className={styles.killSwitchLabel}>
+                      Kronos público
+                      <span className={styles.killSwitchHint}>
+                        {kronosOn
+                          ? "Demo accesible en /kronos"
+                          : "Apagado — banner offline"}
+                      </span>
+                    </span>
+                    <span
+                      className={`${styles.killSwitchToggle} ${kronosOn ? styles.killSwitchOn : ""}`}
+                      aria-hidden="true"
+                    >
+                      <span className={styles.killSwitchKnob} />
+                    </span>
+                  </button>
+                </>
               )}
 
               {svc.notes && (
