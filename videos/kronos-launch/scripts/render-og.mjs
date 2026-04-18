@@ -62,7 +62,10 @@ const browser = await puppeteer.launch({
   args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
 });
 const page = await browser.newPage();
-await page.setViewport({ width: 1200, height: 675, deviceScaleFactor: 2 });
+// Important: deviceScaleFactor = 1 so the output matches the dimensions
+// declared in og:image:width/height meta tags. If the file's actual px
+// doesn't match the tags, Twitter falls back to the small summary card.
+await page.setViewport({ width: 1200, height: 675, deviceScaleFactor: 1 });
 await page.goto(url, { waitUntil: "networkidle0" });
 await page.waitForFunction("window.__READY === true", { timeout: 10_000 });
 await page.evaluate(() => document.fonts.ready);
@@ -70,7 +73,7 @@ await new Promise((r) => setTimeout(r, 300));
 await page.screenshot({ path: OUT, type: "png" });
 
 const { size } = await stat(OUT);
-console.log(`Wrote ${(size / 1024).toFixed(1)} KB (@2x for crisp OG)`);
+console.log(`Wrote ${(size / 1024).toFixed(1)} KB (1200×675 exact)`);
 
 await browser.close();
 server.close();
