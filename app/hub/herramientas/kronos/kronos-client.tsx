@@ -1118,7 +1118,7 @@ export default function KronosClient({
             <input
               type="email"
               className={styles.saveInput}
-              placeholder="Email (opcional, para recibir actualizaciones)"
+              placeholder="Email (opcional)"
               value={saveEmail}
               onChange={(e) => setSaveEmail(e.target.value)}
             />
