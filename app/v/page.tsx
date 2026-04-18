@@ -118,6 +118,7 @@ export default async function VerifyPage() {
     .map((s) => ({
       day: new Date(s.snapshot_date).toLocaleDateString("es", { weekday: "short" }),
       total: s.total_value,
+      cost: s.total_cost ?? undefined,
     }));
 
   const capitalInvested = costBasis.net > 0 ? costBasis.net : null;
@@ -146,21 +147,21 @@ export default async function VerifyPage() {
 /* ─── Demo fallback data ─── */
 
 const DEMO_DAILY = [
-  { day: "lun", total: 8210 }, { day: "mar", total: 8340 },
-  { day: "mié", total: 8285 }, { day: "jue", total: 8420 },
-  { day: "vie", total: 8510 }, { day: "sáb", total: 8475 },
-  { day: "dom", total: 8620 }, { day: "lun", total: 8590 },
-  { day: "mar", total: 8750 }, { day: "mié", total: 8680 },
-  { day: "jue", total: 8820 }, { day: "vie", total: 8910 },
-  { day: "sáb", total: 8870 }, { day: "dom", total: 9020 },
-  { day: "lun", total: 9150 }, { day: "mar", total: 9080 },
-  { day: "mié", total: 9210 }, { day: "jue", total: 9340 },
-  { day: "vie", total: 9280 }, { day: "sáb", total: 9420 },
-  { day: "dom", total: 9510 }, { day: "lun", total: 9580 },
-  { day: "mar", total: 9650 }, { day: "mié", total: 9720 },
-  { day: "jue", total: 9810 }, { day: "vie", total: 9950 },
-  { day: "sáb", total: 10080 }, { day: "dom", total: 10150 },
-  { day: "lun", total: 10320 }, { day: "mar", total: 10450 },
+  { day: "lun", total: 8210, cost: 8500 }, { day: "mar", total: 8340, cost: 8500 },
+  { day: "mié", total: 8285, cost: 8500 }, { day: "jue", total: 8420, cost: 8500 },
+  { day: "vie", total: 8510, cost: 8500 }, { day: "sáb", total: 8475, cost: 8500 },
+  { day: "dom", total: 8620, cost: 8500 }, { day: "lun", total: 8590, cost: 8500 },
+  { day: "mar", total: 8750, cost: 8500 }, { day: "mié", total: 8680, cost: 8500 },
+  { day: "jue", total: 8820, cost: 8500 }, { day: "vie", total: 8910, cost: 8500 },
+  { day: "sáb", total: 8870, cost: 8500 }, { day: "dom", total: 9020, cost: 8500 },
+  { day: "lun", total: 9150, cost: 8500 }, { day: "mar", total: 9080, cost: 8500 },
+  { day: "mié", total: 9210, cost: 8500 }, { day: "jue", total: 9340, cost: 8500 },
+  { day: "vie", total: 9280, cost: 8500 }, { day: "sáb", total: 9420, cost: 8500 },
+  { day: "dom", total: 9510, cost: 8500 }, { day: "lun", total: 9580, cost: 8500 },
+  { day: "mar", total: 9650, cost: 8500 }, { day: "mié", total: 9720, cost: 8500 },
+  { day: "jue", total: 9810, cost: 8500 }, { day: "vie", total: 9950, cost: 8500 },
+  { day: "sáb", total: 10080, cost: 8500 }, { day: "dom", total: 10150, cost: 8500 },
+  { day: "lun", total: 10320, cost: 8500 }, { day: "mar", total: 10450, cost: 8500 },
 ];
 
 const DEMO_PLATFORMS: VerifyPlatform[] = [

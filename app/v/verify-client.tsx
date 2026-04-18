@@ -32,6 +32,7 @@ export interface VerifyPlatform {
 interface DailyData {
   day: string;
   total: number;
+  cost?: number;
 }
 
 interface VerifyProps {
@@ -213,9 +214,14 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
   const padBottom = 24;
   const chartH = H - padTop - padBottom;
 
+  const hasCostBasis = dailyData.some((d) => d.cost != null && d.cost > 0);
+
   const totals = dailyData.map(d => d.total);
-  const minVal = Math.min(...totals);
-  const maxVal = Math.max(...totals);
+  const allValues = hasCostBasis
+    ? [...totals, ...dailyData.filter((d) => d.cost != null && d.cost > 0).map((d) => d.cost!)]
+    : totals;
+  const minVal = Math.min(...allValues);
+  const maxVal = Math.max(...allValues);
   const yRange = maxVal - minVal || 1;
   const yPad = yRange * 0.15;
   const yMin = minVal - yPad;
@@ -225,6 +231,19 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
     x: padX + (i / (dailyData.length - 1)) * (W - padX * 2),
     y: padTop + chartH - ((d.total - yMin) / (yMax - yMin)) * chartH,
   }));
+
+  const costBasisPath = hasCostBasis
+    ? dailyData
+        .map((d, i) => {
+          if (d.cost == null || d.cost <= 0) return null;
+          const x = padX + (i / (dailyData.length - 1)) * (W - padX * 2);
+          const y = padTop + chartH - ((d.cost - yMin) / (yMax - yMin)) * chartH;
+          return { x, y };
+        })
+        .filter((p): p is { x: number; y: number } => p !== null)
+        .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+        .join(" ")
+    : null;
 
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const areaPath = `${linePath} L ${points[points.length - 1].x} ${padTop + chartH} L ${points[0].x} ${padTop + chartH} Z`;
@@ -264,6 +283,18 @@ function PortfolioChart({ dailyData }: { dailyData: DailyData[] }) {
             );
           })}
           <path d={areaPath} fill="url(#verifyAreaGrad)" style={{ opacity: 0, animation: "area-fade 0.8s ease 0.8s forwards" }} />
+          {costBasisPath && (
+            <path
+              d={costBasisPath}
+              fill="none"
+              stroke={V.gold}
+              strokeWidth="1"
+              strokeDasharray="4 4"
+              strokeLinecap="round"
+              opacity="0.45"
+              style={{ animation: "area-fade 0.8s ease 1s forwards", opacity: 0 }}
+            />
+          )}
           <path d={linePath} fill="none" stroke={V.steel} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ "--line-length": `${lineLength}`, strokeDasharray: lineLength, strokeDashoffset: lineLength, animation: `draw-line 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards` } as React.CSSProperties} />
           {points.map((p, i) => (
             <circle key={i} cx={p.x} cy={p.y} r={hoveredDay === i ? 4.5 : 2.5} fill={hoveredDay === i ? V.steel : V.bgDark} stroke={V.steel} strokeWidth={hoveredDay === i ? 2 : 1.5} style={{ transition: "r 0.15s ease, fill 0.15s ease" }} />
@@ -467,16 +498,12 @@ export default function VerifyClient({ platforms, totalValue, dailyData, capital
   }, [platforms, theme, platformColorsLight]);
 
   const hasSummary = summary && summary.totalValue != null;
-  const adjustedPnl = hasSummary
-    ? capitalInvested ? summary.totalValue - capitalInvested : summary.totalPnl
-    : 0;
-  const adjustedRoiPct = hasSummary
-    ? capitalInvested && capitalInvested > 0
-      ? ((summary.totalValue - capitalInvested) / capitalInvested) * 100
-      : summary.totalRoiPct
-    : 0;
+  const invested = capitalInvested ?? 0;
+  const adjustedPnl = hasSummary ? summary.totalValue - invested : 0;
+  const adjustedRoiPct =
+    hasSummary && invested > 0 ? (adjustedPnl / invested) * 100 : 0;
   const pnlPositive = adjustedPnl >= 0;
-  const effectiveCost = hasSummary ? (capitalInvested ?? summary.totalCost) : 0;
+  const effectiveCost = invested;
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 100);
@@ -563,7 +590,7 @@ export default function VerifyClient({ platforms, totalValue, dailyData, capital
               <div style={{ display: "flex", gap: 24 }}>
                 <div>
                   <div style={{ fontFamily: "var(--font-jetbrains), monospace", fontSize: 10, color: V.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
-                    {capitalInvested ? "Invertido" : "Coste"}
+                    Invertido
                   </div>
                   <div style={{ fontFamily: "var(--font-jetbrains), monospace", fontSize: 14, fontWeight: 600, color: V.textPrimary }}>
                     {fmt(effectiveCost)} €
