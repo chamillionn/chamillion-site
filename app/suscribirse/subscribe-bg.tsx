@@ -23,7 +23,6 @@ const PIES = [
 const TICKERS = [
   { text: "+12.4%", x: 140, y: 480, size: 16, delay: 0 },
   { text: "$42,180", x: 1660, y: 320, size: 14, delay: 3 },
-  { text: "8.7% APY", x: 520, y: 720, size: 12, delay: 6 },
   { text: "TVL $4.2B", x: 1400, y: 840, size: 11, delay: 2 },
   { text: "-2.1%", x: 880, y: 120, size: 13, delay: 5 },
   { text: "1.08x", x: 280, y: 920, size: 14, delay: 8 },
@@ -224,6 +223,135 @@ const FRAMES = [
   { x: 1700, y: 380, w: 55, h: 35, delay: 5 },
 ];
 
+/* ── Marquee tape — bottom-only scroll ── */
+type MarqueeDir = "up" | "down";
+type MarqueeItem = readonly [string, string, MarqueeDir];
+
+const MARQUEE_BOTTOM: readonly MarqueeItem[] = [
+  ["TX/s", "14,230", "up"],
+  ["GAS", "32 gwei", "down"],
+  ["VOL 24h", "$1.2B", "up"],
+  ["OI", "$18.4B", "up"],
+  ["FR", "0.012%", "down"],
+  ["LIQ", "$42M", "down"],
+  ["ADDR", "1.4M", "up"],
+  ["DOM", "52.3%", "up"],
+  ["FEAR", "72", "up"],
+  ["STAKED", "28.1%", "up"],
+  ["SUPPLY", "19.6M", "up"],
+  ["HASH", "612 EH/s", "up"],
+];
+
+/* ── Radar sweeps ── */
+const RADARS = [
+  { cx: 180, cy: 870, r: 68, delay: 4 },
+  { cx: 1770, cy: 210, r: 52, delay: 9 },
+];
+
+/* ── Heatmap cells ── */
+const HEATMAPS = [
+  {
+    x: 80, y: 100, cols: 5, cell: 8, gap: 2, delay: 3, label: "VOL 5m",
+    heats: [
+      0.3, 0.7, 0.9, 0.5, 0.2,
+      0.4, 0.85, 1.0, 0.7, 0.3,
+      0.2, 0.6, 0.95, 0.8, 0.4,
+      0.1, 0.3, 0.7, 0.5, 0.2,
+      0.05, 0.2, 0.4, 0.3, 0.1,
+    ],
+  },
+  {
+    x: 1680, y: 880, cols: 5, cell: 7, gap: 1.5, delay: 8, label: "ACTIVITY",
+    heats: [
+      0.1, 0.4, 0.6, 0.3, 0.5,
+      0.3, 0.8, 0.95, 0.7, 0.3,
+      0.6, 0.9, 1.0, 0.85, 0.4,
+      0.4, 0.7, 0.85, 0.6, 0.2,
+      0.2, 0.4, 0.5, 0.3, 0.15,
+    ],
+  },
+];
+
+
+function Marquee({ items, y, alt, delay }: {
+  items: readonly MarqueeItem[]; y: number; alt?: boolean; delay: number;
+}) {
+  return (
+    <g className={styles.marquee} style={{ animationDelay: `${delay}s` }}>
+      <text x={0} y={y} className={alt ? styles.marqueeTextAlt : styles.marqueeText}>
+        {items.map(([sym, val, dir], i) => (
+          <tspan key={i}>
+            {i > 0 ? "    ·    " : ""}
+            {sym} {val}{" "}
+            <tspan className={dir === "up" ? styles.marqueeCaret : styles.marqueeCaretDown}>
+              {dir === "up" ? "▲" : "▼"}
+            </tspan>
+          </tspan>
+        ))}
+      </text>
+    </g>
+  );
+}
+
+function Radar({ cx, cy, r, delay }: {
+  cx: number; cy: number; r: number; delay: number;
+}) {
+  const pingX = cx + r * 0.58;
+  const pingY = cy - r * 0.32;
+  const fanEndX = cx + r * Math.cos(-Math.PI / 5);
+  const fanEndY = cy + r * Math.sin(-Math.PI / 5);
+  return (
+    <g className={styles.radar} style={{ animationDelay: `${delay}s` }}>
+      <circle cx={cx} cy={cy} r={r} className={styles.radarRingSolid} />
+      <circle cx={cx} cy={cy} r={r * 0.66} className={styles.radarRing} />
+      <circle cx={cx} cy={cy} r={r * 0.33} className={styles.radarRing} />
+      <line x1={cx - r} y1={cy} x2={cx + r} y2={cy} className={styles.radarRing} />
+      <line x1={cx} y1={cy - r} x2={cx} y2={cy + r} className={styles.radarRing} />
+
+      <g className={styles.radarSweepGroup} style={{ transformOrigin: `${cx}px ${cy}px` }}>
+        <path
+          d={`M${cx},${cy} L${cx + r},${cy} A${r},${r} 0 0,0 ${fanEndX.toFixed(2)},${fanEndY.toFixed(2)} Z`}
+          className={styles.radarFan}
+        />
+        <line x1={cx} y1={cy} x2={cx + r} y2={cy} className={styles.radarLine} />
+      </g>
+
+      <circle cx={pingX} cy={pingY} r={2.5} className={styles.radarPing}
+        style={{ animationDelay: `${delay + 0.5}s`, transformOrigin: `${pingX}px ${pingY}px` }} />
+    </g>
+  );
+}
+
+function Heatmap({ x, y, cols, cell, gap, delay, label, heats }: {
+  x: number; y: number; cols: number; cell: number; gap: number;
+  delay: number; label: string; heats: readonly number[];
+}) {
+  return (
+    <g className={styles.heatmap} style={{ animationDelay: `${delay}s` }}>
+      <text x={x} y={y - 6} className={styles.heatLabel}>{label}</text>
+      {heats.map((heat, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        return (
+          <rect
+            key={i}
+            x={x + col * (cell + gap)}
+            y={y + row * (cell + gap)}
+            width={cell}
+            height={cell}
+            rx={1}
+            className={styles.heatCell}
+            style={{
+              animationDelay: `${delay + (i * 0.13) % 3.5}s`,
+              ["--heat" as string]: heat,
+            } as React.CSSProperties}
+          />
+        );
+      })}
+    </g>
+  );
+}
+
 function PieChart({ cx, cy, r, arcs, delay }: {
   cx: number; cy: number; r: number; arcs: number[]; delay: number;
 }) {
@@ -273,6 +401,11 @@ export default function SubscribeBg() {
         {/* Area fills */}
         <path className={styles.areaA} d={AREA_A} />
         <path className={styles.areaB} d={AREA_B} />
+
+        {/* Heatmap cells */}
+        {HEATMAPS.map((h, i) => (
+          <Heatmap key={i} {...h} />
+        ))}
 
         {/* Grid fragments */}
         {GRIDS.map((g, i) => (
@@ -424,9 +557,21 @@ export default function SubscribeBg() {
           >
             <ellipse cx={o.cx} cy={o.cy} rx={o.rx} ry={o.ry} className={styles.orbitRing} />
             <ellipse cx={o.cx} cy={o.cy} rx={o.rx * 0.6} ry={o.ry * 0.6} className={styles.orbitRingInner} />
-            <circle cx={o.cx + o.rx} cy={o.cy} r={2.5} className={styles.orbitSat} />
+            <circle cx={o.cx + o.rx} cy={o.cy} r={2.5} className={styles.orbitSat}
+              style={{ transformOrigin: `${o.cx}px ${o.cy}px` }} />
+            <circle cx={o.cx - o.rx * 0.6} cy={o.cy} r={1.5} className={styles.orbitSatInner}
+              style={{ transformOrigin: `${o.cx}px ${o.cy}px` }} />
           </g>
         ))}
+
+        {/* Radar sweeps */}
+        {RADARS.map((r, i) => (
+          <Radar key={i} {...r} />
+        ))}
+
+        {/* Marquee tape (bottom only) */}
+        <Marquee items={MARQUEE_BOTTOM} y={1032} delay={0} alt />
+
 
         {/* Sine wave oscillators */}
         {WAVES.map((w, i) => (
@@ -463,22 +608,22 @@ export default function SubscribeBg() {
           </g>
         ))}
 
-        {/* Crosshairs */}
+        {/* Crosshairs — staggered lock-on: ring → horizontal ticks → vertical ticks → center dot */}
         {CROSSHAIRS.map((c, i) => (
           <g key={i}>
             <circle cx={c.cx} cy={c.cy} r={c.r} className={styles.crosshair}
               style={{ animationDelay: `${c.delay}s`, transformOrigin: `${c.cx}px ${c.cy}px` }}
             />
             <line x1={c.cx - c.r - 6} y1={c.cy} x2={c.cx - c.r + 4} y2={c.cy}
-              className={styles.crosshair} style={{ animationDelay: `${c.delay}s` }} />
+              className={styles.crosshair} style={{ animationDelay: `${c.delay + 0.1}s` }} />
             <line x1={c.cx + c.r - 4} y1={c.cy} x2={c.cx + c.r + 6} y2={c.cy}
-              className={styles.crosshair} style={{ animationDelay: `${c.delay}s` }} />
+              className={styles.crosshair} style={{ animationDelay: `${c.delay + 0.1}s` }} />
             <line x1={c.cx} y1={c.cy - c.r - 6} x2={c.cx} y2={c.cy - c.r + 4}
-              className={styles.crosshair} style={{ animationDelay: `${c.delay}s` }} />
+              className={styles.crosshair} style={{ animationDelay: `${c.delay + 0.18}s` }} />
             <line x1={c.cx} y1={c.cy + c.r - 4} x2={c.cx} y2={c.cy + c.r + 6}
-              className={styles.crosshair} style={{ animationDelay: `${c.delay}s` }} />
+              className={styles.crosshair} style={{ animationDelay: `${c.delay + 0.18}s` }} />
             <circle cx={c.cx} cy={c.cy} r={2} className={styles.crosshairDot}
-              style={{ animationDelay: `${c.delay}s`, transformOrigin: `${c.cx}px ${c.cy}px` }}
+              style={{ animationDelay: `${c.delay + 0.28}s`, transformOrigin: `${c.cx}px ${c.cy}px` }}
             />
           </g>
         ))}
