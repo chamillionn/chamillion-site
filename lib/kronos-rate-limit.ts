@@ -7,6 +7,7 @@ export const KRONOS_ANON_WINDOW_MS = 24 * 60 * 60 * 1000;
 export const KRONOS_IP_MAX_PER_HOUR = 10;
 export const KRONOS_IP_WINDOW_MS = 60 * 60 * 1000;
 export const KRONOS_SAVE_IP_MAX_PER_HOUR = 5;
+export const KRONOS_CANDLES_IP_MAX_PER_HOUR = 40;
 
 export const KRONOS_GLOBAL_DAILY_CAP = Number(
   process.env.KRONOS_GLOBAL_DAILY_CAP ?? 500,
@@ -117,11 +118,12 @@ interface Bucket {
   windowStart: number;
 }
 
-type RegistryKey = "predict:ip" | "save:ip" | "predict:global";
+type RegistryKey = "predict:ip" | "save:ip" | "candles:ip" | "predict:global";
 
 interface Registry {
   predictIp: Map<string, Bucket>;
   saveIp: Map<string, Bucket>;
+  candlesIp: Map<string, Bucket>;
   predictGlobal: Bucket;
   globalTrippedUntil: number;
 }
@@ -136,6 +138,7 @@ function registry(): Registry {
     g.__kronosRateLimit = {
       predictIp: new Map(),
       saveIp: new Map(),
+      candlesIp: new Map(),
       predictGlobal: { count: 0, windowStart: Date.now() },
       globalTrippedUntil: 0,
     };
@@ -293,12 +296,32 @@ export function checkAndBumpSaveLimit(
   return { allowed: true };
 }
 
+/** Check (and bump on allow) candles endpoint by IP. Protects the shared
+ *  Twelve Data / Binance quotas from a single abusive client. */
+export function checkAndBumpCandlesLimit(
+  ip: string,
+  now = Date.now(),
+): { allowed: boolean; resetsAt?: string } {
+  const reg = registry();
+  const key = mapKey("candles:ip", ip);
+  const bucket = reg.candlesIp.get(key) ?? { count: 0, windowStart: now };
+  const res = bucketCheck(bucket, now, KRONOS_IP_WINDOW_MS, KRONOS_CANDLES_IP_MAX_PER_HOUR);
+  if (!res.allowed) {
+    reg.candlesIp.set(key, bucket);
+    return { allowed: false, resetsAt: new Date(res.resetsAt).toISOString() };
+  }
+  bucket.count += 1;
+  reg.candlesIp.set(key, bucket);
+  return { allowed: true };
+}
+
 /* ── Input sanitization for saved comments ── */
 
 const URL_REGEX = /\bhttps?:\/\/\S+|\bwww\.\S+|\b\S+\.(com|net|org|io|xyz|co|sh|dev|app|info|me|ru|cn|tv)\b/gi;
 const COMMENT_MAX_LEN = 140;
 const EMAIL_MAX_LEN = 254;
-const SYMBOL_REGEX = /^[A-Z0-9]{2,20}USDT$/;
+// Binance USDT pair (BTCUSDT) or Twelve Data ticker (AAPL, SPX, EUR/USD, XAU/USD, BRK-B, BRENT)
+const SYMBOL_REGEX = /^[A-Z0-9./-]{1,15}$/;
 const MAX_INPUT_CANDLES = 2048;
 const MAX_PRED_CANDLES = 64;
 const MAX_BODY_BYTES = 120_000;
@@ -325,6 +348,16 @@ export function validateSaveInput(body: unknown): { ok: true } | { ok: false; er
   }
   if (typeof b.model !== "undefined" && (typeof b.model !== "string" || b.model.length > 10)) {
     return { ok: false, error: "Invalid model" };
+  }
+  if (typeof b.source !== "undefined" && b.source !== null) {
+    if (typeof b.source !== "string" || (b.source !== "binance" && b.source !== "twelvedata")) {
+      return { ok: false, error: "Invalid source" };
+    }
+  }
+  if (typeof b.assetLabel !== "undefined" && b.assetLabel !== null) {
+    if (typeof b.assetLabel !== "string" || b.assetLabel.length > 40) {
+      return { ok: false, error: "Invalid assetLabel" };
+    }
   }
   if (typeof b.email !== "undefined" && b.email !== null) {
     if (typeof b.email !== "string" || b.email.length > EMAIL_MAX_LEN) {
