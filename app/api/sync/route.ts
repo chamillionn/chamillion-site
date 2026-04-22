@@ -7,6 +7,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { HyperliquidAdapter } from "@/lib/sync/adapters/hyperliquid";
 import { PolymarketAdapter } from "@/lib/sync/adapters/polymarket";
 import { DefiWalletAdapter } from "@/lib/sync/adapters/defi-wallet";
+import { SolanaWalletAdapter } from "@/lib/sync/adapters/solana-wallet";
 import { FakeDexAdapter } from "@/lib/sync/adapters/fakedex";
 import type { PlatformAdapter } from "@/lib/sync/types";
 
@@ -16,6 +17,7 @@ const ADAPTERS: PlatformAdapter[] = [
   HyperliquidAdapter,
   PolymarketAdapter,
   DefiWalletAdapter,
+  SolanaWalletAdapter,
   ...(IS_DEV ? [FakeDexAdapter] : []),
 ];
 
