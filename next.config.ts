@@ -4,6 +4,12 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  experimental: {
+    serverActions: {
+      // Raise from 1 MB default to 10 MB so banner uploads go through.
+      bodySizeLimit: "10mb",
+    },
+  },
   async headers() {
     return [
       {
