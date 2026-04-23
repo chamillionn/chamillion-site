@@ -1,0 +1,312 @@
+.wrap {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-card);
+  font-family: var(--font-outfit), sans-serif;
+}
+
+/* Header */
+.head,
+.row {
+  display: grid;
+  grid-template-columns: 140px 1fr 96px 96px 68px;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 18px;
+}
+
+.head {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklch, var(--bg-card) 70%, transparent);
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.headCol,
+.headColRight {
+  font-weight: 500;
+}
+
+.headColRight {
+  text-align: right;
+}
+
+/* Rows */
+
+.rows {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.row {
+  border-top: 1px solid color-mix(in oklch, var(--border) 35%, transparent);
+  transition: background 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.row:first-child {
+  border-top: none;
+}
+
+.rowHover {
+  background: color-mix(in oklch, var(--steel-blue) 4%, transparent);
+}
+
+.row-long-yes {
+  background: color-mix(in oklch, var(--steel-blue) 5%, transparent);
+}
+
+.row-long-no {
+  background: color-mix(in oklch, var(--green, #5baa7c) 4%, transparent);
+}
+
+.row-warn {
+  background: color-mix(in oklch, #e8a840 3%, transparent);
+}
+
+/* Outcome column */
+
+.colOutcome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rangeLabel {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+}
+
+.tag {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.tag-long-yes {
+  color: var(--steel-blue);
+  background: color-mix(in oklch, var(--steel-blue) 16%, transparent);
+}
+
+.tag-long-no {
+  color: var(--green, #5baa7c);
+  background: color-mix(in oklch, var(--green, #5baa7c) 16%, transparent);
+}
+
+.tag-warn {
+  color: #e8a840;
+  background: color-mix(in oklch, #e8a840 16%, transparent);
+}
+
+/* Chance column */
+
+.colChance {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chanceWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 220px;
+}
+
+.chanceBar {
+  position: relative;
+  flex: 1;
+  min-width: 60px;
+  height: 6px;
+  background: color-mix(in oklch, var(--border) 50%, transparent);
+  border-radius: 3px;
+  overflow: visible;
+}
+
+.chanceFill {
+  height: 100%;
+  background: color-mix(in oklch, var(--text-muted) 50%, transparent);
+  border-radius: 3px;
+  transition: width 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chanceMyMark {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  background: var(--steel-blue);
+  transform: translateX(-1px);
+  border-radius: 1px;
+  transition: left 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chanceText {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 38px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Price buttons */
+
+.priceButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.priceButton:hover {
+  transform: translateY(-1px);
+}
+
+.priceButton:active {
+  transform: translateY(0);
+}
+
+.priceLabel {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.priceValue {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.priceYes {
+  background: color-mix(in oklch, var(--steel-blue) 12%, transparent);
+  color: var(--steel-blue);
+}
+
+.priceYes:hover {
+  background: color-mix(in oklch, var(--steel-blue) 22%, transparent);
+}
+
+.priceNo {
+  background: color-mix(in oklch, var(--text-muted) 10%, transparent);
+  color: var(--text-secondary);
+}
+
+.priceNo:hover {
+  background: color-mix(in oklch, var(--text-muted) 18%, transparent);
+}
+
+/* Volume column */
+
+.colVol {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Footer */
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 10px 18px;
+  background: color-mix(in oklch, var(--bg-card) 70%, transparent);
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.footLegend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.legendSwatch {
+  width: 14px;
+  height: 6px;
+  background: color-mix(in oklch, var(--text-muted) 50%, transparent);
+  border-radius: 2px;
+}
+
+.legendMark {
+  width: 2px;
+  height: 11px;
+  background: var(--steel-blue);
+  border-radius: 1px;
+}
+
+.footLink {
+  margin-left: auto;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footLink:hover {
+  color: var(--steel-blue);
+}
+
+/* Responsive */
+
+@media (max-width: 760px) {
+  .head,
+  .row {
+    grid-template-columns: 84px 1fr 72px 72px;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+  .headColRight:last-child,
+  .colVol {
+    display: none;
+  }
+  .tag {
+    font-size: 8px;
+    padding: 2px 5px;
+  }
+  .priceValue {
+    font-size: 13px;
+  }
+  .chanceWrap {
+    max-width: 130px;
+  }
+}

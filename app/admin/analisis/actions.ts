@@ -2,73 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/admin";
-import { createAnalysesClient } from "@/lib/supabase/analyses-client";
 import { fetchCandles } from "@/lib/binance";
-import type {
-  AnalysisVisibility,
-  PredictionDirection,
-  PredictionSource,
-} from "@/lib/supabase/types";
+import type { AnalysisVisibility } from "@/lib/supabase/types";
 
 const VALID_VISIBILITIES = ["public", "premium", "hidden"] as const;
-const VALID_DIRECTIONS = ["bullish", "bearish", "neutral"] as const;
-const VALID_PRED_SOURCES = ["manual", "binance"] as const;
 
 function isVisibility(v: string | null): v is AnalysisVisibility {
   return v !== null && (VALID_VISIBILITIES as readonly string[]).includes(v);
-}
-
-function parseDirection(v: string | null): PredictionDirection | null {
-  if (!v || !(VALID_DIRECTIONS as readonly string[]).includes(v)) return null;
-  return v as PredictionDirection;
-}
-
-function parsePredSource(v: string | null): PredictionSource | null {
-  if (!v || !(VALID_PRED_SOURCES as readonly string[]).includes(v)) return null;
-  return v as PredictionSource;
-}
-
-function parseNum(v: string | null): number | null {
-  if (!v) return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-}
-
-function parseDate(v: string | null): string | null {
-  if (!v) return null;
-  // Accept YYYY-MM-DD only.
-  return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
-}
-
-function predictionFieldsFromForm(formData: FormData) {
-  const prediction_asset = ((formData.get("prediction_asset") as string) || "").trim() || null;
-  const prediction_source = parsePredSource(formData.get("prediction_source") as string | null);
-  const prediction_direction = parseDirection(formData.get("prediction_direction") as string | null);
-  const prediction_baseline_value = parseNum(formData.get("prediction_baseline_value") as string | null);
-  const prediction_target_value = parseNum(formData.get("prediction_target_value") as string | null);
-  const prediction_start_date = parseDate(formData.get("prediction_start_date") as string | null);
-  const prediction_end_date = parseDate(formData.get("prediction_end_date") as string | null);
-  const prediction_unit = ((formData.get("prediction_unit") as string) || "").trim() || null;
-  return {
-    prediction_asset,
-    prediction_source,
-    prediction_direction,
-    prediction_baseline_value,
-    prediction_target_value,
-    prediction_start_date,
-    prediction_end_date,
-    prediction_unit,
-  };
-}
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
 }
 
 function revalidateAll(slug?: string) {
@@ -82,122 +22,13 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-export async function createAnalysis(formData: FormData) {
-  const admin = await requireAdmin();
-  if (!admin) return { error: "Unauthorized" };
-  if (admin.isRemote) return { error: "Modo lectura" };
-
-  const title = (formData.get("title") as string)?.trim();
-  if (!title) return { error: "El título es obligatorio" };
-
-  const rawSlug = (formData.get("slug") as string)?.trim();
-  const slug = rawSlug ? slugify(rawSlug) : slugify(title);
-  if (!slug) return { error: "Slug inválido" };
-
-  const visibility = formData.get("visibility") as string;
-  if (!isVisibility(visibility)) return { error: "Visibilidad inválida" };
-
-  const summaryMd = (formData.get("summary_md") as string) ?? "";
-  const adminNotesMd = ((formData.get("admin_notes_md") as string) || "").trim() || null;
-
-  const subtitle = ((formData.get("subtitle") as string) || "").trim() || null;
-  const asset = ((formData.get("asset") as string) || "").trim() || null;
-  const thesis = ((formData.get("thesis") as string) || "").trim() || null;
-  const section = ((formData.get("section") as string) || "").trim() || null;
-  const bannerPath = ((formData.get("banner_path") as string) || "").trim() || null;
-
-  const pred = predictionFieldsFromForm(formData);
-
-  const db = createAnalysesClient();
-  const { error } = await db.from("analyses").insert({
-    slug,
-    title,
-    subtitle,
-    asset,
-    thesis,
-    section,
-    banner_path: bannerPath,
-    summary_md: summaryMd,
-    admin_notes_md: adminNotesMd,
-    visibility,
-    published_at: visibility === "hidden" ? null : nowIso(),
-    ...pred,
-  });
-
-  if (error) return { error: error.message };
-
-  revalidateAll(slug);
-  return { success: true, slug };
-}
-
-export async function updateAnalysis(id: string, formData: FormData) {
-  const admin = await requireAdmin();
-  if (!admin) return { error: "Unauthorized" };
-  if (admin.isRemote) return { error: "Modo lectura" };
-
-  const title = (formData.get("title") as string)?.trim();
-  if (!title) return { error: "El título es obligatorio" };
-
-  const rawSlug = (formData.get("slug") as string)?.trim();
-  const slug = rawSlug ? slugify(rawSlug) : slugify(title);
-  if (!slug) return { error: "Slug inválido" };
-
-  const visibility = formData.get("visibility") as string;
-  if (!isVisibility(visibility)) return { error: "Visibilidad inválida" };
-
-  const summaryMd = (formData.get("summary_md") as string) ?? "";
-  const adminNotesMd = ((formData.get("admin_notes_md") as string) || "").trim() || null;
-  const subtitle = ((formData.get("subtitle") as string) || "").trim() || null;
-  const asset = ((formData.get("asset") as string) || "").trim() || null;
-  const thesis = ((formData.get("thesis") as string) || "").trim() || null;
-  const section = ((formData.get("section") as string) || "").trim() || null;
-  const bannerPath = ((formData.get("banner_path") as string) || "").trim() || null;
-
-  const db = createAnalysesClient();
-
-  const { data: existing } = await db
-    .from("analyses")
-    .select("visibility,published_at")
-    .eq("id", id)
-    .maybeSingle();
-
-  const wasHidden = existing?.visibility === "hidden" || !existing?.published_at;
-  const goingVisible = visibility !== "hidden";
-  const shouldSealPublishedAt = wasHidden && goingVisible;
-
-  const pred = predictionFieldsFromForm(formData);
-
-  const patch: Record<string, unknown> = {
-    slug,
-    title,
-    subtitle,
-    asset,
-    thesis,
-    section,
-    banner_path: bannerPath,
-    summary_md: summaryMd,
-    admin_notes_md: adminNotesMd,
-    visibility,
-    updated_at: nowIso(),
-    ...pred,
-  };
-  if (shouldSealPublishedAt) patch.published_at = nowIso();
-
-  const { error } = await db.from("analyses").update(patch).eq("id", id);
-  if (error) return { error: error.message };
-
-  revalidateAll(slug);
-  return { success: true, slug };
-}
-
 export async function setAnalysisVisibility(id: string, visibility: AnalysisVisibility) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
   if (!isVisibility(visibility)) return { error: "Visibilidad inválida" };
 
-  const db = createAnalysesClient();
-
+  const db = admin.dataClient;
   const { data: existing } = await db
     .from("analyses")
     .select("slug,published_at")
@@ -221,8 +52,7 @@ export async function deleteAnalysis(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const db = createAnalysesClient();
-
+  const db = admin.dataClient;
   const { data: existing } = await db
     .from("analyses")
     .select("slug")
@@ -236,7 +66,7 @@ export async function deleteAnalysis(id: string) {
   return { success: true };
 }
 
-/* ── Observations ── */
+/* ── Observations (manual tracking panel) ── */
 
 export async function addObservation(analysisId: string, formData: FormData) {
   const admin = await requireAdmin();
@@ -259,9 +89,9 @@ export async function addObservation(analysisId: string, formData: FormData) {
   if (!(VALID_OBS_SOURCES as readonly string[]).includes(source)) {
     return { error: "Fuente inválida" };
   }
-  const typedSource = source as typeof VALID_OBS_SOURCES[number];
+  const typedSource = source as (typeof VALID_OBS_SOURCES)[number];
 
-  const db = createAnalysesClient();
+  const db = admin.dataClient;
   const { error } = await db.from("analysis_observations").insert({
     analysis_id: analysisId,
     observed_at: observedAt.toISOString(),
@@ -287,7 +117,7 @@ export async function deleteObservation(id: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const db = createAnalysesClient();
+  const db = admin.dataClient;
   const { data: obs } = await db
     .from("analysis_observations")
     .select("analysis_id")
@@ -313,7 +143,7 @@ export async function pullBinanceObservation(analysisId: string) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const db = createAnalysesClient();
+  const db = admin.dataClient;
   const { data: a } = await db
     .from("analyses")
     .select("slug,prediction_asset,prediction_source")
@@ -339,7 +169,6 @@ export async function pullBinanceObservation(analysisId: string) {
       note: null,
     });
     if (error) {
-      // Unique constraint on (analysis, source, day) — treat as skip.
       if (error.code === "23505") {
         return { success: true, skipped: true };
       }

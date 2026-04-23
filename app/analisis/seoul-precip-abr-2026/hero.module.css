@@ -1,0 +1,42 @@
+.hero {
+  padding: 40px 0 20px;
+}
+
+.eyebrow {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+}
+
+.title {
+  font-family: var(--font-instrument-serif), var(--font-playfair), serif;
+  font-size: clamp(42px, 7vw, 72px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.028em;
+  color: var(--text-primary);
+  margin: 0 0 18px;
+  max-width: 19ch;
+}
+
+.title em {
+  font-style: italic;
+  color: var(--steel-blue);
+}
+
+.standfirst {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: clamp(16px, 1.8vw, 19px);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  font-weight: 300;
+  margin: 0 0 36px;
+  max-width: 46ch;
+}
+
+.slot {
+  margin-top: 8px;
+}

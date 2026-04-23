@@ -11,7 +11,7 @@ import {
   listPublicAnalyses,
 } from "@/lib/supabase/analyses-client";
 import PaywallCTA from "@/components/paywall-cta";
-import PredictionChart from "./prediction-chart";
+import PredictionChart from "@/components/analisis/prediction-chart";
 import styles from "../analisis.module.css";
 
 export const revalidate = 300;

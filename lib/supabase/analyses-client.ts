@@ -1,10 +1,14 @@
+import { type SupabaseClient } from "@supabase/supabase-js";
 import { createServiceClient } from "./server";
 import type {
   Analysis,
   AnalysisObservation,
   AnalysisPublic,
   AnalysisVisibility,
+  Database,
 } from "./types";
+
+type DbClient = SupabaseClient<Database>;
 
 /**
  * Service-role Supabase client for the analyses table. Uses the current
@@ -102,8 +106,10 @@ export async function getAnalysisForDetail(
   return { analysis: row, isAdmin: false, canView };
 }
 
-export async function listAdminAnalyses(): Promise<Analysis[]> {
-  const db = createAnalysesClient();
+export async function listAdminAnalyses(
+  client?: DbClient,
+): Promise<Analysis[]> {
+  const db = client ?? createAnalysesClient();
   const { data, error } = await db
     .from("analyses")
     .select(ADMIN_COLUMNS)
@@ -114,8 +120,9 @@ export async function listAdminAnalyses(): Promise<Analysis[]> {
 
 export async function getAnalysisForAdmin(
   slug: string,
+  client?: DbClient,
 ): Promise<Analysis | null> {
-  const db = createAnalysesClient();
+  const db = client ?? createAnalysesClient();
   const { data } = await db
     .from("analyses")
     .select(ADMIN_COLUMNS)
@@ -128,8 +135,9 @@ export async function getAnalysisForAdmin(
 
 export async function listObservations(
   analysisId: string,
+  client?: DbClient,
 ): Promise<AnalysisObservation[]> {
-  const db = createAnalysesClient();
+  const db = client ?? createAnalysesClient();
   const { data, error } = await db
     .from("analysis_observations")
     .select("*")

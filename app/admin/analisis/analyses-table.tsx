@@ -9,17 +9,18 @@ import { setAnalysisVisibility, deleteAnalysis } from "./actions";
 import crud from "../crud.module.css";
 import styles from "./analisis.module.css";
 
+// UI label mapping — DB keeps "hidden", UI shows "Privado" per user's vocabulary.
 const VISIBILITIES: { value: AnalysisVisibility; label: string; hint: string }[] = [
-  { value: "public", label: "Público", hint: "Visible en /analisis para todos" },
-  { value: "premium", label: "Premium", hint: "Miembros del hub — paywall para anónimos" },
-  { value: "hidden", label: "Oculto", hint: "Sólo admin lo ve" },
+  { value: "public", label: "Público", hint: "Visible en /analisis para cualquiera" },
+  { value: "premium", label: "Premium", hint: "Miembros del hub — paywall para no-members" },
+  { value: "hidden", label: "Privado", hint: "Sólo admin lo ve" },
 ];
 
 const FILTERS: { value: "all" | AnalysisVisibility; label: string }[] = [
   { value: "all", label: "Todos" },
   { value: "public", label: "Público" },
   { value: "premium", label: "Premium" },
-  { value: "hidden", label: "Oculto" },
+  { value: "hidden", label: "Privado" },
 ];
 
 function visibilityPillClass(v: AnalysisVisibility) {
@@ -28,12 +29,20 @@ function visibilityPillClass(v: AnalysisVisibility) {
   return styles.pillHidden;
 }
 
-export default function AnalysesTable({ analyses }: { analyses: Analysis[] }) {
+interface Props {
+  analyses: Analysis[];
+  registrySlugs: string[];
+  syncError?: string;
+}
+
+export default function AnalysesTable({ analyses, registrySlugs, syncError }: Props) {
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | AnalysisVisibility>("all");
   const [confirmDelete, setConfirmDelete] = useState<Analysis | null>(null);
+
+  const registrySet = new Set(registrySlugs);
 
   const filtered = analyses.filter((a) => {
     if (filter !== "all" && a.visibility !== filter) return false;
@@ -52,7 +61,7 @@ export default function AnalysesTable({ analyses }: { analyses: Analysis[] }) {
     startTransition(async () => {
       const res = await setAnalysisVisibility(id, v);
       if (res.error) toast(res.error, "error");
-      else toast(`Visibilidad → ${v}`, "success");
+      else toast(`Visibilidad → ${VISIBILITIES.find((x) => x.value === v)?.label ?? v}`, "success");
     });
   }
 
@@ -71,13 +80,25 @@ export default function AnalysesTable({ analyses }: { analyses: Analysis[] }) {
     <div>
       <div className={crud.heading}>Análisis</div>
 
+      <p className={styles.introBlurb}>
+        Cada análisis se crea hardcoded en el código (<code>app/analisis/&lt;slug&gt;/</code>) y
+        se registra automáticamente al cargar esta página. Aquí sólo
+        controlas <strong>visibilidad</strong> y <strong>borrado</strong>.
+      </p>
+
+      {syncError && (
+        <div className={crud.formError} style={{ marginBottom: 16 }}>
+          Error al sincronizar registry: {syncError}
+        </div>
+      )}
+
       <div className={crud.toolbar}>
         <div className={styles.toolbarLeft}>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por título, slug, activo..."
+            placeholder="Buscar..."
             className={crud.input}
             style={{ width: 240, padding: "6px 10px", fontSize: 12 }}
           />
@@ -93,16 +114,13 @@ export default function AnalysesTable({ analyses }: { analyses: Analysis[] }) {
             ))}
           </div>
         </div>
-        <Link href="/admin/analisis/new" className={crud.btnPrimary}>
-          + Nuevo análisis
-        </Link>
       </div>
 
       {filtered.length === 0 ? (
         <div className={crud.empty}>
           {search || filter !== "all"
             ? "No se encontraron resultados."
-            : "No hay análisis todavía. Crea el primero."}
+            : "Sin análisis registrados. Pídele a Claude que añada uno."}
         </div>
       ) : (
         <div className={crud.tableWrap}>
@@ -118,83 +136,97 @@ export default function AnalysesTable({ analyses }: { analyses: Analysis[] }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((a) => (
-                <tr key={a.id}>
-                  <td>
-                    <Link href={`/admin/analisis/${a.slug}`} className={styles.titleLink}>
-                      {a.title}
-                    </Link>
-                    <div className={styles.slugMono}>{a.slug}</div>
-                  </td>
-                  <td>
-                    {a.asset ? (
-                      <span className={crud.tag}>{a.asset}</span>
-                    ) : (
-                      <span className={styles.muted}>—</span>
-                    )}
-                  </td>
-                  <td className={styles.thesisCell}>{a.thesis || <span className={styles.muted}>—</span>}</td>
-                  <td>
-                    <div className={styles.segmented} role="group" aria-label="Visibilidad">
-                      {VISIBILITIES.map((v) => (
+              {filtered.map((a) => {
+                const inRegistry = registrySet.has(a.slug);
+                return (
+                  <tr key={a.id}>
+                    <td>
+                      <div className={styles.titleCell}>
+                        <Link href={`/admin/analisis/${a.slug}`} className={styles.titleLink}>
+                          {a.title}
+                        </Link>
+                        {!inRegistry && (
+                          <span className={styles.ghostBadge} title="Sin código asociado">
+                            huérfano
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.slugMono}>{a.slug}</div>
+                    </td>
+                    <td>
+                      {a.asset ? (
+                        <span className={crud.tag}>{a.asset}</span>
+                      ) : (
+                        <span className={styles.muted}>—</span>
+                      )}
+                    </td>
+                    <td className={styles.thesisCell}>
+                      {a.thesis || <span className={styles.muted}>—</span>}
+                    </td>
+                    <td>
+                      <div className={styles.segmented} role="group" aria-label="Visibilidad">
+                        {VISIBILITIES.map((v) => (
+                          <button
+                            key={v.value}
+                            type="button"
+                            title={v.hint}
+                            disabled={pending}
+                            onClick={() => handleVisibility(a.id, v.value)}
+                            className={`${styles.segmentedItem} ${a.visibility === v.value ? `${styles.segmentedActive} ${visibilityPillClass(v.value)}` : ""}`}
+                          >
+                            {v.label}
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+                    <td className={styles.dateMono}>
+                      {new Date(a.updated_at).toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td>
+                      <div className={crud.actions}>
+                        {inRegistry && (
+                          <Link
+                            href={`/admin/analisis/${a.slug}`}
+                            className={crud.actionBtn}
+                            title="Observaciones"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 3v18h18" />
+                              <path d="M7 15l4-4 4 4 6-6" />
+                            </svg>
+                          </Link>
+                        )}
+                        {a.visibility !== "hidden" && (
+                          <Link
+                            href={`/analisis/${a.slug}`}
+                            target="_blank"
+                            className={crud.actionBtn}
+                            title="Ver"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M7 17L17 7M7 7h10v10" />
+                            </svg>
+                          </Link>
+                        )}
                         <button
-                          key={v.value}
-                          type="button"
-                          title={v.hint}
+                          onClick={() => setConfirmDelete(a)}
+                          className={`${crud.actionBtn} ${crud.actionBtnDanger}`}
+                          title="Eliminar"
                           disabled={pending}
-                          onClick={() => handleVisibility(a.id, v.value)}
-                          className={`${styles.segmentedItem} ${a.visibility === v.value ? `${styles.segmentedActive} ${visibilityPillClass(v.value)}` : ""}`}
-                        >
-                          {v.label}
-                        </button>
-                      ))}
-                    </div>
-                  </td>
-                  <td className={styles.dateMono}>
-                    {new Date(a.updated_at).toLocaleDateString("es-ES", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </td>
-                  <td>
-                    <div className={crud.actions}>
-                      <Link
-                        href={`/admin/analisis/${a.slug}`}
-                        className={crud.actionBtn}
-                        title="Editar"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                      </Link>
-                      {a.visibility !== "hidden" && (
-                        <Link
-                          href={`/analisis/${a.slug}`}
-                          target="_blank"
-                          className={crud.actionBtn}
-                          title="Ver"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M7 17L17 7M7 7h10v10" />
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
                           </svg>
-                        </Link>
-                      )}
-                      <button
-                        onClick={() => setConfirmDelete(a)}
-                        className={`${crud.actionBtn} ${crud.actionBtnDanger}`}
-                        title="Eliminar"
-                        disabled={pending}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -205,7 +237,9 @@ export default function AnalysesTable({ analyses }: { analyses: Analysis[] }) {
         title="Eliminar análisis"
         message={
           confirmDelete
-            ? `¿Eliminar "${confirmDelete.title}" permanentemente? Esta acción no se puede deshacer.`
+            ? !registrySet.has(confirmDelete.slug)
+              ? `Eliminar "${confirmDelete.title}" del DB. Huérfano (sin código) — borrado limpio.`
+              : `Eliminar "${confirmDelete.title}" del DB. La próxima vez que cargues este panel se re-insertará desde el registry. Para borrar de verdad, primero quita la entrada del código.`
             : ""
         }
         onConfirm={handleDelete}
