@@ -1,11 +1,12 @@
 # Tareas Pendientes
-
+He visto un proyecto llamado HyperFrames para renderizar animaciones HTML en video mp4. Que te parece si hacemos una animacion sobre un proceso de prediccion de Kronos y lo pasamos a mp4 para el tweet?
 
 ## UX / UI
 
 - Ultimo post card: roll/scroll horizontal para ver varios
 - Pagina de fallback/agradecimiento tras comprar suscripcion
 - Revisa los wiidgets y añadeles favicon
+- bug "Semana 1" en la landing page
 
 ## Hub — Kronos (análisis financiero)
 
