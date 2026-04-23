@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import type { Snapshot, SnapshotPosition } from "@/lib/supabase/types";
+import { useState, useCallback } from "react";
+import type { SnapshotSummary, SnapshotPosition } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
-import { deleteSnapshot, deleteSnapshots } from "./actions";
+import { deleteSnapshot, deleteSnapshots, loadSnapshotsPage, loadSnapshotPositions } from "./actions";
 import { useRowSelection } from "../use-row-selection";
 import ConfirmModal from "@/components/confirm-modal";
 import SnapshotChart from "./snapshot-chart";
@@ -37,16 +37,47 @@ function fmtDate(iso: string) {
 }
 
 interface Props {
-  snapshots: Snapshot[];
+  initialSnapshots: SnapshotSummary[];
+  total: number;
+  pageSize: number;
+  chartData: SnapshotSummary[];
 }
 
-export default function SnapshotsTable({ snapshots }: Props) {
+type PositionsState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "loaded"; positions: SnapshotPosition[] }
+  | { status: "error"; message: string };
+
+export default function SnapshotsTable({ initialSnapshots, total, pageSize, chartData }: Props) {
+  const [snapshots, setSnapshots] = useState<SnapshotSummary[]>(initialSnapshots);
+  const [positionsById, setPositionsById] = useState<Record<string, PositionsState>>({});
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [dateFilter, setDateFilter] = useState("");
+  const [loadingMore, setLoadingMore] = useState(false);
   const { toast } = useToast();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const { selected, count: selCount, isSelected, toggle, toggleAll, clear } = useRowSelection();
+
+  const hasMore = snapshots.length < total;
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const res = await loadSnapshotsPage(snapshots.length, pageSize);
+    setLoadingMore(false);
+    if (res.error) {
+      toast(res.error, "error");
+      return;
+    }
+    // Guard against duplicates if rows shifted between loads
+    setSnapshots((prev) => {
+      const existing = new Set(prev.map((s) => s.id));
+      const fresh = res.rows.filter((r) => !existing.has(r.id));
+      return [...prev, ...fresh];
+    });
+  }, [snapshots.length, pageSize, loadingMore, hasMore, toast]);
 
   async function doDelete(id: string) {
     setDeleteLoading(true);
@@ -66,6 +97,28 @@ export default function SnapshotsTable({ snapshots }: Props) {
     else { toast(`${res.count} snapshots eliminados`, "success"); clear(); }
   }
 
+  async function toggleRow(id: string) {
+    const isOpen = expanded.has(id);
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (isOpen) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    if (isOpen) return;
+    // Lazy-load positions the first time a row is opened
+    const current = positionsById[id];
+    if (current && (current.status === "loaded" || current.status === "loading")) return;
+    setPositionsById((prev) => ({ ...prev, [id]: { status: "loading" } }));
+    const res = await loadSnapshotPositions(id);
+    setPositionsById((prev) => ({
+      ...prev,
+      [id]: res.error
+        ? { status: "error", message: res.error }
+        : { status: "loaded", positions: res.positions },
+    }));
+  }
+
   const filtered = dateFilter
     ? snapshots.filter((s) => s.snapshot_date.startsWith(dateFilter))
     : snapshots;
@@ -73,24 +126,15 @@ export default function SnapshotsTable({ snapshots }: Props) {
   const oldest = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
   const latest = snapshots.length > 0 ? snapshots[0] : null;
 
-  function toggleRow(id: string) {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
   return (
     <div>
       {/* Chart */}
-      <SnapshotChart snapshots={snapshots} />
+      <SnapshotChart snapshots={chartData} />
 
       {/* Summary tags */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
         <div className={styles.tag} style={{ padding: "8px 14px", fontSize: 13 }}>
-          Total: <strong>{snapshots.length}</strong> snapshots
+          Mostrando <strong>{snapshots.length}</strong> de <strong>{total}</strong> snapshots
         </div>
         {oldest && (
           <div className={styles.tag} style={{ padding: "8px 14px", fontSize: 13 }}>
@@ -155,7 +199,6 @@ export default function SnapshotsTable({ snapshots }: Props) {
                 <th>Valor</th>
                 <th className={styles.hideMobile}>Coste</th>
                 <th>PnL</th>
-                <th className={styles.hideMobile}>Posiciones</th>
                 <th className={styles.hideMobile}>Notas</th>
                 <th></th>
               </tr>
@@ -163,16 +206,16 @@ export default function SnapshotsTable({ snapshots }: Props) {
             <tbody>
               {filtered.map((s) => {
                 const pnl = s.total_value - s.total_cost;
-                const posCount = s.positions_data?.length ?? 0;
                 const isExpanded = expanded.has(s.id);
+                const positionsState = positionsById[s.id] ?? { status: "idle" as const };
 
                 return (
                   <SnapshotRow
                     key={s.id}
                     snapshot={s}
                     pnl={pnl}
-                    posCount={posCount}
                     isExpanded={isExpanded}
+                    positionsState={positionsState}
                     isChecked={isSelected(s.id)}
                     onCheck={() => toggle(s.id)}
                     onToggle={() => toggleRow(s.id)}
@@ -184,6 +227,22 @@ export default function SnapshotsTable({ snapshots }: Props) {
           </table>
         </div>
         </>
+      )}
+
+      {/* Load more */}
+      {hasMore && !dateFilter && (
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className={styles.btnSecondary}
+            style={{ minWidth: 200 }}
+          >
+            {loadingMore
+              ? "Cargando…"
+              : `Cargar ${Math.min(pageSize, total - snapshots.length)} más (quedan ${total - snapshots.length})`}
+          </button>
+        </div>
       )}
 
       <ConfirmModal
@@ -206,17 +265,17 @@ export default function SnapshotsTable({ snapshots }: Props) {
 function SnapshotRow({
   snapshot: s,
   pnl,
-  posCount,
   isExpanded,
+  positionsState,
   isChecked,
   onCheck,
   onToggle,
   onRequestDelete,
 }: {
-  snapshot: Snapshot;
+  snapshot: SnapshotSummary;
   pnl: number;
-  posCount: number;
   isExpanded: boolean;
+  positionsState: PositionsState;
   isChecked: boolean;
   onCheck: () => void;
   onToggle: () => void;
@@ -227,7 +286,7 @@ function SnapshotRow({
     <>
       <tr
         onClick={onToggle}
-        style={{ cursor: posCount > 0 ? "pointer" : "default" }}
+        style={{ cursor: "pointer" }}
       >
         <td className={styles.checkboxCell} onClick={(e) => e.stopPropagation()}>
           <input
@@ -238,24 +297,22 @@ function SnapshotRow({
           />
         </td>
         <td style={{ width: 28, textAlign: "center" }}>
-          {posCount > 0 && (
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{
-                transition: "transform 0.2s ease",
-                transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
-              }}
-            >
-              <path d="M6 4L10 8L6 12" />
-            </svg>
-          )}
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{
+              transition: "transform 0.2s ease",
+              transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+            }}
+          >
+            <path d="M6 4L10 8L6 12" />
+          </svg>
         </td>
         <td>{fmtDateTime(s.snapshot_date)}</td>
         <td className={styles.bold}>{fmtEur(s.total_value)}</td>
@@ -265,7 +322,6 @@ function SnapshotRow({
             {pnl >= 0 ? "+" : ""}{fmtEur(pnl)}
           </span>
         </td>
-        <td className={styles.hideMobile}>{posCount}</td>
         <td className={styles.hideMobile} style={{ color: "var(--text-muted)", fontSize: 12 }}>{s.notes || "—"}</td>
         <td>
           <button
@@ -280,15 +336,43 @@ function SnapshotRow({
         </td>
       </tr>
 
-      {isExpanded && s.positions_data && s.positions_data.length > 0 && (
+      {isExpanded && (
         <tr>
-          <td colSpan={9} style={{ padding: 0 }}>
-            <PositionsSubTable positions={s.positions_data} />
+          <td colSpan={8} style={{ padding: 0 }}>
+            <PositionsSection state={positionsState} />
           </td>
         </tr>
       )}
     </>
   );
+}
+
+function PositionsSection({ state }: { state: PositionsState }) {
+  if (state.status === "loading") {
+    return (
+      <div style={{ padding: "14px 28px", color: "var(--text-muted)", fontSize: 12 }}>
+        Cargando posiciones…
+      </div>
+    );
+  }
+  if (state.status === "error") {
+    return (
+      <div style={{ padding: "14px 28px", color: "var(--red)", fontSize: 12 }}>
+        Error: {state.message}
+      </div>
+    );
+  }
+  if (state.status === "loaded") {
+    if (state.positions.length === 0) {
+      return (
+        <div style={{ padding: "14px 28px", color: "var(--text-muted)", fontSize: 12 }}>
+          Sin posiciones en este snapshot.
+        </div>
+      );
+    }
+    return <PositionsSubTable positions={state.positions} />;
+  }
+  return null;
 }
 
 function PositionsSubTable({ positions }: { positions: SnapshotPosition[] }) {

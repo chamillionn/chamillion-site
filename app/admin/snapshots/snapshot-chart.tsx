@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import type { Snapshot } from "@/lib/supabase/types";
+import type { SnapshotSummary } from "@/lib/supabase/types";
 import styles from "./snapshots.module.css";
 
 type Range = "7d" | "30d" | "90d" | "all";
@@ -13,7 +13,7 @@ const RANGES: { key: Range; label: string }[] = [
   { key: "all", label: "Todo" },
 ];
 
-function filterByRange(data: Snapshot[], range: Range): Snapshot[] {
+function filterByRange(data: SnapshotSummary[], range: Range): SnapshotSummary[] {
   if (range === "all") return data;
   const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
   const cutoff = new Date();
@@ -38,7 +38,7 @@ const PAD = { top: 16, right: 16, bottom: 28, left: 64 };
 const CHART_W = W - PAD.left - PAD.right;
 const CHART_H = H - PAD.top - PAD.bottom;
 
-export default function SnapshotChart({ snapshots }: { snapshots: Snapshot[] }) {
+export default function SnapshotChart({ snapshots }: { snapshots: SnapshotSummary[] }) {
   const [range, setRange] = useState<Range>("all");
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);

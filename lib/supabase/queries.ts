@@ -5,6 +5,8 @@ import type {
   PositionEnriched,
   PortfolioSummary,
   Snapshot,
+  SnapshotSummary,
+  SnapshotPosition,
   CapitalFlow,
   Profile,
 } from "./types";
@@ -97,6 +99,83 @@ export async function getSnapshots(limit = 100, client?: DataClient): Promise<Sn
     .order("snapshot_date", { ascending: false })
     .limit(limit);
   return (data as Snapshot[]) ?? [];
+}
+
+/**
+ * Lightweight paged snapshots for list views (excludes positions_data JSON).
+ * Returns rows + total count so the caller can know when to stop paging.
+ */
+export async function getSnapshotsPaged(
+  offset: number,
+  limit: number,
+  client?: DataClient,
+): Promise<{ rows: SnapshotSummary[]; total: number }> {
+  const supabase = await resolve(client);
+  const { data, count } = await supabase
+    .from("snapshots")
+    .select("id, snapshot_date, total_value, total_cost, eurusd_rate, notes, created_at", { count: "exact" })
+    .order("snapshot_date", { ascending: false })
+    .range(offset, offset + limit - 1);
+  return { rows: (data as SnapshotSummary[]) ?? [], total: count ?? 0 };
+}
+
+/**
+ * Chart-friendly snapshot series covering full history:
+ * dense (all rows) for the last `denseDays`, and 1 point per day for older data.
+ * Returns rows newest-first (matches convention of other snapshot queries).
+ */
+export async function getSnapshotsForChart(
+  denseDays = 30,
+  client?: DataClient,
+): Promise<SnapshotSummary[]> {
+  const supabase = await resolve(client);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - denseDays);
+  const cutoffISO = cutoff.toISOString();
+  const cols = "id, snapshot_date, total_value, total_cost, eurusd_rate, notes, created_at";
+
+  const [recent, older] = await Promise.all([
+    supabase
+      .from("snapshots")
+      .select(cols)
+      .gte("snapshot_date", cutoffISO)
+      .order("snapshot_date", { ascending: false })
+      .range(0, 9999),
+    supabase
+      .from("snapshots")
+      .select(cols)
+      .lt("snapshot_date", cutoffISO)
+      .order("snapshot_date", { ascending: false })
+      .range(0, 9999),
+  ]);
+
+  const recentRows = (recent.data as SnapshotSummary[]) ?? [];
+  const olderRows = (older.data as SnapshotSummary[]) ?? [];
+
+  // Older: keep latest snapshot per calendar day (input is desc, first wins)
+  const byDay = new Map<string, SnapshotSummary>();
+  for (const s of olderRows) {
+    const day = s.snapshot_date.slice(0, 10);
+    if (!byDay.has(day)) byDay.set(day, s);
+  }
+  const daily = [...byDay.values()]; // already desc since input was desc
+
+  return [...recentRows, ...daily];
+}
+
+/** Fetch positions_data for a single snapshot (lazy-loaded on row expand). */
+export async function getSnapshotPositions(
+  id: string,
+  client?: DataClient,
+): Promise<SnapshotPosition[]> {
+  const supabase = await resolve(client);
+  const { data } = await supabase
+    .from("snapshots")
+    .select("positions_data")
+    .eq("id", id)
+    .single();
+  const row = data as { positions_data: SnapshotPosition[] | null } | null;
+  return row?.positions_data ?? [];
 }
 
 /** Get all snapshots for a specific date (YYYY-MM-DD). */

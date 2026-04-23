@@ -62,6 +62,10 @@ export interface Snapshot {
   created_at: string;
 }
 
+// Snapshot without positions_data payload — used for list views
+// where positions are lazy-loaded on row expansion.
+export type SnapshotSummary = Omit<Snapshot, "positions_data">;
+
 export type CapitalFlowType = "buy" | "sell" | "deposit_fiat" | "withdraw_fiat";
 
 export interface CapitalFlow {
