@@ -14,6 +14,7 @@ const NAV: NavItem[] = [
   { href: "/hub", label: "Panel" },
   { href: "/hub/cartera", label: "Cartera" },
   { href: "/hub/mi-cartera", label: "Mi Cartera" },
+  { href: "/hub/analisis", label: "Análisis" },
   { href: "/hub/herramientas", label: "Herramientas" },
   { href: "/hub/software", label: "Software" },
   { href: "/hub/consultorias", label: "Consultorías" },

@@ -223,6 +223,51 @@ export interface KronosPrediction {
 
 export type TradeSide = "buy" | "sell" | "open_long" | "open_short" | "close_long" | "close_short";
 
+export type AnalysisVisibility = "public" | "premium" | "hidden";
+export type PredictionDirection = "bullish" | "bearish" | "neutral";
+export type PredictionSource = "manual" | "binance";
+export type ObservationSource = "manual" | "binance" | "twelvedata";
+
+export interface Analysis {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  asset: string | null;
+  thesis: string | null;
+  section: string | null;
+  banner_path: string | null;
+  summary_md: string;
+  admin_notes_md: string | null;
+  visibility: AnalysisVisibility;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+  // Prediction metadata (nullable — only set when the analysis tracks one).
+  prediction_asset: string | null;
+  prediction_source: PredictionSource | null;
+  prediction_direction: PredictionDirection | null;
+  prediction_baseline_value: number | null;
+  prediction_target_value: number | null;
+  prediction_start_date: string | null; // YYYY-MM-DD
+  prediction_end_date: string | null;   // YYYY-MM-DD
+  prediction_unit: string | null;
+  has_prediction: boolean;              // generated column
+}
+
+// Narrowed variant without admin_notes_md — returned by non-admin queries.
+export type AnalysisPublic = Omit<Analysis, "admin_notes_md">;
+
+export interface AnalysisObservation {
+  id: string;
+  analysis_id: string;
+  observed_at: string;
+  value: number;
+  source: ObservationSource | null;
+  note: string | null;
+  created_at: string;
+}
+
 export interface Trade {
   id: string;
   platform_id: string | null;
@@ -396,6 +441,25 @@ export type Database = {
         Insert: Flatten<Omit<KronosPrediction, "id" | "created_at" | "model" | "email" | "comment" | "input_range_start" | "input_range_end" | "pred_range_start" | "pred_range_end"> & { id?: string; created_at?: string; model?: string; email?: string | null; comment?: string | null; input_range_start?: string | null; input_range_end?: string | null; pred_range_start?: string | null; pred_range_end?: string | null }>;
         Update: Flatten<Partial<KronosPrediction>>;
         Relationships: [];
+      };
+      analyses: {
+        Row: Flatten<Analysis>;
+        // has_prediction is a generated column; never write to it. All non-required
+        // fields are nullable with sensible defaults in the schema.
+        Insert: Flatten<Partial<Omit<Analysis, "id" | "has_prediction">> & {
+          slug: string;
+          title: string;
+        }>;
+        Update: Flatten<Partial<Omit<Analysis, "has_prediction">>>;
+        Relationships: [];
+      };
+      analysis_observations: {
+        Row: Flatten<AnalysisObservation>;
+        Insert: Flatten<Omit<AnalysisObservation, "id" | "created_at" | "source" | "note"> & { id?: string; created_at?: string; source?: ObservationSource | null; note?: string | null }>;
+        Update: Flatten<Partial<AnalysisObservation>>;
+        Relationships: [
+          { foreignKeyName: "analysis_observations_analysis_id_fkey"; columns: ["analysis_id"]; referencedRelation: "analyses"; referencedColumns: ["id"]; isOneToOne: false },
+        ];
       };
     };
     Views: {
