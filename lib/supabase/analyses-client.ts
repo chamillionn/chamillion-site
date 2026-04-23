@@ -1,26 +1,21 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServiceClient } from "./server";
 import type {
   Analysis,
   AnalysisObservation,
   AnalysisPublic,
   AnalysisVisibility,
-  Database,
 } from "./types";
 
 /**
- * Service-role Supabase client for the analyses table. Follows the same
- * dev→prod override pattern as createPostsClient: uses PROD_* vars when
- * present (so dev builds can read prod content), falls back to the
- * native env otherwise. Bypasses RLS — column projection is the layer
- * that keeps admin_notes_md out of public responses.
+ * Service-role Supabase client for the analyses table. Uses the current
+ * environment's DB (dev in local, prod in production). Column projection
+ * via PUBLIC_COLUMNS keeps admin_notes_md out of public responses.
+ *
+ * Posts/newsletter use a cross-env PROD_* override; we deliberately don't
+ * mirror that pattern here so local dev against dev DB stays straightforward.
  */
 export function createAnalysesClient() {
-  const url =
-    process.env.PROD_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const key =
-    process.env.PROD_SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createClient<Database>(url, key, { auth: { persistSession: false } });
+  return createServiceClient();
 }
 
 /**
