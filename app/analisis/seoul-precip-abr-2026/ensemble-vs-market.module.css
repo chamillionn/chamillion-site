@@ -1,0 +1,277 @@
+.wrap {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-card);
+  font-family: var(--font-outfit), sans-serif;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 82px 1fr 140px 140px 120px;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid color-mix(in oklch, var(--border) 35%, transparent);
+  transition: background 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.row:first-child {
+  border-top: none;
+}
+
+.rowHead {
+  background: color-mix(in oklch, var(--bg-card) 75%, transparent);
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rowActionable {
+  background: color-mix(in oklch, var(--green, #5baa7c) 5%, transparent);
+}
+
+/* Bucket col */
+
+.bucketCol {
+  font-family: var(--font-dm-mono), monospace;
+}
+
+.bucketLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+}
+
+/* Probability col */
+
+.probCol {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.probBar {
+  flex: 1;
+  height: 6px;
+  background: color-mix(in oklch, var(--border) 40%, transparent);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.probFill {
+  height: 100%;
+  background: var(--steel-blue);
+  border-radius: 3px;
+  transition: width 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.probText {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+  min-width: 60px;
+  font-variant-numeric: tabular-nums;
+}
+
+.probMembers {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-left: 4px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Market col */
+
+.mktCol {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.mktPrices {
+  display: flex;
+  gap: 6px;
+}
+
+.mktPrice {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: color-mix(in oklch, var(--text-muted) 8%, transparent);
+  font-family: var(--font-dm-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.mktLabel {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  color: var(--text-muted);
+}
+
+.mktValue {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Action col */
+
+.actionCol {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.actionTag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.actionPrice {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.actionYes {
+  color: var(--steel-blue);
+  background: color-mix(in oklch, var(--steel-blue) 14%, transparent);
+}
+
+.actionNo {
+  color: var(--green, #5baa7c);
+  background: color-mix(in oklch, var(--green, #5baa7c) 14%, transparent);
+}
+
+.actionNone {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 0.65;
+}
+
+/* EV col */
+
+.evCol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.evTrack {
+  flex: 1;
+  position: relative;
+  height: 8px;
+  min-width: 40px;
+}
+
+.evCenter {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: color-mix(in oklch, var(--border) 60%, transparent);
+  transform: translateX(-0.5px);
+}
+
+.evBar {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  border-radius: 2px;
+  transition: width 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.evPos {
+  background: color-mix(in oklch, var(--green, #5baa7c) 70%, transparent);
+}
+
+.evNeg {
+  background: color-mix(in oklch, var(--red, #c7555a) 55%, transparent);
+}
+
+.evValue {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  min-width: 38px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.evValuePos {
+  color: var(--green, #5baa7c);
+}
+
+.evValueNeg {
+  color: var(--red, #c7555a);
+}
+
+/* Footer */
+
+.footer {
+  padding: 10px 16px;
+  background: color-mix(in oklch, var(--bg-card) 70%, transparent);
+  border-top: 1px solid color-mix(in oklch, var(--border) 35%, transparent);
+}
+
+.footerNote {
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+.footerNote strong {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Responsive */
+
+@media (max-width: 820px) {
+  .row {
+    grid-template-columns: 72px 1fr 100px 100px;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .evCol {
+    display: none;
+  }
+  .mktPrice {
+    padding: 2px 5px;
+  }
+}
+
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: 58px 1fr 90px;
+    gap: 8px;
+  }
+  .mktCol {
+    display: none;
+  }
+}

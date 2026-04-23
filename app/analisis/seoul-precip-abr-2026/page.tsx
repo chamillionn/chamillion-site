@@ -18,10 +18,12 @@ import AnalysisNav, { type NavSection } from "./nav";
 import Section from "./section";
 import LiveTracker from "./live-tracker";
 import MarketTable from "./market-table";
+import PolymarketEmbed from "./polymarket-embed";
 import PastSection from "./past-section";
 import ForecastTable from "./forecast-table";
 import EnsembleSpaghetti from "./ensemble-spaghetti";
 import EnsembleHistogram from "./ensemble-histogram";
+import EnsembleVsMarket from "./ensemble-vs-market";
 import EVCalculator from "./ev-calculator";
 import PositionCalculator from "./position-calculator";
 
@@ -36,6 +38,7 @@ import {
   SOURCES,
   POLYMARKET_EVENT,
   KMA_SOURCE_URL,
+  SEOUL_ANALYSIS_SNAPSHOT_DATE,
 } from "./data";
 
 import styles from "./page.module.css";
@@ -45,7 +48,6 @@ export const revalidate = 3600;
 
 const SECTIONS: NavSection[] = [
   { id: "seguimiento", label: "Seguimiento" },
-  { id: "mercado", label: "El mercado" },
   { id: "pasado", label: "Pasado" },
   { id: "futuro", label: "Futuro" },
   { id: "ineficiencia", label: "Ineficiencia y EV" },
@@ -104,10 +106,44 @@ export default async function SeoulPrecipAnalysis() {
   if (!detail) notFound();
   const { analysis, isAdmin, canView } = detail;
 
-  const observations =
-    canView && analysis.has_prediction
-      ? await listObservations(analysis.id)
-      : [];
+  // MTD source of truth: the latest admin-entered observation (from KMA).
+  // If none exists yet, fall back to the snapshot baked into data.ts.
+  const observations = canView && analysis.has_prediction
+    ? await listObservations(analysis.id)
+    : [];
+  const latestObs = observations.length > 0 ? observations[observations.length - 1] : null;
+  const currentMtdMm = latestObs ? Number(latestObs.value) : CURRENT_STATE.mtdMm;
+  const liveSourceLabel = latestObs
+    ? `KMA · ${new Date(latestObs.observed_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}`
+    : `Snapshot · ${SEOUL_ANALYSIS_SNAPSHOT_DATE.slice(5)}`;
+
+  // Build strike-rate strip from the live bucket structure.
+  // Parse the range label to derive [lower, upper] bounds. upper=null → open-ended.
+  const stripBuckets = MARKET_BUCKETS.map((b) => {
+    const range = b.range;
+    let lower = 0;
+    let upper: number | null = null;
+    const between = range.match(/^(\d+)-(\d+)/);
+    const under = range.match(/^<(\d+)/);
+    const plus = range.match(/^(\d+)\+/);
+    if (under) {
+      lower = 0;
+      upper = parseFloat(under[1]);
+    } else if (between) {
+      lower = parseFloat(between[1]);
+      upper = parseFloat(between[2]);
+    } else if (plus) {
+      lower = parseFloat(plus[1]);
+      upper = null;
+    }
+    return {
+      label: b.range,
+      lower,
+      upper,
+      yesPrice: b.yesPrice,
+      noPrice: b.noPrice,
+    };
+  });
 
   return (
     <div className={styles.layout}>
@@ -120,6 +156,14 @@ export default async function SeoulPrecipAnalysis() {
           eyebrow="Polymarket · Seúl"
           title={POLYMARKET_EVENT.title}
           standfirst="Análisis en profundidad."
+        />
+
+        <PolymarketEmbed
+          marketSlug={POLYMARKET_EVENT.submarketSlugs.under40}
+          fallbackHref={POLYMARKET_EVENT.url}
+          title={`${POLYMARKET_EVENT.title} · <40mm`}
+          height={340}
+          features="volume"
         />
 
         {!canView ? (
@@ -139,34 +183,27 @@ export default async function SeoulPrecipAnalysis() {
               </Callout>
             )}
 
-            {/* ────────────────── Seguimiento ────────────────── */}
+            {/* ────────────────── Seguimiento + Mercado ────────────────── */}
             <Section
               id="seguimiento"
               label="Seguimiento"
-              eyebrow="qué pasa ahora mismo"
+              eyebrow="qué pasa ahora mismo y dónde cotiza"
               title="Lluvia acumulada este mes en Seúl"
             >
               <LiveTracker
-                baseline={CURRENT_STATE.mtdMm}
-                current={CURRENT_STATE.mtdMm}
+                current={currentMtdMm}
                 target={CURRENT_STATE.threshold}
                 unit="mm"
                 endDate={POLYMARKET_EVENT.resolutionDate}
                 publicationDate={POLYMARKET_EVENT.publicationDate}
                 direction="below"
-                observations={observations}
                 sourceUrl={KMA_SOURCE_URL}
-                sourceLabel="Fuente · KMA estación 108"
+                sourceLabel="KMA-108 · oficial"
+                liveSourceLabel={liveSourceLabel}
+                buckets={stripBuckets}
               />
-            </Section>
 
-            {/* ────────────────── El mercado ────────────────── */}
-            <Section
-              id="mercado"
-              label="01"
-              eyebrow="qué está cotizado"
-              title="El mercado"
-            >
+              <h3 className={styles.subHead}>Todos los buckets del evento</h3>
               <MarketTable rows={MARKET_BUCKETS} eventUrl={POLYMARKET_EVENT.url} />
             </Section>
 
@@ -245,6 +282,21 @@ export default async function SeoulPrecipAnalysis() {
                 <strong>23 de 30 escenarios</strong> terminan abril por debajo
                 de 40 mm. Eso es <strong>77 %</strong>.
               </Callout>
+
+              <h3 className={styles.subHead}>
+                Cuánto EV tiene cada bucket
+              </h3>
+              <p className={styles.subLead}>
+                Traduce los 30 escenarios del ensemble a probabilidad por bucket y
+                compara con el precio actual en Polymarket. El EV se muestra del
+                lado (YES o NO) donde haya edge.
+              </p>
+
+              <EnsembleVsMarket
+                ensembleTotals={GFS_ENSEMBLE_TOTALS}
+                baseline={CURRENT_STATE.mtdMm}
+                buckets={stripBuckets}
+              />
             </Section>
 
             {/* ────────────────── Ineficiencia y EV ────────────────── */}

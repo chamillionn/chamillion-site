@@ -11,6 +11,19 @@ export const POLYMARKET_EVENT = {
   resolutionDate: "2026-04-30",
   publicationDate: "2026-05-07", // KMA publishes official April totals ~first week of May
   totalVolumeUsd: 20386,
+  // Individual sub-market slugs — used for embed widgets (Polymarket only
+  // supports single-market embeds, not whole-event embeds).
+  submarketSlugs: {
+    under40: "will-seoul-have-less-than-40mm-of-precipitation-in-april",
+    b40_45: "will-seoul-have-between-40-45mm-of-precipitation-in-april-944",
+    b45_50: "will-seoul-have-between-45-50mm-of-precipitation-in-april-476",
+    b50_55: "will-seoul-have-between-50-55mm-of-precipitation-in-april-542",
+    b55_60: "will-seoul-have-between-55-60mm-of-precipitation-in-april-424",
+    b60_65: "will-seoul-have-between-60-65mm-of-precipitation-in-april",
+    b65_70: "will-seoul-have-between-65-70mm-of-precipitation-in-april",
+    b70_75: "will-seoul-have-between-70-75mm-of-precipitation-in-april-n5ag",
+    over75: "will-seoul-have-75mm-or-more-of-precipitation-in-april",
+  },
 };
 
 export const KMA_SOURCE_URL =
