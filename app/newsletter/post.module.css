@@ -140,20 +140,38 @@
   font-weight: 600;
 }
 
-/* ===== BLOCKQUOTE ===== */
+/* ===== PULLQUOTE =====
+ * Rediseñado: sin side-tab border; fondo tintado + comilla tipográfica
+ * grande. El editor de borradores (app/editor/_components/editor.module.css
+ * .ProseMirror blockquote) debe mantener paridad visual. */
 .pullquote {
-  border-left: 3px solid var(--accent-strong);
-  margin: 32px 0;
-  padding: 20px 24px;
+  position: relative;
+  margin: 36px 0;
+  padding: 24px 32px 24px 48px;
   background: var(--bg-surface);
-  border-radius: 0 6px 6px 0;
+  border-radius: 6px;
+}
+
+.pullquote::before {
+  content: "\201C";
+  position: absolute;
+  left: 14px;
+  top: 8px;
+  font-family: var(--font-playfair), serif;
+  font-size: 56px;
+  font-style: italic;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .pullquote p {
+  font-family: var(--font-playfair), serif;
   font-style: italic;
   color: var(--text-secondary);
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: 16.5px;
+  line-height: 1.75;
   margin-bottom: 0 !important;
 }
 

@@ -104,6 +104,9 @@ export interface Post {
   premium: boolean;
   published: boolean;
   created_at: string;
+  content_json: unknown | null; // TipTap ProseMirror doc
+  content_md: string | null;
+  draft_updated_at: string | null;
 }
 
 export interface SiteSetting {
@@ -374,7 +377,7 @@ export type Database = {
       };
       posts: {
         Row: Flatten<Post>;
-        Insert: Flatten<Omit<Post, "id" | "created_at" | "subtitle" | "banner_path" | "section" | "substack_url"> & { id?: string; created_at?: string; subtitle?: string | null; banner_path?: string | null; section?: string | null; substack_url?: string | null }>;
+        Insert: Flatten<Omit<Post, "id" | "created_at" | "subtitle" | "banner_path" | "section" | "substack_url" | "content_json" | "content_md" | "draft_updated_at"> & { id?: string; created_at?: string; subtitle?: string | null; banner_path?: string | null; section?: string | null; substack_url?: string | null; content_json?: unknown | null; content_md?: string | null; draft_updated_at?: string | null }>;
         Update: Flatten<Partial<Post>>;
         Relationships: [];
       };

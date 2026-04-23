@@ -133,6 +133,7 @@ export default function NewsletterTable({ posts }: { posts: Post[] }) {
                 <th className={styles.hideMobile}>Slug</th>
                 <th>Premium</th>
                 <th>Publicado</th>
+                <th>Editar</th>
                 <th>Ver</th>
               </tr>
             </thead>
@@ -141,6 +142,15 @@ export default function NewsletterTable({ posts }: { posts: Post[] }) {
                 <tr key={post.id}>
                   <td>
                     <span className={styles.bold}>{post.title}</span>
+                    {post.draft_updated_at && !post.published && (
+                      <span
+                        className={styles.tag}
+                        style={{ marginLeft: 8, fontSize: 10 }}
+                        title={`Borrador actualizado ${new Date(post.draft_updated_at).toLocaleString()}`}
+                      >
+                        borrador
+                      </span>
+                    )}
                   </td>
                   <td className={styles.hideMobile}>
                     <span style={{ fontFamily: "var(--font-dm-mono), monospace", fontSize: 11 }}>
@@ -176,6 +186,15 @@ export default function NewsletterTable({ posts }: { posts: Post[] }) {
                       onChange={(v) => handlePublished(post.id, v)}
                       disabled={pending}
                     />
+                  </td>
+                  <td>
+                    <Link
+                      href={`/editor/${post.id}`}
+                      className={styles.link}
+                      title="Abrir editor"
+                    >
+                      ✎
+                    </Link>
                   </td>
                   <td>
                     <Link
