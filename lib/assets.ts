@@ -71,6 +71,7 @@ export const PREMIUM_EXTRAS: AssetMeta[] = [
 
   // Commodities
   { id: "silver", symbol: "XAG/USD", source: "twelvedata", label: "Plata",     sublabel: "XAG/USD", category: "commodity", tier: "premium", timeframes: ALL_TFS },
+  { id: "copper", symbol: "HG1",     source: "twelvedata", label: "Cobre",     sublabel: "HG1",     category: "commodity", tier: "premium", timeframes: ALL_TFS },
   { id: "wti",    symbol: "WTI",     source: "twelvedata", label: "Crudo WTI", sublabel: "WTI",     category: "commodity", tier: "premium", timeframes: ALL_TFS },
   { id: "brent",  symbol: "BRENT",   source: "twelvedata", label: "Brent",     sublabel: "BRENT",   category: "commodity", tier: "premium", timeframes: ALL_TFS },
 ];
