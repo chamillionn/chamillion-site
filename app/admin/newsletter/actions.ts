@@ -5,6 +5,7 @@ import path from "path";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/admin";
 import { createPostsClient } from "@/lib/supabase/posts-client";
+import type { EditorState } from "@/lib/supabase/types";
 
 export async function togglePostPremium(id: string, premium: boolean) {
   const admin = await requireAdmin();
@@ -48,6 +49,7 @@ export interface DraftMetadata {
   slug?: string;
   section?: string | null;
   banner_path?: string | null;
+  banner_aspect?: string | null;
   substack_url?: string | null;
   premium?: boolean;
   date?: string;
@@ -99,6 +101,45 @@ export async function saveDraftContent(
 
   if (error) return { error: error.message };
   return { success: true, savedAt: new Date().toISOString() };
+}
+
+/**
+ * Merge parcial en la columna jsonb `editor_state`. Para settings del
+ * editor que no son contenido (añade campos en `EditorState` en types.ts).
+ * Uso típico:
+ *   updateEditorState(post.id, { focusMode: true })
+ */
+export async function updateEditorState(
+  id: string,
+  patch: Partial<EditorState>,
+) {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const postsDb = createPostsClient();
+
+  // Fetch-merge-write. Suficiente para 1 usuario admin sin concurrencia.
+  // Si alguna vez se vuelve concurrente, se puede mover a un SQL function
+  // con `editor_state = editor_state || $1` atómico.
+  const { data: current, error: readErr } = await postsDb
+    .from("posts")
+    .select("editor_state")
+    .eq("id", id)
+    .single();
+  if (readErr) return { error: readErr.message };
+
+  const next: EditorState = {
+    ...((current?.editor_state as EditorState | null) ?? {}),
+    ...patch,
+  };
+
+  const { error } = await postsDb
+    .from("posts")
+    .update({ editor_state: next })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  return { success: true };
 }
 
 export async function updateDraftMetadata(id: string, patch: DraftMetadata) {
@@ -179,6 +220,67 @@ export async function uploadBannerImage(formData: FormData) {
   } catch (e) {
     return {
       error: `No se pudo escribir: ${(e as Error).message}. ¿Estás en un entorno con filesystem writable?`,
+    };
+  }
+
+  // Cache-bust: el header `Cache-Control: immutable` de /assets/* hace que
+  // el browser no vuelva a pedir el mismo path aunque el fichero haya
+  // cambiado. Añadimos ?v=<timestamp> para que la URL sea única por subida.
+  const versionedPath = `${publicPath}?v=${Date.now()}`;
+
+  return { success: true, path: versionedPath, filename };
+}
+
+/**
+ * Sube una imagen inline (no banner) al filesystem. Se guarda en
+ * public/assets/newsletter/<slug>-<timestamp>.<ext> para no pisar el banner
+ * ni colisionar entre imágenes del mismo post. Devuelve la ruta pública.
+ */
+export async function uploadInlineImage(formData: FormData) {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const entry = formData.get("file");
+  const slugRaw = formData.get("slug");
+  const slug = typeof slugRaw === "string" ? slugRaw.trim() : "";
+
+  if (!entry || typeof entry === "string") {
+    return { error: "No se adjuntó ningún archivo" };
+  }
+  const file = entry as Blob & { name?: string };
+  if (file.size === 0) {
+    return { error: "No se adjuntó ningún archivo" };
+  }
+  if (file.size > MAX_BANNER_BYTES) {
+    return {
+      error: `Máximo 8 MB (recibido ${(file.size / 1024 / 1024).toFixed(1)} MB)`,
+    };
+  }
+
+  const originalName = typeof file.name === "string" ? file.name : "";
+  let ext = (originalName.split(".").pop() ?? "").toLowerCase();
+  if (!ext && file.type) {
+    ext = file.type.split("/").pop()?.toLowerCase() ?? "";
+  }
+  if (!ALLOWED_IMG_EXT.includes(ext as (typeof ALLOWED_IMG_EXT)[number])) {
+    return {
+      error: `Formato no soportado (usa ${ALLOWED_IMG_EXT.join(", ")})`,
+    };
+  }
+
+  const safeSlug = /^[a-z0-9][a-z0-9-]*$/.test(slug) ? slug : "img";
+  const filename = `${safeSlug}-${Date.now()}.${ext}`;
+  const publicPath = `/assets/newsletter/${filename}`;
+  const absPath = path.join(process.cwd(), "public", "assets", "newsletter", filename);
+
+  try {
+    const bytes = Buffer.from(await file.arrayBuffer());
+    await fs.mkdir(path.dirname(absPath), { recursive: true });
+    await fs.writeFile(absPath, bytes);
+  } catch (e) {
+    return {
+      error: `No se pudo escribir: ${(e as Error).message}`,
     };
   }
 

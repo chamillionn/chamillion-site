@@ -92,6 +92,21 @@ export interface Profile {
   subscribed_at: string | null;
 }
 
+/**
+ * Settings per-post del editor de borradores. NO es contenido ni metadata
+ * publicable — es cómo el admin ve el draft. Crece sin migraciones: añade
+ * un campo opcional y persiste vía `updateEditorState()`.
+ *
+ * NO poner aquí: title, subtitle, banner_path, banner_aspect, content_json,
+ * content_md, premium, published, section. Esos tienen columna propia.
+ */
+export interface EditorState {
+  // Añade settings aquí según los vayas necesitando. Ejemplos:
+  // focusMode?: boolean;
+  // customToolbarOrder?: string[];
+  // collapsedCallouts?: string[];
+}
+
 export interface Post {
   id: string;
   slug: string;
@@ -99,6 +114,7 @@ export interface Post {
   subtitle: string | null;
   date: string; // YYYY-MM-DD
   banner_path: string | null;
+  banner_aspect: string | null; // CSS aspect-ratio, null = 3/1 default
   section: string | null; // e.g. "Reporte de la Cartera" | "Deep Dives"
   substack_url: string | null;
   premium: boolean;
@@ -107,6 +123,7 @@ export interface Post {
   content_json: unknown | null; // TipTap ProseMirror doc
   content_md: string | null;
   draft_updated_at: string | null;
+  editor_state: EditorState; // jsonb, default {}
 }
 
 export interface SiteSetting {
@@ -466,7 +483,7 @@ export type Database = {
       };
       posts: {
         Row: Flatten<Post>;
-        Insert: Flatten<Omit<Post, "id" | "created_at" | "subtitle" | "banner_path" | "section" | "substack_url" | "content_json" | "content_md" | "draft_updated_at"> & { id?: string; created_at?: string; subtitle?: string | null; banner_path?: string | null; section?: string | null; substack_url?: string | null; content_json?: unknown | null; content_md?: string | null; draft_updated_at?: string | null }>;
+        Insert: Flatten<Omit<Post, "id" | "created_at" | "subtitle" | "banner_path" | "banner_aspect" | "section" | "substack_url" | "content_json" | "content_md" | "draft_updated_at" | "editor_state"> & { id?: string; created_at?: string; subtitle?: string | null; banner_path?: string | null; banner_aspect?: string | null; section?: string | null; substack_url?: string | null; content_json?: unknown | null; content_md?: string | null; draft_updated_at?: string | null; editor_state?: EditorState }>;
         Update: Flatten<Partial<Post>>;
         Relationships: [];
       };

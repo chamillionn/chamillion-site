@@ -214,7 +214,10 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
     editable: !readOnly,
     extensions: [
       StarterKit.configure({ heading: false }),
-      HeadingWithId,
+      // El <h1> del doc es el título del post (PostHeader lo envuelve
+      // semánticamente). En el cuerpo solo permitimos H2–H4 para evitar
+      // duplicar el H1 accidentalmente con `#` en markdown.
+      HeadingWithId.configure({ levels: [2, 3, 4] }),
       Underline,
       Link.configure({ openOnClick: false, autolink: true }),
       Image,
@@ -499,7 +502,7 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
           </div>
         </div>
 
-        <Toolbar editor={editor} disabled={readOnly} />
+        <Toolbar editor={editor} disabled={readOnly} slug={post.slug} />
 
         <PostHeader post={post} readOnly={readOnly} bannerOptions={bannerOptions} />
 

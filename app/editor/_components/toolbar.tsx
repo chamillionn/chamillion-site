@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { useToast } from "@/components/admin-toast";
 import InsertModal from "./insert-modal";
+import ImageInsertModal from "./image-insert-modal";
 import {
   IconH2,
   IconH3,
@@ -29,6 +30,8 @@ import styles from "./editor.module.css";
 interface ToolbarProps {
   editor: Editor | null;
   disabled?: boolean;
+  /** Slug del post — usado para nombrar imágenes subidas. */
+  slug: string;
 }
 
 function Btn({
@@ -65,7 +68,7 @@ function Divider() {
 
 type ModalKind = null | "link" | "image" | "widget" | "polymarket" | "tweet";
 
-export default function Toolbar({ editor, disabled }: ToolbarProps) {
+export default function Toolbar({ editor, disabled, slug }: ToolbarProps) {
   const { toast } = useToast();
   const [modal, setModal] = useState<ModalKind>(null);
 
@@ -269,33 +272,14 @@ export default function Toolbar({ editor, disabled }: ToolbarProps) {
       )}
 
       {modal === "image" && (
-        <InsertModal
-          title="Insertar imagen"
-          fields={[
-            {
-              name: "src",
-              label: "URL o ruta",
-              placeholder: "/assets/newsletter/imagen.jpg",
-              required: true,
-              mono: true,
-            },
-            {
-              name: "alt",
-              label: "Alt (descripción)",
-              placeholder: "Qué muestra la imagen",
-            },
-            {
-              name: "caption",
-              label: "Caption (opcional)",
-              placeholder: "Pie de foto",
-            },
-          ]}
+        <ImageInsertModal
+          slug={slug}
           onSubmit={({ src, alt, caption }) => {
             editor
               .chain()
               .focus()
               .setImage({
-                src: src.trim(),
+                src,
                 alt: alt || undefined,
                 title: caption || undefined,
               })

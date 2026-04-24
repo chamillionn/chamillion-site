@@ -5,13 +5,24 @@ import { useRouter } from "next/navigation";
 import { uploadBannerImage } from "@/app/admin/newsletter/actions";
 import styles from "./editor.module.css";
 
+const ASPECT_OPTIONS = [
+  { value: "4 / 1", label: "Extra-wide · 4:1 (cinemascope)" },
+  { value: "3 / 1", label: "Wide · 3:1 (default web)" },
+  { value: "2 / 1", label: "Estándar · 2:1" },
+  { value: "16 / 9", label: "Video · 16:9" },
+  { value: "14 / 10", label: "Substack · 14:10" },
+];
+
+const DEFAULT_ASPECT = "3 / 1";
+
 interface BannerPickerModalProps {
   /** Paths disponibles (ej. /assets/newsletter/banner-post-01.jpeg). */
   options: string[];
   /** Slug del post actual, usado para nombrar el archivo subido. */
   slug: string;
   initial?: string;
-  onSubmit: (path: string) => void;
+  initialAspect?: string | null;
+  onSubmit: (payload: { path: string; aspect: string }) => void;
   onClose: () => void;
 }
 
@@ -19,6 +30,7 @@ export default function BannerPickerModal({
   options,
   slug,
   initial = "",
+  initialAspect,
   onSubmit,
   onClose,
 }: BannerPickerModalProps) {
@@ -27,6 +39,7 @@ export default function BannerPickerModal({
   const [custom, setCustom] = useState(
     initial && !options.includes(initial) ? initial : "",
   );
+  const [aspect, setAspect] = useState<string>(initialAspect || DEFAULT_ASPECT);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,7 +70,7 @@ export default function BannerPickerModal({
         // Seleccionar directamente el nuevo banner y aplicar.
         setSelected(res.path);
         setCustom("");
-        onSubmit(res.path);
+        onSubmit({ path: res.path, aspect });
         router.refresh(); // re-fetchea bannerOptions en el server component
       }
     });
@@ -73,7 +86,12 @@ export default function BannerPickerModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const path = custom.trim() || selected;
-    onSubmit(path);
+    if (!path) return;
+    // Cache-bust si no trae ya una version (selección del grid o custom path).
+    // Los headers `Cache-Control: immutable` de /assets/* harían que el
+    // browser no vuelva a pedir un mismo path aunque el fichero cambie.
+    const finalPath = path.includes("?") ? path : `${path}?v=${Date.now()}`;
+    onSubmit({ path: finalPath, aspect });
   }
 
   return (
@@ -176,12 +194,35 @@ export default function BannerPickerModal({
             />
           </div>
 
+          {/* ASPECT RATIO */}
+          <div className={styles.field}>
+            <label className={styles.fieldLabel} htmlFor="banner-aspect">
+              Proporción
+            </label>
+            <select
+              id="banner-aspect"
+              className={styles.select}
+              value={aspect}
+              onChange={(e) => setAspect(e.target.value)}
+            >
+              {ASPECT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <p className={styles.fieldHint}>
+              Más ancho = más bajo. El default (3:1) es lo que usan los posts
+              existentes.
+            </p>
+          </div>
+
           <div className={styles.modalActions}>
             {initial && (
               <button
                 type="button"
                 className={styles.btnSecondaryDanger}
-                onClick={() => onSubmit("")}
+                onClick={() => onSubmit({ path: "", aspect })}
                 disabled={pending}
               >
                 Quitar banner

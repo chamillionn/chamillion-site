@@ -38,6 +38,7 @@ export default function PostHeader({ post, readOnly, bannerOptions }: PostHeader
   const [title, setTitle] = useState(post.title);
   const [subtitle, setSubtitle] = useState(post.subtitle ?? "");
   const [bannerPath, setBannerPath] = useState(post.banner_path ?? "");
+  const [bannerAspect, setBannerAspect] = useState(post.banner_aspect ?? "");
   const [bannerError, setBannerError] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -65,10 +66,20 @@ export default function PostHeader({ post, readOnly, bannerOptions }: PostHeader
     save({ subtitle: next || null });
   }
 
-  function onPickerSubmit(nextPath: string) {
+  function onPickerSubmit({
+    path: nextPath,
+    aspect: nextAspect,
+  }: {
+    path: string;
+    aspect: string;
+  }) {
     setBannerPath(nextPath);
+    setBannerAspect(nextAspect);
     setBannerError(false);
-    save({ banner_path: nextPath || null });
+    save({
+      banner_path: nextPath || null,
+      banner_aspect: nextAspect || null,
+    });
     setPickerOpen(false);
   }
 
@@ -79,6 +90,7 @@ export default function PostHeader({ post, readOnly, bannerOptions }: PostHeader
         <button
           type="button"
           className={`${styles.bannerWrapper} ${!bannerPath || bannerError ? styles.bannerEmpty : ""}`}
+          style={bannerAspect ? { aspectRatio: bannerAspect } : undefined}
           onClick={() => !readOnly && setPickerOpen(true)}
           disabled={readOnly}
           title={
@@ -156,6 +168,7 @@ export default function PostHeader({ post, readOnly, bannerOptions }: PostHeader
           options={bannerOptions}
           slug={post.slug}
           initial={bannerPath}
+          initialAspect={bannerAspect || null}
           onSubmit={onPickerSubmit}
           onClose={() => setPickerOpen(false)}
         />
