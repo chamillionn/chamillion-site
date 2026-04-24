@@ -4,8 +4,11 @@ import { requireAdmin } from "@/lib/supabase/admin";
 import {
   getAnalysisForAdmin,
   listObservations,
+  latestSnapshot,
+  listEvents,
 } from "@/lib/supabase/analyses-client";
 import ObservationsPanel from "../observations-panel";
+import TrackerPanel from "../tracker-panel";
 import crud from "../../crud.module.css";
 
 export const metadata = { title: "Admin — Análisis" };
@@ -22,9 +25,13 @@ export default async function AnalysisAdminPage({
   const analysis = await getAnalysisForAdmin(slug, admin.dataClient);
   if (!analysis) notFound();
 
-  const observations = analysis.has_prediction
-    ? await listObservations(analysis.id, admin.dataClient)
-    : [];
+  const [observations, snapshot, events] = analysis.has_prediction
+    ? await Promise.all([
+        listObservations(analysis.id, admin.dataClient),
+        latestSnapshot(analysis.id, admin.dataClient),
+        listEvents(analysis.id, admin.dataClient, 50),
+      ])
+    : [[], null, []];
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
@@ -127,6 +134,8 @@ export default async function AnalysisAdminPage({
         </code>
         ). Para editarla, pídele a Claude que actualice la entrada correspondiente.
       </div>
+
+      <TrackerPanel analysis={analysis} latest={snapshot} events={events} />
 
       <ObservationsPanel analysis={analysis} observations={observations} />
     </div>

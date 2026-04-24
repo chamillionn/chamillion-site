@@ -146,3 +146,50 @@ export async function listObservations(
   if (error) throw error;
   return (data ?? []) as AnalysisObservation[];
 }
+
+/* ── Tracker helpers ── */
+
+export async function listSnapshots(
+  analysisId: string,
+  client?: DbClient,
+): Promise<import("./types").AnalysisSnapshot[]> {
+  const db = client ?? createAnalysesClient();
+  const { data, error } = await db
+    .from("analysis_snapshots")
+    .select("*")
+    .eq("analysis_id", analysisId)
+    .order("snapshot_date", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as import("./types").AnalysisSnapshot[];
+}
+
+export async function latestSnapshot(
+  analysisId: string,
+  client?: DbClient,
+): Promise<import("./types").AnalysisSnapshot | null> {
+  const db = client ?? createAnalysesClient();
+  const { data } = await db
+    .from("analysis_snapshots")
+    .select("*")
+    .eq("analysis_id", analysisId)
+    .order("snapshot_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as import("./types").AnalysisSnapshot | null) ?? null;
+}
+
+export async function listEvents(
+  analysisId: string,
+  client?: DbClient,
+  limit = 60,
+): Promise<import("./types").AnalysisEvent[]> {
+  const db = client ?? createAnalysesClient();
+  const { data, error } = await db
+    .from("analysis_events")
+    .select("*")
+    .eq("analysis_id", analysisId)
+    .order("occurred_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as import("./types").AnalysisEvent[];
+}

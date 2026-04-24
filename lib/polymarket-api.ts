@@ -264,3 +264,192 @@ export function formatUSDC(n: number, digits = 2): string {
   if (!Number.isFinite(n)) return "—";
   return `${n.toFixed(digits)} USDC`;
 }
+
+/* ─── Data API (user positions + activity + market prices) ─────── */
+
+export const POLYMARKET_DATA_URL =
+  process.env.POLYMARKET_DATA_URL ?? "https://data-api.polymarket.com";
+
+/**
+ * Current positions for a wallet. Mirrors the shape returned by the sync
+ * adapter at lib/sync/adapters/polymarket.ts (same endpoint).
+ */
+export interface UserPosition {
+  title: string;
+  outcome: string; // "Yes" | "No"
+  size: number;
+  avgPrice: number;
+  initialValue: number;
+  currentValue: number;
+  cashPnl: number;
+  percentPnl: number;
+  curPrice: number;
+  conditionId: string;
+  slug: string;
+}
+
+export async function fetchUserPositions(
+  wallet: string,
+  opts?: { signal?: AbortSignal; sizeThreshold?: number; limit?: number },
+): Promise<UserPosition[]> {
+  const limit = opts?.limit ?? 500;
+  const threshold = opts?.sizeThreshold ?? 0;
+  const url = `${POLYMARKET_DATA_URL}/positions?user=${wallet}&sizeThreshold=${threshold}&limit=${limit}`;
+  const res = await fetch(url, { signal: opts?.signal });
+  if (!res.ok) throw new Error(`Polymarket positions: HTTP ${res.status}`);
+  const raw = await res.json();
+  if (!Array.isArray(raw)) {
+    throw new Error(`Polymarket positions: expected array, got ${typeof raw}`);
+  }
+  return raw as UserPosition[];
+}
+
+/**
+ * User activity (trades, orders). Endpoint returns an array of events newest
+ * first. Each event includes type, timestamp, market, price/size, and
+ * transaction hash when applicable.
+ */
+export interface UserActivity {
+  /** Type: "TRADE" | "SPLIT" | "MERGE" | ... */
+  type: string;
+  /** Timestamp in unix seconds or ISO string */
+  timestamp: number | string;
+  /** Market slug or condition id */
+  market?: string;
+  slug?: string;
+  conditionId?: string;
+  outcome?: string;    // "Yes" | "No"
+  side?: string;       // "BUY" | "SELL"
+  price?: number;
+  size?: number;
+  usdcSize?: number;
+  /** Polygon tx hash if the action was on-chain */
+  transactionHash?: string;
+  /** Any other raw fields the API returns */
+  [key: string]: unknown;
+}
+
+export async function fetchUserActivity(
+  wallet: string,
+  opts?: { signal?: AbortSignal; limit?: number; sinceTs?: number },
+): Promise<UserActivity[]> {
+  const limit = opts?.limit ?? 200;
+  const params = new URLSearchParams({
+    user: wallet,
+    limit: String(limit),
+    sortBy: "TIMESTAMP",
+    sortDirection: "DESC",
+  });
+  const url = `${POLYMARKET_DATA_URL}/activity?${params.toString()}`;
+  const res = await fetch(url, { signal: opts?.signal });
+  if (!res.ok) throw new Error(`Polymarket activity: HTTP ${res.status}`);
+  const raw = await res.json();
+  if (!Array.isArray(raw)) {
+    throw new Error(`Polymarket activity: expected array, got ${typeof raw}`);
+  }
+  const rows = raw as UserActivity[];
+  if (opts?.sinceTs != null) {
+    return rows.filter((r) => {
+      const ts = typeof r.timestamp === "string"
+        ? Math.floor(Date.parse(r.timestamp) / 1000)
+        : Number(r.timestamp);
+      return Number.isFinite(ts) && ts >= opts.sinceTs!;
+    });
+  }
+  return rows;
+}
+
+/**
+ * Current market prices (yes/no ask, volume) for a batch of sub-market slugs
+ * via Gamma API. Returns a map keyed by slug.
+ */
+export interface MarketPriceSnapshot {
+  slug: string;
+  yesPrice: number | null;
+  noPrice: number | null;
+  volume: number | null;
+  endDate: string | null;
+  closed: boolean;
+}
+
+/**
+ * Open limit orders resting in the CLOB for a user. Polymarket exposes this
+ * under data-api too (off-chain state). Each entry has market, side, size,
+ * price, and timestamps.
+ */
+export interface UserOpenOrder {
+  market?: string;       // condition id
+  slug?: string;
+  outcome?: string;
+  side?: string;
+  price?: number;
+  size?: number;
+  filledSize?: number;
+  remainingSize?: number;
+  createdAt?: string;
+  orderHash?: string;
+  [key: string]: unknown;
+}
+
+export async function fetchUserOpenOrders(
+  wallet: string,
+  opts?: { signal?: AbortSignal; limit?: number },
+): Promise<UserOpenOrder[]> {
+  const limit = opts?.limit ?? 200;
+  const url = `${POLYMARKET_DATA_URL}/orders?user=${wallet}&limit=${limit}`;
+  const res = await fetch(url, { signal: opts?.signal });
+  if (!res.ok) {
+    if (res.status === 404) return []; // no orders endpoint or no orders
+    throw new Error(`Polymarket orders: HTTP ${res.status}`);
+  }
+  const raw = await res.json();
+  if (!Array.isArray(raw)) return [];
+  return raw as UserOpenOrder[];
+}
+
+export async function fetchMarketPrices(
+  slugs: string[],
+  opts?: { signal?: AbortSignal },
+): Promise<Record<string, MarketPriceSnapshot>> {
+  const out: Record<string, MarketPriceSnapshot> = {};
+  if (slugs.length === 0) return out;
+
+  // Gamma supports batching by slug[]= — use it.
+  const params = new URLSearchParams();
+  for (const s of slugs) params.append("slug", s);
+  const url = `${POLYMARKET_GAMMA_URL}/markets?${params.toString()}`;
+  const res = await fetch(url, { signal: opts?.signal });
+  if (!res.ok) throw new Error(`Polymarket Gamma markets: HTTP ${res.status}`);
+  const raw = await res.json();
+  const markets = Array.isArray(raw) ? raw : [];
+
+  for (const m of markets) {
+    const slug = (m.slug as string) ?? "";
+    if (!slug) continue;
+    // Prices come as JSON-string arrays in Gamma responses, aligned to `outcomes`.
+    const outcomes = parseStringArray(m.outcomes);
+    const outcomePrices = parseStringArray(m.outcomePrices).map((s) =>
+      Number(s),
+    );
+    const yesIdx = outcomes.findIndex((o) => /^yes$/i.test(o));
+    const noIdx = outcomes.findIndex((o) => /^no$/i.test(o));
+    const yesPrice =
+      yesIdx >= 0 && Number.isFinite(outcomePrices[yesIdx])
+        ? outcomePrices[yesIdx]
+        : outcomePrices[0] ?? null;
+    const noPrice =
+      noIdx >= 0 && Number.isFinite(outcomePrices[noIdx])
+        ? outcomePrices[noIdx]
+        : outcomePrices[1] ?? null;
+    out[slug] = {
+      slug,
+      yesPrice,
+      noPrice,
+      volume: typeof m.volume === "number" ? m.volume : Number(m.volume) || null,
+      endDate: (m.endDate as string) ?? null,
+      closed: !!m.closed,
+    };
+  }
+
+  return out;
+}

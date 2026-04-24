@@ -1,0 +1,65 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.roi,
+.gap {
+  font-weight: 400;
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tones */
+
+.chip-en-curso {
+  background: color-mix(in oklch, var(--steel-blue) 10%, transparent);
+  color: var(--steel-blue);
+}
+.chip-en-curso .dot { background: var(--steel-blue); }
+
+.chip-holgado,
+.chip-cumplida {
+  background: color-mix(in oklch, var(--green, #5baa7c) 12%, transparent);
+  color: var(--green, #5baa7c);
+}
+.chip-holgado .dot,
+.chip-cumplida .dot {
+  background: var(--green, #5baa7c);
+}
+
+.chip-apretando {
+  background: color-mix(in oklch, #e8a840 12%, transparent);
+  color: #e8a840;
+}
+.chip-apretando .dot { background: #e8a840; }
+
+.chip-fallada,
+.chip-neutral {
+  background: color-mix(in oklch, var(--red, #c7555a) 12%, transparent);
+  color: var(--red, #c7555a);
+}
+.chip-fallada .dot,
+.chip-neutral .dot {
+  background: var(--red, #c7555a);
+}

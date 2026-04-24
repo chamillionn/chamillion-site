@@ -226,8 +226,13 @@ export const ENSO_STATE = {
 // KMA monthly totals (HISTORICAL_APRIL.totalMm) are the official values; this
 // daily breakdown comes from ERA5 reanalysis and may diverge by a few mm.
 
+// Years whose daily values come directly from KMA (estación 108 Seúl).
+// The rest use ERA5 reanalysis as a stopgap until the official CSV is loaded.
+export const KMA_VERIFIED_YEARS = new Set<number>([2016]);
+
 export const APRIL_DAILY_HISTORY: Record<number, number[]> = {
-  2016: [0, 0, 2.6, 0, 0, 0, 5.7, 0, 0, 0, 0, 0, 4.9, 0, 0, 26.3, 20.9, 2.7, 0, 1.2, 16.5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  // 2016: oficial KMA estación 108 (día a día)
+  2016: [0, 0, 2.0, 0, 0, 3.0, 7.5, 0, 0, 0, 0, 0, 1.0, 0, 0, 23.5, 20.5, 1.5, 0, 0.5, 17.0, 0.0, 0, 0, 0, 0, 0, 0, 0.3, 0],
   2017: [0, 3.8, 55.2, 0.1, 5.9, 7.5, 0, 0, 0, 10.0, 0, 0, 0, 0, 28.5, 4.0, 0, 0, 0, 0, 0, 0, 0.6, 28.3, 0, 0, 0, 0, 0.3, 0],
   2018: [0, 0, 0, 0, 0, 0, 0, 0.4, 0, 0, 0, 0.9, 5.0, 0.1, 0, 40.9, 1.5, 0, 0, 0.5, 0, 0, 3.3, 0, 23.7, 0.5, 0, 0, 0, 0],
   2019: [0, 0.5, 86.7, 41.2, 0, 24.8, 70.6, 0.8, 0.4, 0, 0, 0, 0, 0.4, 0, 1.7, 2.7, 62.5, 2.0, 0.9, 0, 0, 0, 0.6, 0.3, 1.7, 0.3, 0, 10.5, 6.8],

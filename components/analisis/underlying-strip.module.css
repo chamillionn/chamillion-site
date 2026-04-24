@@ -1,0 +1,214 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.caption {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.value {
+  font-family: var(--font-instrument-serif), var(--font-playfair), serif;
+  font-size: clamp(40px, 6.8vw, 60px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 0.95;
+}
+
+.unit {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 14px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  margin-left: 6px;
+  font-weight: 500;
+}
+
+.hint {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  padding-bottom: 4px;
+}
+
+/* Track */
+
+.track {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  margin-top: 4px;
+}
+
+.axisLine {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: color-mix(in oklch, var(--border) 70%, transparent);
+  border-radius: 2px;
+  transform: translateY(-1px);
+}
+
+.segment {
+  position: absolute;
+  top: 0;
+  height: 40px;
+  border-right: 1px solid color-mix(in oklch, var(--border) 60%, transparent);
+  background: color-mix(in oklch, var(--border) 18%, transparent);
+  transition: background 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4px;
+  overflow: hidden;
+}
+
+.segment:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.segment:last-child {
+  border-right: none;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.segmentActive {
+  background: color-mix(in oklch, var(--steel-blue) 16%, transparent);
+}
+
+.segmentLabel {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  opacity: 0.65;
+  transition: color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.segmentActive .segmentLabel {
+  color: var(--steel-blue);
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* Reference line */
+
+.reference {
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  width: 0;
+  pointer-events: none;
+}
+
+.reference::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -0.5px;
+  width: 1px;
+  background: var(--steel-blue);
+  opacity: 0.6;
+}
+
+.referenceLabel {
+  position: absolute;
+  top: -14px;
+  transform: translateX(-50%);
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--steel-blue);
+  background: var(--bg-card);
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Marker */
+
+.marker {
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  pointer-events: none;
+  transition: left 900ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.markerLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1.5px;
+  background: var(--text-primary);
+  transform: translateX(-0.75px);
+  border-radius: 1px;
+}
+
+.markerDot {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: var(--text-primary);
+  border: 2px solid var(--bg-card);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.markerDot::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--text-primary) 35%, transparent);
+  animation: dotPulse 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes dotPulse {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Axis ticks (continuous) */
+
+.axisTicks {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markerDot::after { animation: none; }
+  .marker { transition: none; }
+}

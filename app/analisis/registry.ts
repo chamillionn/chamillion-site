@@ -29,6 +29,31 @@ export interface RegistryPrediction {
   unit: string;
 }
 
+/**
+ * Tracker config — autonomous daily snapshot + event log for analyses with a
+ * measurable position on a specific platform. Each platform has its own
+ * resolver in lib/trackers/<kind>.ts.
+ */
+export interface RegistryTrackerPolymarket {
+  kind: "polymarket";
+  /**
+   * Polygon wallet. If omitted, the resolver falls back to whichever wallet
+   * is stored in `platforms.wallet_address` for the Polymarket platform row
+   * (same wallet used by the portfolio sync). Wallets are public addresses,
+   * no secret — override per-analysis only when you want to track a
+   * different account.
+   */
+  walletAddress?: string;
+  /** Sub-market slugs to follow (e.g. the 3 buckets we're long on) */
+  marketSlugs: string[];
+  /** Source for the underlying value (e.g. "kma" for Seoul rainfall) */
+  underlyingSource: "manual" | "kma";
+  /** Optional hook to compute edge — path relative to app/analisis/<slug>/ */
+  edgeComputeRef?: string;
+}
+
+export type RegistryTracker = RegistryTrackerPolymarket;
+
 export interface AnalysisRegistryEntry {
   slug: string;
   title: string;
@@ -38,6 +63,7 @@ export interface AnalysisRegistryEntry {
   section?: string;
   bannerPath?: string;
   prediction?: RegistryPrediction;
+  tracker?: RegistryTracker;
 }
 
 export const ANALYSIS_REGISTRY: AnalysisRegistryEntry[] = [
@@ -57,6 +83,16 @@ export const ANALYSIS_REGISTRY: AnalysisRegistryEntry[] = [
       startDate: "2026-04-23",
       endDate: "2026-04-30",
       unit: "mm",
+    },
+    tracker: {
+      kind: "polymarket",
+      // walletAddress: reads from env POLYMARKET_TRACKER_WALLET
+      marketSlugs: [
+        "will-seoul-have-less-than-40mm-of-precipitation-in-april",
+        "will-seoul-have-between-50-55mm-of-precipitation-in-april-542",
+        "will-seoul-have-between-55-60mm-of-precipitation-in-april-424",
+      ],
+      underlyingSource: "manual",
     },
   },
 ];

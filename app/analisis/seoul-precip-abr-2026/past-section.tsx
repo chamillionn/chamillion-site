@@ -3,7 +3,11 @@
 import { useState } from "react";
 import HistoricalBars from "./historical-bars";
 import YearDailyChart from "./year-daily-chart";
-import { HISTORICAL_APRIL, APRIL_DAILY_HISTORY } from "./data";
+import {
+  HISTORICAL_APRIL,
+  APRIL_DAILY_HISTORY,
+  KMA_VERIFIED_YEARS,
+} from "./data";
 
 type HistoryRow = (typeof HISTORICAL_APRIL)[number];
 
@@ -62,7 +66,11 @@ export default function PastSection() {
           monthlyTotal={selectedRow.totalMm}
           maxDailyDate={selectedRow.maxDailyDate}
           maxDailyValue={selectedRow.maxDailyMm}
-          note="Total mensual según KMA (estación 108 Seúl). Detalle diario estimado vía ERA5 reanalysis (puede diferir del oficial por unos milímetros)."
+          note={
+            KMA_VERIFIED_YEARS.has(selectedRow.year)
+              ? "Datos diarios oficiales de KMA (estación 108 Seúl)."
+              : "Total mensual oficial de KMA. Detalle diario estimado vía ERA5 reanalysis — puede diferir del oficial por unos milímetros."
+          }
         />
       )}
     </div>

@@ -1,7 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { listPublicAnalyses } from "@/lib/supabase/analyses-client";
-import type { AnalysisPublic } from "@/lib/supabase/types";
+import {
+  listPublicAnalyses,
+  latestSnapshot,
+} from "@/lib/supabase/analyses-client";
+import type { AnalysisPublic, AnalysisSnapshot } from "@/lib/supabase/types";
+import AnalysisStatusChip from "@/components/analisis/analysis-status-chip";
 import styles from "./analisis.module.css";
 
 export const revalidate = 300; // 5 min ISR
@@ -25,6 +29,15 @@ export default async function AnalisisIndex() {
   } catch (e) {
     console.error("Analisis fetch failed:", e);
   }
+
+  // Fetch latest snapshot per analysis in parallel (for status chips).
+  const snapshots = await Promise.all(
+    analyses.map((a) =>
+      a.has_prediction ? latestSnapshot(a.id).catch(() => null) : Promise.resolve(null),
+    ),
+  );
+  const snapshotByAnalysis = new Map<string, AnalysisSnapshot | null>();
+  analyses.forEach((a, i) => snapshotByAnalysis.set(a.id, snapshots[i]));
 
   return (
     <div className={styles.container}>
@@ -71,6 +84,10 @@ export default async function AnalisisIndex() {
                   {a.published_at && (
                     <span className={styles.cardDate}>{formatDate(a.published_at)}</span>
                   )}
+                  <AnalysisStatusChip
+                    analysis={a}
+                    latestSnapshot={snapshotByAnalysis.get(a.id) ?? null}
+                  />
                 </div>
 
                 <h2 className={styles.cardTitle}>{a.title}</h2>

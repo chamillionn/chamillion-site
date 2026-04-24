@@ -235,6 +235,8 @@ export type PredictionDirection = "bullish" | "bearish" | "neutral";
 export type PredictionSource = "manual" | "binance";
 export type ObservationSource = "manual" | "binance" | "twelvedata";
 
+export type AnalysisOutcome = "cumplida" | "fallida" | "neutral";
+
 export interface Analysis {
   id: string;
   slug: string;
@@ -260,6 +262,10 @@ export interface Analysis {
   prediction_end_date: string | null;   // YYYY-MM-DD
   prediction_unit: string | null;
   has_prediction: boolean;              // generated column
+  // Resolution (set by the tracker cron when prediction_end_date passes).
+  resolved_at: string | null;
+  final_outcome: AnalysisOutcome | null;
+  final_roi_pct: number | null;
 }
 
 // Narrowed variant without admin_notes_md — returned by non-admin queries.
@@ -272,6 +278,89 @@ export interface AnalysisObservation {
   value: number;
   source: ObservationSource | null;
   note: string | null;
+  created_at: string;
+}
+
+/* ── Tracker: daily snapshot (position + edge + underlying) ── */
+
+export interface TrackerUnderlying {
+  value: number;
+  unit: string;
+  source: string; // "polymarket" | "kma" | "manual" | "binance" | ...
+  asOf: string;   // ISO timestamp
+}
+
+export interface TrackerPositionLeg {
+  name: string;
+  side: "YES" | "NO";
+  size: number;
+  avgPrice: number;
+  curPrice: number;
+  cashPnl: number;
+  pnlPct: number;
+  marketSlug?: string;
+  conditionId?: string;
+}
+
+export interface TrackerPosition {
+  legs: TrackerPositionLeg[];
+  totalCashPnl: number;
+  totalNotional: number;
+  cashUsdc?: number;
+}
+
+export interface TrackerEdge {
+  evAbs: number;        // expected value in currency units
+  evPct: number;        // ROI pct
+  myProb: number;       // 0-1
+  mktProb: number;      // 0-1 — implied prob derived from current market
+  source: string;       // e.g. "gfs-ensemble"
+  note?: string;
+}
+
+// Backward-compatible aliases for earlier iterations of this iteration's code.
+export type SnapshotUnderlying = TrackerUnderlying;
+export type SnapshotPositionLeg = TrackerPositionLeg;
+export type TrackerSnapshotPosition = TrackerPosition;
+export type SnapshotEdge = TrackerEdge;
+
+export interface AnalysisSnapshot {
+  id: string;
+  analysis_id: string;
+  snapshot_date: string; // YYYY-MM-DD
+  underlying: TrackerUnderlying | null;
+  position: TrackerPosition | null;
+  edge: TrackerEdge | null;
+  created_at: string;
+}
+
+/* ── Tracker: event log (orders, resolution, notes) ── */
+
+export type AnalysisEventType =
+  | "order_placed"
+  | "order_filled"
+  | "order_cancelled"
+  | "position_opened"
+  | "position_closed"
+  | "resolution"
+  | "note";
+
+export type AnalysisEventSource =
+  | "polymarket"
+  | "manual"
+  | "kma"
+  | "cron"
+  | "binance"
+  | "twelvedata";
+
+export interface AnalysisEvent {
+  id: string;
+  analysis_id: string;
+  occurred_at: string;
+  type: AnalysisEventType;
+  payload: Record<string, unknown> | null;
+  source: AnalysisEventSource | null;
+  dedup_key: string | null;
   created_at: string;
 }
 
@@ -466,6 +555,22 @@ export type Database = {
         Update: Flatten<Partial<AnalysisObservation>>;
         Relationships: [
           { foreignKeyName: "analysis_observations_analysis_id_fkey"; columns: ["analysis_id"]; referencedRelation: "analyses"; referencedColumns: ["id"]; isOneToOne: false },
+        ];
+      };
+      analysis_snapshots: {
+        Row: Flatten<AnalysisSnapshot>;
+        Insert: Flatten<Omit<AnalysisSnapshot, "id" | "created_at" | "underlying" | "position" | "edge"> & { id?: string; created_at?: string; underlying?: TrackerUnderlying | null; position?: TrackerPosition | null; edge?: TrackerEdge | null }>;
+        Update: Flatten<Partial<AnalysisSnapshot>>;
+        Relationships: [
+          { foreignKeyName: "analysis_snapshots_analysis_id_fkey"; columns: ["analysis_id"]; referencedRelation: "analyses"; referencedColumns: ["id"]; isOneToOne: false },
+        ];
+      };
+      analysis_events: {
+        Row: Flatten<AnalysisEvent>;
+        Insert: Flatten<Omit<AnalysisEvent, "id" | "created_at" | "payload" | "source" | "dedup_key"> & { id?: string; created_at?: string; payload?: Record<string, unknown> | null; source?: AnalysisEventSource | null; dedup_key?: string | null }>;
+        Update: Flatten<Partial<AnalysisEvent>>;
+        Relationships: [
+          { foreignKeyName: "analysis_events_analysis_id_fkey"; columns: ["analysis_id"]; referencedRelation: "analyses"; referencedColumns: ["id"]; isOneToOne: false },
         ];
       };
     };

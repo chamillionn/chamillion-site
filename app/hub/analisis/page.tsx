@@ -1,7 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { listMemberAnalyses } from "@/lib/supabase/analyses-client";
-import type { AnalysisPublic } from "@/lib/supabase/types";
+import {
+  listMemberAnalyses,
+  latestSnapshot,
+} from "@/lib/supabase/analyses-client";
+import type { AnalysisPublic, AnalysisSnapshot } from "@/lib/supabase/types";
+import AnalysisStatusChip from "@/components/analisis/analysis-status-chip";
 import styles from "./analisis.module.css";
 
 export const metadata = { title: "Análisis" };
@@ -26,6 +30,14 @@ export default async function HubAnalisis() {
 
   const publicCount = analyses.filter((a) => a.visibility === "public").length;
   const premiumCount = analyses.filter((a) => a.visibility === "premium").length;
+
+  const snapshots = await Promise.all(
+    analyses.map((a) =>
+      a.has_prediction ? latestSnapshot(a.id).catch(() => null) : Promise.resolve(null),
+    ),
+  );
+  const snapshotByAnalysis = new Map<string, AnalysisSnapshot | null>();
+  analyses.forEach((a, i) => snapshotByAnalysis.set(a.id, snapshots[i]));
 
   return (
     <div className={styles.container}>
@@ -94,6 +106,10 @@ export default async function HubAnalisis() {
                       {formatDate(a.published_at)}
                     </span>
                   )}
+                  <AnalysisStatusChip
+                    analysis={a}
+                    latestSnapshot={snapshotByAnalysis.get(a.id) ?? null}
+                  />
                 </div>
 
                 <h2 className={styles.cardTitle}>{a.title}</h2>

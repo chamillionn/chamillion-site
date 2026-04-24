@@ -4,6 +4,8 @@ import { requireUser } from "@/lib/supabase/auth";
 import {
   getAnalysisForDetail,
   listObservations,
+  latestSnapshot,
+  listEvents,
 } from "@/lib/supabase/analyses-client";
 import PaywallCTA from "@/components/paywall-cta";
 
@@ -11,12 +13,13 @@ import PaywallCTA from "@/components/paywall-cta";
 import Callout from "@/components/analisis/callout";
 import Term from "@/components/analisis/term";
 import Source from "@/components/analisis/source";
+import LiveTrackerV2 from "@/components/analisis/live-tracker-v2";
+import AdminTickButton from "@/components/analisis/admin-tick-button";
 
 // Seoul-specific
 import Hero from "./hero";
 import AnalysisNav, { type NavSection } from "./nav";
 import Section from "./section";
-import LiveTracker from "./live-tracker";
 import MarketTable from "./market-table";
 import PolymarketEmbed from "./polymarket-embed";
 import PastSection from "./past-section";
@@ -74,6 +77,32 @@ const scenarios = [
 
 const ALL_SCENARIO_KEYS = ["<40", "40-50", "50-55", "55-60", "60+"];
 
+/**
+ * Produce a minimal snapshot from the fallback sources (observations table +
+ * hardcoded baseline). The tracker cron will overwrite this once it runs —
+ * meanwhile the UI has something to render.
+ */
+function buildFallbackSnapshot(
+  analysis: import("@/lib/supabase/types").Analysis | import("@/lib/supabase/types").AnalysisPublic,
+  currentValue: number,
+  sourceLabel: string,
+): import("@/lib/supabase/types").AnalysisSnapshot {
+  return {
+    id: "fallback",
+    analysis_id: analysis.id,
+    snapshot_date: new Date().toISOString().slice(0, 10),
+    underlying: {
+      value: currentValue,
+      unit: analysis.prediction_unit ?? "",
+      source: sourceLabel,
+      asOf: new Date().toISOString(),
+    },
+    position: null,
+    edge: null,
+    created_at: new Date().toISOString(),
+  };
+}
+
 const positionLegs = [
   {
     name: "<40 YES",
@@ -106,16 +135,24 @@ export default async function SeoulPrecipAnalysis() {
   if (!detail) notFound();
   const { analysis, isAdmin, canView } = detail;
 
-  // MTD source of truth: the latest admin-entered observation (from KMA).
-  // If none exists yet, fall back to the snapshot baked into data.ts.
-  const observations = canView && analysis.has_prediction
-    ? await listObservations(analysis.id)
-    : [];
+  // Tracker data (from daily cron snapshots) + event log
+  const [snapshot, events, observations] = canView && analysis.has_prediction
+    ? await Promise.all([
+        latestSnapshot(analysis.id),
+        listEvents(analysis.id, undefined, 80),
+        listObservations(analysis.id),
+      ])
+    : [null, [], []];
+
+  // Underlying fallback chain (snapshot → latest observation → hardcoded baseline)
   const latestObs = observations.length > 0 ? observations[observations.length - 1] : null;
-  const currentMtdMm = latestObs ? Number(latestObs.value) : CURRENT_STATE.mtdMm;
-  const liveSourceLabel = latestObs
-    ? `KMA · ${new Date(latestObs.observed_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}`
-    : `Snapshot · ${SEOUL_ANALYSIS_SNAPSHOT_DATE.slice(5)}`;
+  const currentMtdMm = snapshot?.underlying?.value
+    ?? (latestObs ? Number(latestObs.value) : CURRENT_STATE.mtdMm);
+  const liveSourceLabel = snapshot?.underlying?.asOf
+    ? `KMA · ${new Date(snapshot.underlying.asOf).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}`
+    : latestObs
+      ? `KMA · ${new Date(latestObs.observed_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}`
+      : `Snapshot · ${SEOUL_ANALYSIS_SNAPSHOT_DATE.slice(5)}`;
 
   // Build strike-rate strip from the live bucket structure.
   // Parse the range label to derive [lower, upper] bounds. upper=null → open-ended.
@@ -190,17 +227,26 @@ export default async function SeoulPrecipAnalysis() {
               eyebrow="qué pasa ahora mismo y dónde cotiza"
               title="Lluvia acumulada este mes en Seúl"
             >
-              <LiveTracker
-                current={currentMtdMm}
-                target={CURRENT_STATE.threshold}
-                unit="mm"
-                endDate={POLYMARKET_EVENT.resolutionDate}
-                publicationDate={POLYMARKET_EVENT.publicationDate}
-                direction="below"
-                sourceUrl={KMA_SOURCE_URL}
-                sourceLabel="KMA-108 · oficial"
-                liveSourceLabel={liveSourceLabel}
-                buckets={stripBuckets}
+              {isAdmin && (
+                <div style={{ marginBottom: 12 }}>
+                  <AdminTickButton analysisId={analysis.id} />
+                </div>
+              )}
+
+              <LiveTrackerV2
+                analysis={analysis}
+                latest={
+                  snapshot ?? buildFallbackSnapshot(analysis, currentMtdMm, liveSourceLabel)
+                }
+                events={events}
+                buckets={stripBuckets.map((b) => ({
+                  label: b.label,
+                  lower: b.lower,
+                  upper: b.upper,
+                }))}
+                reference={{ value: CURRENT_STATE.threshold, label: `${CURRENT_STATE.threshold} mm · umbral` }}
+                underlyingSourceUrl={KMA_SOURCE_URL}
+                underlyingSourceLabel="KMA-108"
               />
 
               <h3 className={styles.subHead}>Todos los buckets del evento</h3>

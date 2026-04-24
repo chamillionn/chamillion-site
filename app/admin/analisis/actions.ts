@@ -138,6 +138,100 @@ export async function deleteObservation(id: string) {
   return { success: true };
 }
 
+/**
+ * Fire the tracker tick for a single analysis on demand (admin button).
+ * Calls the same cron endpoint internally.
+ */
+export async function runTrackerTick(analysisId: string) {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const { polymarketResolver } = await import("@/lib/trackers/polymarket");
+  const db = admin.dataClient;
+
+  // Load analysis row
+  const { data: row, error: loadErr } = await db
+    .from("analyses")
+    .select("*")
+    .eq("id", analysisId)
+    .maybeSingle();
+  if (loadErr) return { error: loadErr.message };
+  if (!row) return { error: "Analysis not found" };
+
+  // Find the registry entry + tracker config
+  const { ANALYSIS_REGISTRY } = await import("@/app/analisis/registry");
+  const entry = ANALYSIS_REGISTRY.find((e) => e.slug === row.slug);
+  if (!entry?.tracker) return { error: "No tracker config para este análisis" };
+
+  try {
+    // Dispatch to the right resolver (only polymarket supported for now)
+    if (entry.tracker.kind !== "polymarket") {
+      return { error: `Tracker kind no soportado: ${entry.tracker.kind}` };
+    }
+    const tick = await polymarketResolver(row, entry.tracker, { db });
+
+    // Merge underlying from latest observation if resolver didn't set one
+    let underlying = tick.underlying;
+    if (!underlying) {
+      const { data: latestObs } = await db
+        .from("analysis_observations")
+        .select("observed_at, value, source")
+        .eq("analysis_id", analysisId)
+        .order("observed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestObs) {
+        underlying = {
+          value: Number(latestObs.value),
+          unit: row.prediction_unit ?? "",
+          source: latestObs.source ?? "manual",
+          asOf: latestObs.observed_at,
+        };
+      }
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const { error: upErr } = await db.from("analysis_snapshots").upsert(
+      {
+        analysis_id: analysisId,
+        snapshot_date: today,
+        underlying,
+        position: tick.position,
+        edge: tick.edge,
+      },
+      { onConflict: "analysis_id,snapshot_date" },
+    );
+    if (upErr) return { error: upErr.message };
+
+    let eventsInserted = 0;
+    for (const ev of tick.events) {
+      const { error: evErr } = await db.from("analysis_events").insert({
+        analysis_id: analysisId,
+        occurred_at: ev.occurred_at,
+        type: ev.type,
+        payload: ev.payload ?? null,
+        source: ev.source ?? null,
+        dedup_key: ev.dedup_key ?? null,
+      });
+      if (!evErr) eventsInserted++;
+      else if (evErr.code !== "23505") return { error: evErr.message };
+    }
+
+    revalidateAll(row.slug);
+    return {
+      success: true,
+      snapshot: "upserted",
+      eventsInserted,
+      positionLegs: tick.position?.legs.length ?? 0,
+      eventsFetched: tick.events.length,
+      warnings: tick.warnings ?? [],
+    };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Error en tick" };
+  }
+}
+
 export async function pullBinanceObservation(analysisId: string) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };

@@ -1,0 +1,123 @@
+.wrap {
+  padding: 16px 18px;
+  border: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
+  border-radius: 10px;
+  background: color-mix(in oklch, var(--bg-card) 50%, transparent);
+  font-family: var(--font-outfit), sans-serif;
+}
+
+.empty {
+  padding: 16px 18px;
+  border: 1px dashed color-mix(in oklch, var(--border) 60%, transparent);
+  border-radius: 10px;
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.primary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: end;
+}
+
+.evBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.evLabel {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.evValue {
+  font-family: var(--font-playfair), serif;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.evPct {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
+.pos { color: var(--green, #5baa7c); }
+.neg { color: var(--red, #c7555a); }
+
+.probRow {
+  display: flex;
+  gap: 18px;
+  justify-content: flex-end;
+}
+
+.probBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: right;
+}
+
+.probLabel {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.probValue {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  margin: 10px 0 0;
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: 300;
+}
+
+.meta {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed color-mix(in oklch, var(--border) 35%, transparent);
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .primary {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .probRow {
+    justify-content: flex-start;
+  }
+  .probBlock {
+    text-align: left;
+  }
+}
