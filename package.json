@@ -10,7 +10,9 @@
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "seed-dev": "node scripts/seed-dev.mjs",
+    "seed-dev:dry": "DRY=1 node scripts/seed-dev.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",

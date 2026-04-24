@@ -88,8 +88,33 @@ export const polymarketResolver: TrackerResolver<RegistryTrackerPolymarket> =
       `debug: wallet=${wallet.slice(0, 6)}… · positions(all)=${allPositions.length} · positions(tracked)=${allPositions.filter((p) => slugSet.has(p.slug)).length} · openOrders(all)=${openOrders.length} · activity=${activity.length}`,
     );
 
-    // Filter positions to the tracked markets
-    const tracked = allPositions.filter((p) => slugSet.has(p.slug));
+    // Auto-detect: if the strict filter misses all positions, try a relaxed
+    // match (positions whose slug contains any of the tracked slugs' keyword
+    // portion) and log what we found. Helps surface slug-format mismatches.
+    const strictTracked = allPositions.filter((p) => slugSet.has(p.slug));
+    let tracked = strictTracked;
+    if (strictTracked.length === 0 && allPositions.length > 0) {
+      // Surface every position slug the user has, so we can align the registry.
+      for (const p of allPositions) {
+        warnings.push(
+          `debug: position slug="${p.slug}" · title="${(p.title ?? "").slice(0, 60)}" · outcome=${p.outcome} · size=${p.size}`,
+        );
+      }
+      // Relaxed match: any position whose slug contains a chunk of any tracked slug
+      const relaxedTracked = allPositions.filter((p) =>
+        cfg.marketSlugs.some((ts) => {
+          const a = ts.toLowerCase();
+          const b = (p.slug ?? "").toLowerCase();
+          return a === b || a.includes(b) || b.includes(a);
+        }),
+      );
+      if (relaxedTracked.length > 0) {
+        warnings.push(
+          `info: strict filter matched 0 pero relaxed encontró ${relaxedTracked.length} — revisa los slugs del registry`,
+        );
+        tracked = relaxedTracked;
+      }
+    }
 
     // Build position snapshot
     const legs: TrackerPositionLeg[] = tracked.map((p) => ({
