@@ -132,20 +132,36 @@ export async function uploadBannerImage(formData: FormData) {
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const file = formData.get("file");
+  const entry = formData.get("file");
   const slugRaw = formData.get("slug");
   const slug = typeof slugRaw === "string" ? slugRaw.trim() : "";
 
-  if (!(file instanceof File) || file.size === 0) {
+  // `File` no siempre es global en el runtime (Node 18). Validamos por
+  // duck-typing: descartamos string/null y trabajamos como Blob + .name.
+  if (!entry || typeof entry === "string") {
+    return { error: "No se adjuntó ningún archivo" };
+  }
+  const file = entry as Blob & { name?: string };
+  if (file.size === 0) {
     return { error: "No se adjuntó ningún archivo" };
   }
   if (file.size > MAX_BANNER_BYTES) {
-    return { error: `Máximo 8 MB (recibido ${(file.size / 1024 / 1024).toFixed(1)} MB)` };
+    return {
+      error: `Máximo 8 MB (recibido ${(file.size / 1024 / 1024).toFixed(1)} MB)`,
+    };
   }
 
-  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+  const originalName = typeof file.name === "string" ? file.name : "";
+  let ext = (originalName.split(".").pop() ?? "").toLowerCase();
+  // Fallback a tipo MIME si el nombre no trae extensión.
+  if (!ext && file.type) {
+    ext = file.type.split("/").pop()?.toLowerCase() ?? "";
+    if (ext === "jpeg") ext = "jpeg";
+  }
   if (!ALLOWED_IMG_EXT.includes(ext as (typeof ALLOWED_IMG_EXT)[number])) {
-    return { error: `Formato no soportado (usa ${ALLOWED_IMG_EXT.join(", ")})` };
+    return {
+      error: `Formato no soportado (usa ${ALLOWED_IMG_EXT.join(", ")})`,
+    };
   }
 
   // Nombre: preferir banner-<slug>.<ext>. Si el slug ya existe con otra ext,

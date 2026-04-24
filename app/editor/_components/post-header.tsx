@@ -122,6 +122,7 @@ export default function PostHeader({ post, readOnly, bannerOptions }: PostHeader
       <div className={styles.articleHeader}>
         <h1 className={styles.hTitle}>
           <input
+            id="ph-title-input"
             type="text"
             className={styles.hTitleInput}
             value={title}
@@ -134,6 +135,7 @@ export default function PostHeader({ post, readOnly, bannerOptions }: PostHeader
         </h1>
         <p className={styles.hSubtitleWrap}>
           <input
+            id="ph-subtitle-input"
             type="text"
             className={styles.hSubtitleInput}
             value={subtitle}

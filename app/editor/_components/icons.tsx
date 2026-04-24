@@ -175,3 +175,19 @@ export const IconDivider = ({ className }: IconProps) => (
     <path d="M4 8h8" opacity="0.3" />
   </svg>
 );
+
+/* Polymarket — prediction market (barras de probabilidad + marco) */
+export const IconPolymarket = ({ className }: IconProps) => (
+  <svg {...BASE_PROPS} className={className}>
+    <rect x="2" y="3" width="12" height="10" rx="1.2" />
+    <path d="M5 10V6M8 10V4.5M11 10v-2" strokeWidth="1.6" />
+    <path d="M4 12.5h8" opacity="0.35" />
+  </svg>
+);
+
+/* Tweet (X) — logo X glyph simplificado */
+export const IconTweet = ({ className }: IconProps) => (
+  <svg {...TEXT_PROPS} className={className}>
+    <path d="M11.3 2.5h2.1l-4.6 5.25 5.4 7.25H9.96L6.7 10.66l-3.73 4.34H.86l4.9-5.62L.58 2.5h4.35l2.95 3.9zm-.74 11.27h1.16L5.49 3.64H4.25z" />
+  </svg>
+);

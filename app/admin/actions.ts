@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/admin";
-import type { DbTarget } from "@/lib/supabase/admin-db";
+import { nativeTarget, type DbTarget } from "@/lib/supabase/admin-db";
 
 export async function switchAdminDb(target: DbTarget) {
   const admin = await requireAdmin();
@@ -21,4 +21,27 @@ export async function switchAdminDb(target: DbTarget) {
   revalidatePath("/");
   revalidatePath("/v");
   return { success: true };
+}
+
+/**
+ * Sale del modo lectura poniendo la cookie al target nativo del entorno
+ * (el que permite escritura sin ser "remoto"). Usado desde el editor
+ * cuando el user quiere recuperar capacidad de edición sin navegar al
+ * admin shell.
+ */
+export async function exitReadOnlyMode() {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+
+  const store = await cookies();
+  store.set("admin-db-target", nativeTarget(), {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24,
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/editor", "layout");
+  return { success: true, target: nativeTarget() };
 }

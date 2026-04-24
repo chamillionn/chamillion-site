@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Editor } from "@tiptap/react";
+import { useToast } from "@/components/admin-toast";
 import InsertModal from "./insert-modal";
 import {
   IconH2,
@@ -18,7 +19,11 @@ import {
   IconImage,
   IconWidget,
   IconDivider,
+  IconPolymarket,
+  IconTweet,
 } from "./icons";
+import { isValidPolymarketUrl } from "./extensions/polymarket";
+import { isValidTweetUrl } from "./extensions/tweet";
 import styles from "./editor.module.css";
 
 interface ToolbarProps {
@@ -58,9 +63,10 @@ function Divider() {
   return <span className={styles.tbDiv} aria-hidden="true" />;
 }
 
-type ModalKind = null | "link" | "image" | "widget";
+type ModalKind = null | "link" | "image" | "widget" | "polymarket" | "tweet";
 
 export default function Toolbar({ editor, disabled }: ToolbarProps) {
+  const { toast } = useToast();
   const [modal, setModal] = useState<ModalKind>(null);
 
   if (!editor) return null;
@@ -79,6 +85,12 @@ export default function Toolbar({ editor, disabled }: ToolbarProps) {
         name?: string;
         description?: string;
       })
+    : null;
+  const polymarketCurrent = editor.isActive("polymarket")
+    ? (editor.getAttributes("polymarket") as { url?: string })
+    : null;
+  const tweetCurrent = editor.isActive("tweet")
+    ? (editor.getAttributes("tweet") as { url?: string })
     : null;
 
   return (
@@ -207,6 +219,22 @@ export default function Toolbar({ editor, disabled }: ToolbarProps) {
           <IconWidget className={styles.tbIcon} />
         </Btn>
         <Btn
+          title="Embed de Polymarket"
+          active={editor.isActive("polymarket")}
+          disabled={d}
+          onClick={() => setModal("polymarket")}
+        >
+          <IconPolymarket className={styles.tbIcon} />
+        </Btn>
+        <Btn
+          title="Embed de tweet (X)"
+          active={editor.isActive("tweet")}
+          disabled={d}
+          onClick={() => setModal("tweet")}
+        >
+          <IconTweet className={styles.tbIcon} />
+        </Btn>
+        <Btn
           title="Separador"
           disabled={d}
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
@@ -272,6 +300,91 @@ export default function Toolbar({ editor, disabled }: ToolbarProps) {
                 title: caption || undefined,
               })
               .run();
+            setModal(null);
+          }}
+          onClose={closeModal}
+        />
+      )}
+
+      {modal === "polymarket" && (
+        <InsertModal
+          title={polymarketCurrent ? "Editar embed Polymarket" : "Insertar embed Polymarket"}
+          fields={[
+            {
+              name: "url",
+              label: "URL del mercado",
+              placeholder: "https://polymarket.com/event/…",
+              required: true,
+              type: "url",
+              initial: polymarketCurrent?.url ?? "",
+              mono: true,
+              hint: "Pega el enlace del mercado o evento. Se embebe con el tema dark del proyecto.",
+            },
+          ]}
+          submitLabel={polymarketCurrent ? "Actualizar" : "Insertar"}
+          onSubmit={({ url }) => {
+            const clean = url.trim();
+            if (!isValidPolymarketUrl(clean)) {
+              toast("URL no válida — debe ser un enlace de polymarket.com", "error");
+              return;
+            }
+            if (polymarketCurrent) {
+              editor
+                .chain()
+                .focus()
+                .updateAttributes("polymarket", { url: clean })
+                .run();
+            } else {
+              editor
+                .chain()
+                .focus()
+                .insertContent({ type: "polymarket", attrs: { url: clean } })
+                .run();
+            }
+            setModal(null);
+          }}
+          onClose={closeModal}
+        />
+      )}
+
+      {modal === "tweet" && (
+        <InsertModal
+          title={tweetCurrent ? "Editar tweet" : "Insertar tweet"}
+          fields={[
+            {
+              name: "url",
+              label: "URL del tweet",
+              placeholder: "https://x.com/usuario/status/1234…",
+              required: true,
+              type: "url",
+              initial: tweetCurrent?.url ?? "",
+              mono: true,
+              hint: "Enlace directo al tweet (twitter.com o x.com). Se embebe en modo dark.",
+            },
+          ]}
+          submitLabel={tweetCurrent ? "Actualizar" : "Insertar"}
+          onSubmit={({ url }) => {
+            const clean = url.trim();
+            if (!isValidTweetUrl(clean)) {
+              toast(
+                "URL no válida — debe ser un enlace a un tweet (twitter.com/… /status/… o x.com/…)",
+                "error",
+              );
+              return;
+            }
+            if (tweetCurrent) {
+              editor
+                .chain()
+                .focus()
+                .updateAttributes("tweet", { url: clean })
+                .run();
+            } else {
+              editor
+                .chain()
+                .focus()
+                .insertContent({ type: "tweet", attrs: { url: clean } })
+                .run();
+            }
             setModal(null);
           }}
           onClose={closeModal}

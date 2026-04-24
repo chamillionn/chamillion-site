@@ -225,7 +225,8 @@ function PostCard({ post, delay, isAdmin }: { post: Post; delay: number; isAdmin
       }}
     >
       <Link
-        href={`/newsletter/${post.slug}`}
+        href={isAdmin && !post.published ? `/editor/${post.id}` : `/newsletter/${post.slug}`}
+        title={isAdmin && !post.published ? "Abrir editor de borrador" : undefined}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
@@ -399,25 +400,46 @@ function PostCard({ post, delay, isAdmin }: { post: Post; delay: number; isAdmin
               letterSpacing: "0.06em",
             }}
           >
-            Leer
-            <svg
-              width="9"
-              height="9"
-              viewBox="0 0 16 16"
-              fill="none"
-              style={{
-                transition: "transform 0.3s ease",
-                transform: hovered ? "translateX(3px)" : "translateX(0)",
-              }}
-            >
-              <path
-                d="M6 3L11 8L6 13"
-                stroke={V.steel}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            {isAdmin && !post.published ? "Editar borrador" : "Leer"}
+            {isAdmin && !post.published ? (
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 16 16"
+                fill="none"
+                style={{
+                  transition: "transform 0.3s ease",
+                  transform: hovered ? "translateX(2px)" : "translateX(0)",
+                }}
+              >
+                <path
+                  d="M11 2l3 3-8 8H3v-3l8-8z"
+                  stroke={V.steel}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <svg
+                width="9"
+                height="9"
+                viewBox="0 0 16 16"
+                fill="none"
+                style={{
+                  transition: "transform 0.3s ease",
+                  transform: hovered ? "translateX(3px)" : "translateX(0)",
+                }}
+              >
+                <path
+                  d="M6 3L11 8L6 13"
+                  stroke={V.steel}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
           </div>
         </div>
       </Link>

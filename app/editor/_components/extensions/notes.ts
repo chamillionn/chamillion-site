@@ -12,7 +12,28 @@ export interface NoteRef {
   to: number;
 }
 
+export interface FieldNoteRef {
+  text: string;
+  /** Origen del string (campo fuera del editor). */
+  source: "title" | "subtitle";
+}
+
 const NOTE_RE = /\[([^[\]\n]+)\]/g;
+
+/** Extrae `[algo]` de un string arbitrario (título, subtítulo, etc.). */
+export function extractFieldNotes(
+  value: string | null | undefined,
+  source: "title" | "subtitle",
+): FieldNoteRef[] {
+  if (!value) return [];
+  const refs: FieldNoteRef[] = [];
+  NOTE_RE.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = NOTE_RE.exec(value)) !== null) {
+    refs.push({ text: match[1], source });
+  }
+  return refs;
+}
 
 function buildDecorations(doc: PMNode): { decos: DecorationSet; refs: NoteRef[] } {
   const decorations: Decoration[] = [];

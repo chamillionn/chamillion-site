@@ -12,10 +12,16 @@ import { Markdown } from "tiptap-markdown";
 import type { Post } from "@/lib/supabase/types";
 import { useToast } from "@/components/admin-toast";
 import { saveDraftContent } from "@/app/admin/newsletter/actions";
+import { exitReadOnlyMode } from "@/app/admin/actions";
 import { Callout } from "./extensions/callout";
 import { Widget } from "./extensions/widget";
 import { SlashCommands } from "./extensions/slash-commands";
-import { Notes, notesKey, type NoteRef } from "./extensions/notes";
+import { Notes, notesKey, extractFieldNotes, type NoteRef } from "./extensions/notes";
+import { Polymarket } from "./extensions/polymarket";
+import { Tweet } from "./extensions/tweet";
+import { HeadingWithId } from "./extensions/heading-with-id";
+import { extractTocEntries, type TocEntry } from "./toc-utils";
+import TocSidebar from "@/app/newsletter/toc-sidebar";
 import {
   useAutosave,
   formatSavedAgo,
@@ -44,26 +50,59 @@ function StatusLabel({
   savedAt: number | null;
   err: string | null;
 }) {
+  // Mantén "Guardando…" y el flash de "Guardado" visibles al menos 600 ms
+  // para que no parpadeen en saves rápidos.
+  const [displayStatus, setDisplayStatus] = useState<SaveStatus>(status);
+  const [justSaved, setJustSaved] = useState(false);
+  const prevStatus = useRef<SaveStatus>(status);
+
+  useEffect(() => {
+    const prev = prevStatus.current;
+    prevStatus.current = status;
+
+    if (status === "saving") {
+      setDisplayStatus("saving");
+      return;
+    }
+    if (status === "saved" && prev === "saving") {
+      // Flash "guardado" brevemente con estilo destacado
+      setJustSaved(true);
+      setDisplayStatus("saved");
+      const t = setTimeout(() => setJustSaved(false), 1400);
+      return () => clearTimeout(t);
+    }
+    setDisplayStatus(status);
+  }, [status]);
+
   const content = (() => {
-    if (status === "saving") return { cls: styles.statusSaving, text: "Guardando…" };
-    if (status === "error")
+    if (displayStatus === "saving")
+      return {
+        cls: styles.statusSaving,
+        dot: styles.dotSaving,
+        text: "Guardando…",
+      };
+    if (displayStatus === "error")
       return {
         cls: styles.statusError,
+        dot: styles.dotError,
         text: `Error: ${err ?? "no se pudo guardar"}`,
       };
-    if (status === "saved")
+    if (displayStatus === "saved")
       return {
-        cls: styles.statusSaved,
-        text: `Guardado ${formatSavedAgo(savedAt)}`,
+        cls: justSaved ? styles.statusJustSaved : styles.statusSaved,
+        dot: styles.dotSaved,
+        text: justSaved ? "✓ Guardado" : `Guardado ${formatSavedAgo(savedAt)}`,
       };
-    return { cls: "", text: "Sin cambios" };
+    return { cls: "", dot: styles.dotIdle, text: "Sin cambios" };
   })();
+
   return (
     <span
       className={`${styles.status} ${content.cls}`}
       role="status"
       aria-live="polite"
     >
+      <span className={`${styles.statusDot} ${content.dot}`} aria-hidden="true" />
       {content.text}
     </span>
   );
@@ -78,6 +117,14 @@ function countWords(text: string): number {
 export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
   const { toast } = useToast();
   const initialJson = (post.content_json as JSONContent | null) ?? undefined;
+
+  // Backup local (declarado al principio para estar disponible en los
+  // useEffects y callbacks de abajo).
+  const backupKey = `editor-backup-${post.id}`;
+  const [pendingBackup, setPendingBackup] = useState<{
+    json: unknown;
+    ts: number;
+  } | null>(null);
 
   const autosave = useAutosave({
     onSave: async (payload) => saveDraftContent(post.id, payload),
@@ -109,6 +156,39 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
     };
   }, []);
 
+  // Detectar backup local más reciente que el server al montar.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(backupKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { json: unknown; ts: number };
+      const serverTs = post.draft_updated_at
+        ? new Date(post.draft_updated_at).getTime()
+        : 0;
+      // Tolerancia 2s: si el backup es posterior al último save conocido,
+      // el user tiene cambios no sincronizados.
+      if (parsed.ts > serverTs + 2000) {
+        setPendingBackup(parsed);
+      } else {
+        localStorage.removeItem(backupKey);
+      }
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Cuando autosave confirma save exitoso, el backup queda obsoleto.
+  useEffect(() => {
+    if (autosave.status === "saved" && !pendingBackup) {
+      try {
+        localStorage.removeItem(backupKey);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [autosave.status, backupKey, pendingBackup]);
+
   // Sidebar colapsable — persistida en localStorage.
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   useEffect(() => {
@@ -122,6 +202,7 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
   // Word/char count sobre el plain text actual.
   const [counts, setCounts] = useState({ words: 0, chars: 0 });
   const [notes, setNotes] = useState<NoteRef[]>([]);
+  const [tocEntries, setTocEntries] = useState<TocEntry[]>([]);
 
   // UI overlays
   const [linkModal, setLinkModal] = useState(false);
@@ -132,7 +213,8 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
     immediatelyRender: false,
     editable: !readOnly,
     extensions: [
-      StarterKit,
+      StarterKit.configure({ heading: false }),
+      HeadingWithId,
       Underline,
       Link.configure({ openOnClick: false, autolink: true }),
       Image,
@@ -142,34 +224,64 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
       }),
       Callout,
       Widget,
+      Polymarket,
+      Tweet,
       SlashCommands,
       Notes,
       Markdown.configure({ html: false, tightLists: true }),
     ],
     content: initialJson,
     onUpdate: ({ editor }) => {
+      // Solo tareas síncronas de UI. El autosave vive en un useEffect
+      // separado (más abajo) para evitar stale closures.
       const text = editor.state.doc.textContent;
       setCounts({ words: countWords(text), chars: text.length });
       setNotes(notesKey.getState(editor.state)?.refs ?? []);
-      if (readOnly) return;
-      // La serialización a MD/JSON se pospone al momento de flush en autosave
-      // (ver schedule callback abajo).
-      autosave.schedule(() => {
-        const storage = editor.storage as {
-          markdown?: { getMarkdown: () => string };
-        };
-        return {
-          contentJson: editor.getJSON(),
-          contentMd: storage.markdown?.getMarkdown() ?? "",
-        };
-      });
+      setTocEntries(extractTocEntries(editor.state.doc));
     },
     onCreate: ({ editor }) => {
       const text = editor.state.doc.textContent;
       setCounts({ words: countWords(text), chars: text.length });
       setNotes(notesKey.getState(editor.state)?.refs ?? []);
+      setTocEntries(extractTocEntries(editor.state.doc));
     },
   });
+
+  // Subscripción de autosave con closure fresca (se re-subscribe si
+  // cambian editor, readOnly o autosave). Así evitamos el stale closure
+  // del onUpdate inline del useEditor.
+  useEffect(() => {
+    if (!editor) return;
+    function handleUpdate() {
+      if (!editor) return;
+      console.log("[editor] update event", { readOnly });
+      if (readOnly) return;
+      try {
+        localStorage.setItem(
+          backupKey,
+          JSON.stringify({ json: editor.getJSON(), ts: Date.now() }),
+        );
+      } catch {
+        /* ignore */
+      }
+      autosave.schedule(() => {
+        const storage = editor.storage as {
+          markdown?: { getMarkdown: () => string };
+        };
+        let contentMd = "";
+        try {
+          contentMd = storage.markdown?.getMarkdown() ?? "";
+        } catch (err) {
+          console.warn("[editor] getMarkdown failed:", err);
+        }
+        return { contentJson: editor.getJSON(), contentMd };
+      });
+    }
+    editor.on("update", handleUpdate);
+    return () => {
+      editor.off("update", handleUpdate);
+    };
+  }, [editor, readOnly, autosave, backupKey]);
 
   // -- Keyboard shortcuts global --
   useEffect(() => {
@@ -221,7 +333,14 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
     const storage = editor.storage as {
       markdown?: { getMarkdown: () => string };
     };
-    const md = storage.markdown?.getMarkdown() ?? "";
+    let md = "";
+    try {
+      md = storage.markdown?.getMarkdown() ?? "";
+    } catch (err) {
+      console.warn("[editor] getMarkdown failed:", err);
+      toast("No se pudo serializar a markdown", "error");
+      return;
+    }
     try {
       await navigator.clipboard.writeText(md);
       toast("Markdown copiado", "success");
@@ -233,6 +352,22 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
   const saveNow = useCallback(() => {
     autosave.flush();
   }, [autosave]);
+
+  function restoreBackup() {
+    if (!pendingBackup || !editor) return;
+    editor.commands.setContent(pendingBackup.json as JSONContent);
+    setPendingBackup(null);
+    autosave.flush();
+  }
+
+  function discardBackup() {
+    try {
+      localStorage.removeItem(backupKey);
+    } catch {
+      /* ignore */
+    }
+    setPendingBackup(null);
+  }
 
   // Current link/widget attrs for modals
   const linkCurrent = useMemo(() => {
@@ -262,6 +397,11 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
 
   return (
     <div className={`${styles.shell} ${sidebarOpen ? "" : styles.shellSolo}`}>
+      {tocEntries.length > 0 && (
+        <div className={styles.tocWrap}>
+          <TocSidebar entries={tocEntries} />
+        </div>
+      )}
       <main className={styles.main}>
         <div className={styles.topbar}>
           <div className={styles.topbarLeft}>
@@ -269,13 +409,22 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
               ← Newsletter
             </a>
             {readOnly && (
-              <span
+              <button
+                type="button"
                 className={styles.readOnlyChip}
-                role="status"
-                aria-live="polite"
+                title="Cambiar al target nativo para poder editar"
+                onClick={async () => {
+                  const res = await exitReadOnlyMode();
+                  if (res.error) {
+                    toast(res.error, "error");
+                    return;
+                  }
+                  window.location.reload();
+                }}
+                aria-label="Salir de modo lectura"
               >
-                Solo lectura
-              </span>
+                Solo lectura — click para editar
+              </button>
             )}
           </div>
           <div className={styles.topbarRight}>
@@ -364,7 +513,14 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
       {sidebarOpen && (
         <div className={styles.sidebarCol}>
           <MetadataPanel post={post} readOnly={readOnly} />
-          <NotesPanel editor={editor} notes={notes} />
+          <NotesPanel
+            editor={editor}
+            notes={notes}
+            fieldNotes={[
+              ...extractFieldNotes(post.title, "title"),
+              ...extractFieldNotes(post.subtitle, "subtitle"),
+            ]}
+          />
         </div>
       )}
 
@@ -441,6 +597,48 @@ export default function Editor({ post, readOnly, bannerOptions }: EditorProps) {
       )}
 
       {shortcutSheet && <ShortcutSheet onClose={() => setShortcutSheet(false)} />}
+
+      {pendingBackup && (
+        <div className={styles.modalOverlay} role="presentation">
+          <div
+            className={styles.modalCard}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Cambios sin sincronizar"
+          >
+            <h3 className={styles.modalTitle}>Cambios no guardados</h3>
+            <p
+              style={{
+                fontFamily: "var(--font-outfit), sans-serif",
+                fontSize: 13.5,
+                lineHeight: 1.6,
+                color: "var(--text-secondary)",
+                margin: "0 0 16px",
+              }}
+            >
+              Hay una versión local del borrador más reciente que la del servidor
+              (guardada {formatSavedAgo(pendingBackup.ts)}). Probablemente
+              corresponde a edits que no llegaron a sincronizarse.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.btnSecondary}
+                onClick={discardBackup}
+              >
+                Descartar local
+              </button>
+              <button
+                type="button"
+                className={styles.btnPrimary}
+                onClick={restoreBackup}
+              >
+                Restaurar versión local
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
