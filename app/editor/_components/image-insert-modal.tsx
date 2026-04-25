@@ -45,7 +45,7 @@ export default function ImageInsertModal({
     fd.set("slug", slug);
     startTransition(async () => {
       const res = await uploadInlineImage(fd);
-      if (res.error) {
+      if ("error" in res) {
         setUploadError(res.error);
         return;
       }

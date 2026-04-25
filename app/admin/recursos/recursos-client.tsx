@@ -43,6 +43,19 @@ const SERVICES: ServiceInfo[] = [
     ],
   },
   {
+    name: "Vercel Blob",
+    plan: "Hobby (Gratis)",
+    icon: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12",
+    dashboardUrl: "https://vercel.com/dashboard/stores",
+    limits: [
+      { label: "Storage", value: "1 GB" },
+      { label: "Data Transfer", value: "10 GB/mes" },
+      { label: "Operaciones", value: "Simples 100K · Avanzadas 10K" },
+    ],
+    liveUsage: true,
+    notes: "Almacena banners e imágenes inline del newsletter. Substituye al filesystem (read-only en Vercel).",
+  },
+  {
     name: "Twelve Data",
     plan: "Basic (Free)",
     icon: "M3 12h18M3 6h18M3 18h18",
@@ -118,11 +131,29 @@ interface TwelveUsage {
   block: { blocked: boolean; untilTs: number };
 }
 
+interface BlobUsage {
+  available: boolean;
+  count: number;
+  totalBytes: number;
+  freeTierBytes: number;
+  usedPct: number;
+  largest: { pathname: string; size: number; uploadedAt: string }[];
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+
 export default function RecursosClient({ dbCounts, totalRows, kronosEnabled }: Props) {
   const [modal, setModal] = useState<ModalUsage | null>(null);
   const [modalLoading, setModalLoading] = useState(true);
   const [twelve, setTwelve] = useState<TwelveUsage | null>(null);
   const [twelveLoading, setTwelveLoading] = useState(true);
+  const [blob, setBlob] = useState<BlobUsage | null>(null);
+  const [blobLoading, setBlobLoading] = useState(true);
   const [kronosOn, setKronosOn] = useState(kronosEnabled);
   const [pending, startTransition] = useTransition();
 
@@ -151,6 +182,14 @@ export default function RecursosClient({ dbCounts, totalRows, kronosEnabled }: P
       })
       .catch(() => {})
       .finally(() => setTwelveLoading(false));
+
+    fetch("/api/admin/blob-usage")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.error) setBlob(data);
+      })
+      .catch(() => {})
+      .finally(() => setBlobLoading(false));
   }, []);
 
   return (
@@ -326,6 +365,71 @@ export default function RecursosClient({ dbCounts, totalRows, kronosEnabled }: P
                     </span>
                   </button>
                 </>
+              )}
+
+              {svc.liveUsage && svc.name === "Vercel Blob" && (
+                <div className={styles.usageBlock}>
+                  {blobLoading ? (
+                    <span className={styles.usageLoading}>Cargando uso...</span>
+                  ) : blob?.available ? (
+                    <>
+                      <div className={styles.usageHeader}>
+                        <span className={styles.usageLabel}>Storage</span>
+                        <span className={styles.usageValue}>
+                          {formatBytes(blob.totalBytes)} / {formatBytes(blob.freeTierBytes)}
+                        </span>
+                      </div>
+                      <div className={styles.progressBar}>
+                        <div
+                          className={styles.progressFill}
+                          style={{
+                            width: `${Math.min(blob.usedPct, 100)}%`,
+                            background:
+                              blob.usedPct > 80
+                                ? "#c7555a"
+                                : blob.usedPct > 60
+                                  ? "#d4a04a"
+                                  : undefined,
+                          }}
+                        />
+                      </div>
+                      <span className={styles.usagePct}>
+                        {blob.usedPct.toFixed(1)}% · {blob.count.toLocaleString("es-ES")} archivos
+                      </span>
+                      {blob.largest.length > 0 && (
+                        <div style={{ marginTop: 10 }}>
+                          <span className={styles.usageLabel}>Más pesados</span>
+                          <ul style={{ listStyle: "none", padding: 0, margin: "6px 0 0", display: "flex", flexDirection: "column", gap: 2 }}>
+                            {blob.largest.map((b) => (
+                              <li
+                                key={b.pathname}
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  fontFamily: "var(--font-jetbrains), monospace",
+                                  fontSize: 11,
+                                  color: "var(--text-secondary)",
+                                  gap: 12,
+                                }}
+                              >
+                                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                  {b.pathname}
+                                </span>
+                                <span style={{ flexShrink: 0, color: "var(--text-muted)" }}>
+                                  {formatBytes(b.size)}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <span className={styles.usageLoading}>
+                      No se pudo obtener el uso (BLOB_READ_WRITE_TOKEN no configurado)
+                    </span>
+                  )}
+                </div>
               )}
 
               {svc.notes && (

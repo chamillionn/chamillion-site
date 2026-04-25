@@ -124,7 +124,7 @@ export const metadata: Metadata = {
     title: "Cómo decir adiós a tu banco — Chamillion",
     description:
       "500 euros en el banco, listos para el despliegue. El primer paso hacia los mercados sin intermediarios.",
-    images: [{ url: "/api/og?title=C%C3%B3mo+decir+adi%C3%B3s+a+tu+banco&subtitle=500+euros+en+el+banco%2C+listos+para+el+despliegue.+El+primer+paso+hacia+los+mercados+sin+intermediarios.&banner=/assets/newsletter/banner-post-02.jpeg", width: 1200, height: 630 }],
+    images: [{ url: "/api/og?title=C%C3%B3mo+decir+adi%C3%B3s+a+tu+banco&subtitle=500+euros+en+el+banco%2C+listos+para+el+despliegue.+El+primer+paso+hacia+los+mercados+sin+intermediarios.&banner=https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-02-DxV4ecwMgOUXEiIeWJW433sNbYTLbe.jpeg", width: 1200, height: 630 }],
   },
 };
 
@@ -155,7 +155,7 @@ export default async function Post02() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className={styles.postPreviewImg}
-              src="/assets/newsletter/banner-post-01.jpeg"
+              src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-01-XRge08UEXKueBFhB7eTjVfOSEvg9Ma.jpeg"
               alt=""
               aria-hidden
             />
@@ -190,7 +190,7 @@ export default async function Post02() {
           <Image
             className={styles.bannerImg}
             style={{ objectPosition: "center 75%" }}
-            src="/assets/newsletter/banner-post-02.jpeg"
+            src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-02-DxV4ecwMgOUXEiIeWJW433sNbYTLbe.jpeg"
             alt="Chamillion — Cómo decir adiós a tu banco"
             width={1568}
             height={700}
@@ -224,7 +224,7 @@ export default async function Post02() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   className={styles.postPreviewImg}
-                  src="/assets/newsletter/banner-post-01.jpeg"
+                  src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-01-XRge08UEXKueBFhB7eTjVfOSEvg9Ma.jpeg"
                   alt=""
                   aria-hidden
                 />
@@ -460,7 +460,7 @@ export default async function Post02() {
 
                 <Image
                   className={styles.heroImg}
-                  src="/assets/newsletter/post-02-intermediarios.png"
+                  src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/post-02-intermediarios-zRqcFcQwcb7m3LuQSnwuIUR3jEqyIa.png"
                   alt="La casa de cambio de un aeropuerto, la terminal de un trader en Wall Street y la parada de taxis"
                   width={1024}
                   height={686}
@@ -748,7 +748,7 @@ export default async function Post02() {
 
           <Image
             className={styles.closingImg}
-            src="/assets/newsletter/banner-post-02.jpeg"
+            src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-02-DxV4ecwMgOUXEiIeWJW433sNbYTLbe.jpeg"
             alt="Impression, soleil levant — Claude Monet"
             width={1568}
             height={700}
@@ -766,7 +766,7 @@ export default async function Post02() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   className={styles.postPreviewImg}
-                  src="/assets/newsletter/banner-post-01.jpeg"
+                  src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-01-XRge08UEXKueBFhB7eTjVfOSEvg9Ma.jpeg"
                   alt=""
                   aria-hidden
                 />
@@ -819,7 +819,7 @@ export default async function Post02() {
         description="500 euros en el banco, listos para el despliegue. El primer paso hacia los mercados sin intermediarios."
         slug={SLUG}
         date="2026-03-20"
-        bannerPath="/assets/newsletter/banner-post-02.jpeg"
+        bannerPath="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-02-DxV4ecwMgOUXEiIeWJW433sNbYTLbe.jpeg"
       />
     </>
   );

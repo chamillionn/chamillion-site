@@ -1,7 +1,6 @@
 "use server";
 
-import { promises as fs } from "fs";
-import path from "path";
+import { put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/admin";
 import { createPostsClient } from "@/lib/supabase/posts-client";
@@ -162,129 +161,105 @@ export async function updateDraftMetadata(id: string, patch: DraftMetadata) {
 const ALLOWED_IMG_EXT = ["jpg", "jpeg", "png", "webp", "avif"] as const;
 const MAX_BANNER_BYTES = 8 * 1024 * 1024; // 8 MB
 
+interface ValidatedUpload {
+  file: Blob & { name?: string; type?: string };
+  ext: string;
+}
+
+function validateUpload(formData: FormData): { error: string } | ValidatedUpload {
+  const entry = formData.get("file");
+  if (!entry || typeof entry === "string") {
+    return { error: "No se adjuntó ningún archivo" };
+  }
+  const file = entry as Blob & { name?: string; type?: string };
+  if (file.size === 0) return { error: "No se adjuntó ningún archivo" };
+  if (file.size > MAX_BANNER_BYTES) {
+    return {
+      error: `Máximo 8 MB (recibido ${(file.size / 1024 / 1024).toFixed(1)} MB)`,
+    };
+  }
+  const originalName = typeof file.name === "string" ? file.name : "";
+  let ext = (originalName.split(".").pop() ?? "").toLowerCase();
+  if (!ext && file.type) {
+    ext = file.type.split("/").pop()?.toLowerCase() ?? "";
+  }
+  if (!ALLOWED_IMG_EXT.includes(ext as (typeof ALLOWED_IMG_EXT)[number])) {
+    return {
+      error: `Formato no soportado (usa ${ALLOWED_IMG_EXT.join(", ")})`,
+    };
+  }
+  return { file, ext };
+}
+
 /**
- * Sube un banner al filesystem (public/assets/newsletter/). Pensado para
- * flujo local de drafting: los assets viven en el repo y se commitean con
- * el post. En un entorno prod con filesystem read-only (Vercel), fallará
- * con un error explícito — no es el caso de uso principal.
+ * Sube un banner a Vercel Blob (carpeta `newsletter/`). El path devuelto
+ * es la URL pública absoluta del Blob, que se persiste tal cual en
+ * `posts.banner_path` y se sirve directo desde el CDN de Vercel.
+ *
+ * Requiere `BLOB_READ_WRITE_TOKEN` en el entorno (Vercel lo inyecta
+ * automáticamente; en local hay que añadirlo en `.env.local`).
  */
 export async function uploadBannerImage(formData: FormData) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const entry = formData.get("file");
+  const validated = validateUpload(formData);
+  if ("error" in validated) return validated;
+  const { file, ext } = validated;
+
   const slugRaw = formData.get("slug");
   const slug = typeof slugRaw === "string" ? slugRaw.trim() : "";
-
-  // `File` no siempre es global en el runtime (Node 18). Validamos por
-  // duck-typing: descartamos string/null y trabajamos como Blob + .name.
-  if (!entry || typeof entry === "string") {
-    return { error: "No se adjuntó ningún archivo" };
-  }
-  const file = entry as Blob & { name?: string };
-  if (file.size === 0) {
-    return { error: "No se adjuntó ningún archivo" };
-  }
-  if (file.size > MAX_BANNER_BYTES) {
-    return {
-      error: `Máximo 8 MB (recibido ${(file.size / 1024 / 1024).toFixed(1)} MB)`,
-    };
-  }
-
-  const originalName = typeof file.name === "string" ? file.name : "";
-  let ext = (originalName.split(".").pop() ?? "").toLowerCase();
-  // Fallback a tipo MIME si el nombre no trae extensión.
-  if (!ext && file.type) {
-    ext = file.type.split("/").pop()?.toLowerCase() ?? "";
-    if (ext === "jpeg") ext = "jpeg";
-  }
-  if (!ALLOWED_IMG_EXT.includes(ext as (typeof ALLOWED_IMG_EXT)[number])) {
-    return {
-      error: `Formato no soportado (usa ${ALLOWED_IMG_EXT.join(", ")})`,
-    };
-  }
-
-  // Nombre: preferir banner-<slug>.<ext>. Si el slug ya existe con otra ext,
-  // se sobreescribe la versión con la misma ext (lo típico es que el user
-  // suba el banner definitivo del post).
+  // Si el slug es válido, usamos un nombre estable (banner-<slug>.<ext>)
+  // y dejamos que Vercel Blob añada un sufijo aleatorio para evitar
+  // colisiones entre versiones del mismo post.
   const safeSlug = /^[a-z0-9][a-z0-9-]*$/.test(slug) ? slug : `${Date.now()}`;
-  const filename = `banner-${safeSlug}.${ext}`;
-  const publicPath = `/assets/newsletter/${filename}`;
-  const absPath = path.join(process.cwd(), "public", "assets", "newsletter", filename);
+  const pathname = `newsletter/banner-${safeSlug}.${ext}`;
 
   try {
-    const bytes = Buffer.from(await file.arrayBuffer());
-    await fs.mkdir(path.dirname(absPath), { recursive: true });
-    await fs.writeFile(absPath, bytes);
+    const blob = await put(pathname, file, {
+      access: "public",
+      contentType: file.type || `image/${ext === "jpg" ? "jpeg" : ext}`,
+      addRandomSuffix: true,
+    });
+    return { success: true, path: blob.url, filename: blob.pathname };
   } catch (e) {
     return {
-      error: `No se pudo escribir: ${(e as Error).message}. ¿Estás en un entorno con filesystem writable?`,
+      error: `No se pudo subir a Vercel Blob: ${(e as Error).message}. Comprueba que BLOB_READ_WRITE_TOKEN esté configurado.`,
     };
   }
-
-  // Cache-bust: el header `Cache-Control: immutable` de /assets/* hace que
-  // el browser no vuelva a pedir el mismo path aunque el fichero haya
-  // cambiado. Añadimos ?v=<timestamp> para que la URL sea única por subida.
-  const versionedPath = `${publicPath}?v=${Date.now()}`;
-
-  return { success: true, path: versionedPath, filename };
 }
 
 /**
- * Sube una imagen inline (no banner) al filesystem. Se guarda en
- * public/assets/newsletter/<slug>-<timestamp>.<ext> para no pisar el banner
- * ni colisionar entre imágenes del mismo post. Devuelve la ruta pública.
+ * Sube una imagen inline (no banner) a Vercel Blob. Devuelve la URL
+ * pública del Blob para insertarla en el contenido del post.
  */
 export async function uploadInlineImage(formData: FormData) {
   const admin = await requireAdmin();
   if (!admin) return { error: "Unauthorized" };
   if (admin.isRemote) return { error: "Modo lectura" };
 
-  const entry = formData.get("file");
+  const validated = validateUpload(formData);
+  if ("error" in validated) return validated;
+  const { file, ext } = validated;
+
   const slugRaw = formData.get("slug");
   const slug = typeof slugRaw === "string" ? slugRaw.trim() : "";
-
-  if (!entry || typeof entry === "string") {
-    return { error: "No se adjuntó ningún archivo" };
-  }
-  const file = entry as Blob & { name?: string };
-  if (file.size === 0) {
-    return { error: "No se adjuntó ningún archivo" };
-  }
-  if (file.size > MAX_BANNER_BYTES) {
-    return {
-      error: `Máximo 8 MB (recibido ${(file.size / 1024 / 1024).toFixed(1)} MB)`,
-    };
-  }
-
-  const originalName = typeof file.name === "string" ? file.name : "";
-  let ext = (originalName.split(".").pop() ?? "").toLowerCase();
-  if (!ext && file.type) {
-    ext = file.type.split("/").pop()?.toLowerCase() ?? "";
-  }
-  if (!ALLOWED_IMG_EXT.includes(ext as (typeof ALLOWED_IMG_EXT)[number])) {
-    return {
-      error: `Formato no soportado (usa ${ALLOWED_IMG_EXT.join(", ")})`,
-    };
-  }
-
   const safeSlug = /^[a-z0-9][a-z0-9-]*$/.test(slug) ? slug : "img";
-  const filename = `${safeSlug}-${Date.now()}.${ext}`;
-  const publicPath = `/assets/newsletter/${filename}`;
-  const absPath = path.join(process.cwd(), "public", "assets", "newsletter", filename);
+  const pathname = `newsletter/${safeSlug}-${Date.now()}.${ext}`;
 
   try {
-    const bytes = Buffer.from(await file.arrayBuffer());
-    await fs.mkdir(path.dirname(absPath), { recursive: true });
-    await fs.writeFile(absPath, bytes);
+    const blob = await put(pathname, file, {
+      access: "public",
+      contentType: file.type || `image/${ext === "jpg" ? "jpeg" : ext}`,
+      addRandomSuffix: true,
+    });
+    return { success: true, path: blob.url, filename: blob.pathname };
   } catch (e) {
     return {
-      error: `No se pudo escribir: ${(e as Error).message}`,
+      error: `No se pudo subir a Vercel Blob: ${(e as Error).message}`,
     };
   }
-
-  return { success: true, path: publicPath, filename };
 }
 
 export async function deleteDraftPost(id: string) {

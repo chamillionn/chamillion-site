@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: "Navegar las finanzas modernas: El augurio de una odisea — Chamillion",
     description:
       "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
-    images: [{ url: "/api/og?title=Navegar+las+finanzas+modernas%3A+El+augurio+de+una+odisea&subtitle=Un+viaje+con+dinero+real+por+los+mercados+que+est%C3%A1n+reemplazando+al+sistema.&banner=/assets/newsletter/banner-post-01.jpeg", width: 1200, height: 630 }],
+    images: [{ url: "/api/og?title=Navegar+las+finanzas+modernas%3A+El+augurio+de+una+odisea&subtitle=Un+viaje+con+dinero+real+por+los+mercados+que+est%C3%A1n+reemplazando+al+sistema.&banner=https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-01-XRge08UEXKueBFhB7eTjVfOSEvg9Ma.jpeg", width: 1200, height: 630 }],
   },
 };
 
@@ -72,7 +72,7 @@ export default async function Post01() {
         <div className={styles.bannerWrapper}>
           <Image
             className={styles.bannerImg}
-            src="/assets/newsletter/banner-post-01.jpeg"
+            src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-01-XRge08UEXKueBFhB7eTjVfOSEvg9Ma.jpeg"
             alt="Chamillion — The Daily"
             width={1568}
             height={700}
@@ -409,7 +409,7 @@ export default async function Post01() {
         {/* HERO IMAGE */}
         <Image
           className={styles.heroImg}
-          src="/assets/newsletter/wanderer-post-01.png"
+          src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/wanderer-post-01-EUVVsM4xep3iuJANNjSP4VUgUie04b.png"
           alt="Wanderer above the Sea of Fog — Camaleón"
           width={1920}
           height={1080}
@@ -460,7 +460,7 @@ export default async function Post01() {
         description="Un viaje con dinero real por los mercados que están reemplazando al sistema."
         slug={SLUG}
         date="2025-01-26"
-        bannerPath="/assets/newsletter/banner-post-01.jpeg"
+        bannerPath="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-01-XRge08UEXKueBFhB7eTjVfOSEvg9Ma.jpeg"
       />
     </>
   );
