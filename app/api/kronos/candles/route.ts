@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getOptionalUser } from "@/lib/supabase/auth";
 import { fetchCandles, fetchCandlesByRange, type Timeframe } from "@/lib/binance";
 import { fetchTwelveCandles, fetchTwelveCandlesByRange } from "@/lib/twelvedata";
+import { fetchYahooCandles, fetchYahooCandlesByRange } from "@/lib/yahoo";
 import { findAsset } from "@/lib/assets";
 import { checkAndBumpCandlesLimit, getClientIp } from "@/lib/kronos-rate-limit";
 import { isTwelveBlocked } from "@/lib/twelvedata-usage";
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
   }
 
   let assetSymbol: string;
-  let source: "binance" | "twelvedata";
+  let source: "binance" | "twelvedata" | "yahoo";
   let tier: "free" | "premium";
   let supportedTfs: Timeframe[] = ALLOWED_TFS;
   let responseId: string;
@@ -111,6 +112,12 @@ export async function GET(request: Request) {
         candles = await fetchCandlesByRange(assetSymbol, tf, Number(start), Number(end));
       } else {
         candles = await fetchCandles(assetSymbol, tf, limitParam);
+      }
+    } else if (source === "yahoo") {
+      if (hasRange) {
+        candles = await fetchYahooCandlesByRange(assetSymbol, tf, Number(start), Number(end));
+      } else {
+        candles = await fetchYahooCandles(assetSymbol, tf, limitParam);
       }
     } else {
       if (hasRange) {

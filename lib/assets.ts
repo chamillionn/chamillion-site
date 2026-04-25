@@ -1,6 +1,6 @@
 import type { Timeframe } from "./binance";
 
-export type AssetSource = "binance" | "twelvedata";
+export type AssetSource = "binance" | "twelvedata" | "yahoo";
 export type AssetCategory = "crypto" | "stock" | "index" | "forex" | "commodity";
 export type AssetTier = "free" | "premium";
 
@@ -22,6 +22,7 @@ export interface AssetMeta {
 }
 
 const ALL_TFS: Timeframe[] = ["1h", "4h", "1d"];
+const YAHOO_TFS: Timeframe[] = ["1h", "1d"]; // Yahoo has no native 4h
 
 /* ── Free tier (anon-accessible) ── */
 
@@ -71,7 +72,7 @@ export const PREMIUM_EXTRAS: AssetMeta[] = [
 
   // Commodities
   { id: "silver", symbol: "XAG/USD", source: "twelvedata", label: "Plata",     sublabel: "XAG/USD", category: "commodity", tier: "premium", timeframes: ALL_TFS },
-  { id: "copper", symbol: "HG1",     source: "twelvedata", label: "Cobre",     sublabel: "HG1",     category: "commodity", tier: "premium", timeframes: ALL_TFS },
+  { id: "copper", symbol: "HG=F",    source: "yahoo",      label: "Cobre",     sublabel: "HG=F",    category: "commodity", tier: "premium", timeframes: YAHOO_TFS },
   { id: "wti",    symbol: "WTI",     source: "twelvedata", label: "Crudo WTI", sublabel: "WTI",     category: "commodity", tier: "premium", timeframes: ALL_TFS },
   { id: "brent",  symbol: "BRENT",   source: "twelvedata", label: "Brent",     sublabel: "BRENT",   category: "commodity", tier: "premium", timeframes: ALL_TFS },
 ];

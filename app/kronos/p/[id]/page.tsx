@@ -10,7 +10,7 @@ import SharedClient from "./shared-client";
 /** Best-effort source detection from the stored symbol. Catalog-known
  *  symbols use their declared source; pairs ending in USDT fall back to
  *  Binance; everything else routes to Twelve Data. */
-function detectSource(symbol: string): "binance" | "twelvedata" {
+function detectSource(symbol: string): "binance" | "twelvedata" | "yahoo" {
   const fromCatalog = CATALOG.find((a) => a.symbol === symbol);
   if (fromCatalog) return fromCatalog.source;
   if (/USDT$/.test(symbol) && /^[A-Z0-9]+$/.test(symbol)) return "binance";
