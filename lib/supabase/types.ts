@@ -100,6 +100,7 @@ export interface Profile {
  * NO poner aquí: title, subtitle, banner_path, banner_aspect, content_json,
  * content_md, premium, published, section. Esos tienen columna propia.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface EditorState {
   // Añade settings aquí según los vayas necesitando. Ejemplos:
   // focusMode?: boolean;
