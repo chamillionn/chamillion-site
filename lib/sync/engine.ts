@@ -38,9 +38,9 @@ export async function syncPlatform(adapter: PlatformAdapter, eurUsdRate?: number
   const platform = (platforms as { id: string; wallet_address: string | null }[] | null)?.[0];
 
   if (!platform?.wallet_address) {
-    result.errors.push(
-      `${adapter.platformName} no tiene wallet address configurada. Edítala en Admin > Plataformas.`,
-    );
+    // Platform exists but isn't yet configured (reserved slot for future use).
+    // Skip silently — surfacing this as an error pollutes every sync run.
+    // The Admin > Plataformas UI is where the user fills the address when ready.
     return result;
   }
 
