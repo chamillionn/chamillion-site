@@ -193,6 +193,13 @@ export const SolanaWalletAdapter: PlatformAdapter = {
     const solPrice = prices.get(WSOL_MINT);
     const positions: PositionRow[] = [];
 
+    // If we have balances but prices are completely empty it's a Jupiter outage —
+    // throw so the engine skips deactivation instead of wiping positions.
+    const hasMeaningfulBalance = solBalance > 0.001 || byMint.size > 0;
+    if (hasMeaningfulBalance && prices.size === 0) {
+      throw new Error("Jupiter price API returned no prices — skipping to preserve existing positions");
+    }
+
     // Native SOL
     if (solBalance > 0) {
       if (solPrice == null) {
