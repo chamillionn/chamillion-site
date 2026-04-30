@@ -386,7 +386,7 @@ export default function SharedClient({
           </span>
           <span className={styles.chamillionCover} aria-hidden="true">
             <Image
-              src="/assets/newsletter/banner-post-01.jpeg"
+              src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-01-XRge08UEXKueBFhB7eTjVfOSEvg9Ma.jpeg"
               alt=""
               fill
               sizes="240px"

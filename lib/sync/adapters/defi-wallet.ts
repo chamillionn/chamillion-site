@@ -249,7 +249,7 @@ export const DefiWalletAdapter: PlatformAdapter = {
       warnings.push(`Moralis failed: ${moralisErr instanceof Error ? moralisErr.message : String(moralisErr)}`);
     }
 
-    // Both failed
-    return { positions: [], warnings };
+    // Both failed — throw so the engine skips deactivation instead of wiping positions
+    throw new Error(`All wallet sources failed: ${warnings.join(" | ")}`);
   },
 };

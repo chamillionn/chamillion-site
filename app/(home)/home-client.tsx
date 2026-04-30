@@ -535,7 +535,7 @@ function SinglePostCard({ post, mobile }: { post: NonNullable<HomeProps["recentP
       >
         <div style={{ position: "relative", width: "100%", aspectRatio: "2.4/1", overflow: "hidden" }}>
           <Image
-            src={post.banner_path || "/assets/newsletter/banner-post-01.jpeg"}
+            src={post.banner_path || "https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-01-XRge08UEXKueBFhB7eTjVfOSEvg9Ma.jpeg"}
             alt={post.title}
             fill
             style={{
@@ -710,7 +710,7 @@ function PostCard({ loaded, recentPosts }: { loaded: boolean; recentPosts?: Home
     title: "Navegar las finanzas modernas: El augurio de una odisea",
     subtitle: "Un viaje con dinero real por los mercados que están reemplazando al sistema.",
     date: "2026-02-21",
-    banner_path: "/assets/newsletter/banner-post-01.jpeg",
+    banner_path: "https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/banner-post-01-XRge08UEXKueBFhB7eTjVfOSEvg9Ma.jpeg",
     substack_url: null,
   }];
 

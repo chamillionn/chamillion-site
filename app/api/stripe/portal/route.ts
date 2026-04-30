@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
  * POST /api/stripe/portal
  * Creates a Stripe Customer Portal session for the authenticated user.
  */
-export async function POST(_req: Request) {
+export async function POST(req: Request) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -29,7 +29,7 @@ export async function POST(_req: Request) {
     );
   }
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(req.url).origin;
 
   const session = await getStripe().billingPortal.sessions.create({
     customer: profile.stripe_customer_id,

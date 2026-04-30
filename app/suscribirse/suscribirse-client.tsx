@@ -183,7 +183,7 @@ function SuscribirseForm() {
         <div className={styles.hero}>
           <Image
             className={styles.heroImg}
-            src="/assets/newsletter/wanderer-post-01.png"
+            src="https://3hkzsfmnwdimbdxj.public.blob.vercel-storage.com/newsletter/wanderer-post-01-EUVVsM4xep3iuJANNjSP4VUgUie04b.png"
             alt="Chamillion"
             fill
             sizes="520px"
