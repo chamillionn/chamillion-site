@@ -251,7 +251,7 @@ export type TradeSide = "buy" | "sell" | "open_long" | "open_short" | "close_lon
 export type AnalysisVisibility = "public" | "premium" | "hidden";
 export type PredictionDirection = "bullish" | "bearish" | "neutral";
 export type PredictionSource = "manual" | "binance";
-export type ObservationSource = "manual" | "binance" | "twelvedata";
+export type ObservationSource = "manual" | "binance" | "twelvedata" | "kma";
 
 export type AnalysisOutcome = "cumplida" | "fallida" | "neutral";
 
@@ -342,6 +342,27 @@ export type SnapshotPositionLeg = TrackerPositionLeg;
 export type TrackerSnapshotPosition = TrackerPosition;
 export type SnapshotEdge = TrackerEdge;
 
+/** Serialisable shape stored in analysis_snapshots.forecasts (JSONB) */
+export interface ForecastSnapshot {
+  fetchedAt: string;
+  forecastDays: string[];
+  deterministic: Array<{
+    model: string;
+    slug: string;
+    daily: number[];
+    total: number;
+    note?: string;
+    ok: boolean;
+  }>;
+  ensemble: {
+    memberTotals: number[];
+    count: number;
+    mean: number;
+    median: number;
+    days: string[];
+  };
+}
+
 export interface AnalysisSnapshot {
   id: string;
   analysis_id: string;
@@ -349,6 +370,7 @@ export interface AnalysisSnapshot {
   underlying: TrackerUnderlying | null;
   position: TrackerPosition | null;
   edge: TrackerEdge | null;
+  forecasts: ForecastSnapshot | null;
   created_at: string;
 }
 
@@ -577,7 +599,7 @@ export type Database = {
       };
       analysis_snapshots: {
         Row: Flatten<AnalysisSnapshot>;
-        Insert: Flatten<Omit<AnalysisSnapshot, "id" | "created_at" | "underlying" | "position" | "edge"> & { id?: string; created_at?: string; underlying?: TrackerUnderlying | null; position?: TrackerPosition | null; edge?: TrackerEdge | null }>;
+        Insert: Flatten<Omit<AnalysisSnapshot, "id" | "created_at" | "underlying" | "position" | "edge" | "forecasts"> & { id?: string; created_at?: string; underlying?: TrackerUnderlying | null; position?: TrackerPosition | null; edge?: TrackerEdge | null; forecasts?: ForecastSnapshot | null }>;
         Update: Flatten<Partial<AnalysisSnapshot>>;
         Relationships: [
           { foreignKeyName: "analysis_snapshots_analysis_id_fkey"; columns: ["analysis_id"]; referencedRelation: "analyses"; referencedColumns: ["id"]; isOneToOne: false },

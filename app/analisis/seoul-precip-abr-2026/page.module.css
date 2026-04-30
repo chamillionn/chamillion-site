@@ -1,150 +1,121 @@
-.layout {
+.shell {
+  --hairline:      color-mix(in oklch, var(--border) 70%, transparent);
+  --hairline-soft: color-mix(in oklch, var(--border) 38%, transparent);
+
+  /* Type scale (matches markets-panel) */
+  --t-xs: 9.5px;
+  --t-sm: 11px;
+  --t-md: 13px;
+  --t-lg: 14px;
+  --t-xl: 28px;
+
+  min-height: 100vh;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+/* status bar */
+
+.statusBar {
+  border-bottom: 1px solid var(--hairline);
+  padding: 14px clamp(20px, 4vw, 48px) 12px;
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
-  gap: 64px;
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 40px 32px 140px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  background: color-mix(in oklch, var(--bg-card) 32%, transparent);
 }
 
-.navRail {
-  position: relative;
-}
-
-.article {
+.statusIdent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
-  max-width: 760px;
 }
 
-.paywallWrap {
-  padding-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* ── Typographic helpers ── */
-
-.lead {
-  font-family: var(--font-outfit), sans-serif;
-  font-size: 17px;
-  line-height: 1.65;
-  color: var(--text-primary);
-  font-weight: 300;
-  margin: 0 0 28px;
-  max-width: 60ch;
-}
-
-.subLead {
-  font-family: var(--font-outfit), sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text-secondary);
-  font-weight: 300;
-  margin: -4px 0 20px;
-  max-width: 62ch;
-}
-
-.subHead {
-  font-family: var(--font-instrument-serif), var(--font-playfair), serif;
-  font-size: 22px;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  margin: 44px 0 10px;
-}
-
-.footnote {
-  font-family: var(--font-outfit), sans-serif;
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.55;
-  margin: 24px 0 0;
-  padding-top: 16px;
-  border-top: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
-  max-width: 58ch;
-  font-weight: 300;
-}
-
-/* ── Riesgos (tight grid) ── */
-
-.riskGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-  margin: 0;
-}
-
-.risk {
-  padding: 14px 16px 16px;
-  background: color-mix(in oklch, var(--bg-card) 50%, transparent);
-  border: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.riskTitle {
-  font-family: var(--font-playfair), serif;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.riskBody {
-  font-family: var(--font-outfit), sans-serif;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-secondary);
-  font-weight: 300;
-  margin: 0;
-}
-
-/* ── Sources footer ── */
-
-.footerSources {
-  margin-top: 72px;
-  padding-top: 32px;
-  border-top: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
-}
-
-.footerTitle {
+.eyebrow {
   font-family: var(--font-jetbrains), monospace;
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: var(--t-xs);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin: 0 0 16px;
-  font-weight: 500;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
 }
 
-.sourcesGrid {
+.eyebrowDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--steel-blue);
+}
+
+.titleRow {
   display: flex;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
-  gap: 10px;
 }
 
-/* ── Responsive ── */
+.statusTitle {
+  font-family: var(--font-instrument-serif), var(--font-playfair), serif;
+  font-size: clamp(20px, 2.4vw, 28px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin: 0;
+  color: var(--text-primary);
+}
 
-@media (max-width: 1100px) {
-  .layout {
+/* dashboard */
+
+.dashboard {
+  padding: clamp(16px, 2vw, 28px) clamp(20px, 3vw, 40px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(24px, 3vw, 48px);
+  align-items: start;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  min-width: 0;
+}
+
+.dashRight {
+  min-width: 0;
+  position: sticky;
+  top: clamp(16px, 2vw, 28px);
+}
+
+@media (max-width: 1024px) {
+  .dashboard {
     grid-template-columns: 1fr;
-    gap: 0;
-    padding-top: 28px;
   }
-  .navRail {
-    display: none;
+  .dashRight {
+    position: static;
   }
 }
 
-@media (max-width: 700px) {
-  .layout {
-    padding: 24px 18px 80px;
-  }
-  .riskGrid {
+/* paywall */
+
+.paywallWrap {
+  padding: clamp(28px, 4vw, 56px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+@media (max-width: 980px) {
+  .statusBar {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 }

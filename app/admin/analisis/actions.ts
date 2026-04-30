@@ -85,7 +85,7 @@ export async function addObservation(analysisId: string, formData: FormData) {
   const value = Number(valueRaw);
   if (!Number.isFinite(value)) return { error: "Valor inválido" };
 
-  const VALID_OBS_SOURCES = ["manual", "binance", "twelvedata"] as const;
+  const VALID_OBS_SOURCES = ["manual", "binance", "twelvedata", "kma"] as const;
   if (!(VALID_OBS_SOURCES as readonly string[]).includes(source)) {
     return { error: "Fuente inválida" };
   }
@@ -191,6 +191,37 @@ export async function runTrackerTick(analysisId: string) {
       }
     }
 
+    // Fetch Open-Meteo forecasts if coords configured
+    let forecasts = null;
+    const coords = entry.tracker.kind === "polymarket"
+      ? entry.tracker.forecastCoords
+      : undefined;
+    if (coords && row.prediction_end_date) {
+      try {
+        const { fetchForecasts } = await import("@/lib/open-meteo");
+        const today = new Date().toISOString().slice(0, 10);
+        // Forecast window: today → prediction_end_date
+        const startDate = today > row.prediction_end_date ? row.prediction_end_date : today;
+        const result = await fetchForecasts(coords.lat, coords.lon, startDate, row.prediction_end_date);
+        forecasts = {
+          fetchedAt: result.fetchedAt,
+          forecastDays: result.forecastDays,
+          deterministic: result.deterministic,
+          ensemble: {
+            memberTotals: result.ensemble.memberTotals,
+            count: result.ensemble.count,
+            mean: result.ensemble.mean,
+            median: result.ensemble.median,
+            days: result.ensemble.days,
+          },
+        };
+      } catch (e) {
+        // Non-fatal — warn but don't fail the tick
+        tick.warnings = tick.warnings ?? [];
+        tick.warnings.push(`Open-Meteo: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+
     const today = new Date().toISOString().slice(0, 10);
     const { error: upErr } = await db.from("analysis_snapshots").upsert(
       {
@@ -199,6 +230,7 @@ export async function runTrackerTick(analysisId: string) {
         underlying,
         position: tick.position,
         edge: tick.edge,
+        forecasts,
       },
       { onConflict: "analysis_id,snapshot_date" },
     );
@@ -274,4 +306,120 @@ export async function pullBinanceObservation(analysisId: string) {
 
   revalidateAll(a.slug);
   return { success: true };
+}
+
+/**
+ * Parse and bulk-import a KMA daily precipitation CSV.
+ *
+ * Accepted formats:
+ *   1. KMA export  — columns include "일시" (date) and "일강수량(mm)"
+ *   2. Simple 2-col — first col YYYY-MM-DD, second col mm value
+ *
+ * Rows with missing/zero precipitation are skipped.
+ * Duplicate dates (same analysis_id + date) are upserted (update if exists).
+ */
+export async function importKmaCsv(analysisId: string, csvText: string) {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (admin.isRemote) return { error: "Modo lectura" };
+
+  const db = admin.dataClient;
+  const { data: a } = await db
+    .from("analyses")
+    .select("slug")
+    .eq("id", analysisId)
+    .maybeSingle();
+  if (!a) return { error: "Análisis no encontrado" };
+
+  // ── Parse CSV ──
+  const lines = csvText
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) return { error: "CSV vacío o sin filas de datos" };
+
+  // Detect separator (comma or semicolon)
+  const sep = lines[0].includes(";") ? ";" : ",";
+  const headers = lines[0].split(sep).map((h) => h.trim().replace(/^"|"$/g, ""));
+
+  // Find date and precipitation column indices
+  const dateColIdx = headers.findIndex(
+    (h) => /일시|date/i.test(h)
+  );
+  const precipColIdx = headers.findIndex(
+    (h) => /일강수량|precipitation|precip|강수|mm/i.test(h)
+  );
+
+  // Fallback: assume col 0 = date, col 1 = mm
+  const dIdx = dateColIdx >= 0 ? dateColIdx : 0;
+  const pIdx = precipColIdx >= 0 ? precipColIdx : 1;
+
+  const rows: { observed_at: string; value: number }[] = [];
+  const parseErrors: string[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(sep).map((c) => c.trim().replace(/^"|"$/g, ""));
+    const rawDate = cols[dIdx] ?? "";
+    const rawPrecip = cols[pIdx] ?? "";
+
+    // Accept YYYY-MM-DD or YYYYMMDD
+    const dateStr = rawDate.replace(/^(\d{4})(\d{2})(\d{2})$/, "$1-$2-$3");
+    const d = new Date(`${dateStr}T12:00:00Z`);
+    if (Number.isNaN(d.getTime())) {
+      parseErrors.push(`Línea ${i + 1}: fecha inválida "${rawDate}"`);
+      continue;
+    }
+
+    const precip = parseFloat(rawPrecip.replace(",", "."));
+    if (!Number.isFinite(precip)) continue; // skip blank / non-numeric
+
+    rows.push({ observed_at: d.toISOString(), value: precip });
+  }
+
+  if (rows.length === 0) {
+    return {
+      error: `Sin filas válidas.${parseErrors.length > 0 ? ` Errores: ${parseErrors.slice(0, 3).join("; ")}` : ""}`,
+    };
+  }
+
+  // Upsert — on conflict (analysis_id + observed_at date) update value
+  let inserted = 0;
+  let updated = 0;
+
+  for (const row of rows) {
+    const { data: existing } = await db
+      .from("analysis_observations")
+      .select("id, value")
+      .eq("analysis_id", analysisId)
+      .gte("observed_at", row.observed_at.slice(0, 10) + "T00:00:00Z")
+      .lt("observed_at", row.observed_at.slice(0, 10) + "T23:59:59Z")
+      .maybeSingle();
+
+    if (existing) {
+      await db
+        .from("analysis_observations")
+        .update({ value: row.value, source: "kma", note: "csv-import" })
+        .eq("id", existing.id);
+      updated++;
+    } else {
+      await db.from("analysis_observations").insert({
+        analysis_id: analysisId,
+        observed_at: row.observed_at,
+        value: row.value,
+        source: "kma",
+        note: "csv-import",
+      });
+      inserted++;
+    }
+  }
+
+  revalidateAll(a.slug);
+  return {
+    success: true,
+    inserted,
+    updated,
+    skipped: rows.length - inserted - updated,
+    parseErrors: parseErrors.slice(0, 5),
+  };
 }

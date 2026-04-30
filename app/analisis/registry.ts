@@ -50,6 +50,12 @@ export interface RegistryTrackerPolymarket {
   underlyingSource: "manual" | "kma";
   /** Optional hook to compute edge — path relative to app/analisis/<slug>/ */
   edgeComputeRef?: string;
+  /**
+   * If set, each tracker tick also fetches Open-Meteo deterministic +
+   * ensemble forecasts for this location and stores them in the snapshot.
+   * forecastEndDate defaults to the analysis prediction_end_date.
+   */
+  forecastCoords?: { lat: number; lon: number };
 }
 
 export type RegistryTracker = RegistryTrackerPolymarket;
@@ -93,6 +99,7 @@ export const ANALYSIS_REGISTRY: AnalysisRegistryEntry[] = [
         "will-seoul-have-between-55-60mm-of-precipitation-in-april-424",
       ],
       underlyingSource: "manual",
+      forecastCoords: { lat: 37.5665, lon: 126.978 }, // KMA estación 108 Seúl
     },
   },
 ];

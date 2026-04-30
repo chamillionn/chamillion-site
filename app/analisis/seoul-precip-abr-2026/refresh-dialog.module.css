@@ -1,0 +1,274 @@
+/* trigger */
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid color-mix(in oklch, var(--border) 55%, transparent);
+  padding: 4px 9px;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.trigger:hover {
+  color: var(--steel-blue);
+  border-color: var(--steel-blue);
+  background: color-mix(in oklch, var(--steel-blue) 5%, transparent);
+}
+
+/* overlay */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklch, var(--bg-dark) 80%, transparent);
+  backdrop-filter: blur(2px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* dialog */
+
+.dialog {
+  background: var(--bg-dark);
+  border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  width: 100%;
+  max-width: 560px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dialogHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
+  flex-shrink: 0;
+}
+
+.dialogTitle {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
+  transition: color var(--transition-fast);
+}
+.closeBtn:hover { color: var(--text-primary); }
+
+/* body */
+
+.body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* csv block */
+
+.csvBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.csvLabel {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.csvHint {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9px;
+  color: var(--text-muted);
+  opacity: 0.65;
+  letter-spacing: 0.06em;
+}
+
+.csvInputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fileInput {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: color-mix(in oklch, var(--bg-card) 60%, transparent);
+  border: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+  padding: 4px 8px;
+  cursor: pointer;
+  flex: 1;
+}
+.fileInput::file-selector-button {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: color-mix(in oklch, var(--steel-blue) 12%, transparent);
+  color: var(--steel-blue);
+  border: 1px solid color-mix(in oklch, var(--steel-blue) 40%, transparent);
+  padding: 2px 8px;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.csvTextarea {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  line-height: 1.5;
+  background: color-mix(in oklch, var(--bg-card) 40%, transparent);
+  border: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  resize: vertical;
+  min-height: 90px;
+  max-height: 160px;
+  width: 100%;
+  outline: none;
+}
+.csvTextarea:focus {
+  border-color: color-mix(in oklch, var(--steel-blue) 50%, transparent);
+}
+
+/* actions */
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btnStart {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--steel-blue);
+  color: var(--bg-dark);
+  border: none;
+  padding: 7px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity var(--transition-fast);
+}
+.btnStart:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btnCancel {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: none;
+  color: var(--text-muted);
+  border: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.btnCancel:hover { color: var(--text-primary); border-color: var(--border); }
+
+/* terminal log */
+
+.terminalWrap {
+  flex-shrink: 0;
+}
+
+.terminalLabel {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.terminal {
+  background: color-mix(in oklch, oklch(0.1 0.005 240) 100%, transparent);
+  border: 1px solid color-mix(in oklch, var(--border) 35%, transparent);
+  padding: 12px 14px;
+  min-height: 80px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  scroll-behavior: smooth;
+}
+
+.logLine {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 10px;
+  line-height: 1.5;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.logTime {
+  color: color-mix(in oklch, var(--text-muted) 55%, transparent);
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
+.logStep {
+  color: var(--steel-blue);
+  flex-shrink: 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 9px;
+}
+
+.logMsg { color: var(--text-secondary); flex: 1; }
+
+.logOk   { color: oklch(0.72 0.14 152); } /* green */
+.logErr  { color: oklch(0.65 0.18 22);  } /* red */
+.logWarn { color: oklch(0.78 0.13 65);  } /* amber */
+.logInfo { color: var(--text-muted); }
+
+.logIcon { flex-shrink: 0; }
+
+.done {
+  margin-top: 6px;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: oklch(0.72 0.14 152);
+  text-align: center;
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in oklch, var(--border) 25%, transparent);
+}

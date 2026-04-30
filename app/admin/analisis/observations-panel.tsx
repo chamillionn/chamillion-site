@@ -11,6 +11,7 @@ import {
   addObservation,
   deleteObservation,
   pullBinanceObservation,
+  importKmaCsv,
 } from "./actions";
 import crud from "../crud.module.css";
 import styles from "./analisis.module.css";
@@ -44,6 +45,8 @@ export default function ObservationsPanel({
   const [value, setValue] = useState("");
   const [source, setSource] = useState<ObservationSource>("manual");
   const [note, setNote] = useState("");
+  const [showCsvImport, setShowCsvImport] = useState(false);
+  const [csvText, setCsvText] = useState("");
 
   const canAutoPull = analysis.prediction_source === "binance" && !!analysis.prediction_asset;
 
@@ -82,6 +85,35 @@ export default function ObservationsPanel({
     });
   }
 
+  function handleCsvImport() {
+    if (!csvText.trim()) {
+      toast("Pega el contenido del CSV primero", "error");
+      return;
+    }
+    startTransition(async () => {
+      const res = await importKmaCsv(analysis.id, csvText);
+      if (res.error) {
+        toast(res.error, "error");
+        return;
+      }
+      const msg = `CSV importado · +${res.inserted} nuevos · ${res.updated} actualizados`;
+      toast(msg, "success");
+      if (res.parseErrors && res.parseErrors.length > 0) {
+        console.warn("CSV parse errors:", res.parseErrors);
+      }
+      setCsvText("");
+      setShowCsvImport(false);
+    });
+  }
+
+  function handleCsvFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setCsvText(ev.target?.result as string ?? "");
+    reader.readAsText(file, "utf-8");
+  }
+
   return (
     <div className={styles.formSection}>
       <div className={styles.sectionTitle}>
@@ -89,7 +121,58 @@ export default function ObservationsPanel({
         <span className={styles.sectionHint}>
           {observations.length} registro{observations.length !== 1 ? "s" : ""}
         </span>
+        <button
+          type="button"
+          onClick={() => setShowCsvImport((v) => !v)}
+          className={crud.btnSecondary}
+          style={{ marginLeft: "auto" }}
+        >
+          {showCsvImport ? "Cancelar CSV" : "Importar CSV KMA"}
+        </button>
       </div>
+
+      {showCsvImport && (
+        <div style={{ marginBottom: 18 }}>
+          <div
+            style={{
+              fontFamily: "var(--font-dm-mono), monospace",
+              fontSize: 11,
+              color: "var(--text-muted)",
+              marginBottom: 8,
+            }}
+          >
+            Pega el CSV de KMA o selecciona el archivo. Columnas reconocidas:{" "}
+            <code style={{ background: "rgba(var(--steel-blue-rgb),0.08)", padding: "0 4px" }}>일시</code>{" "}
+            +{" "}
+            <code style={{ background: "rgba(var(--steel-blue-rgb),0.08)", padding: "0 4px" }}>일강수량(mm)</code>
+            {" "}· Formato simple: fecha,mm (sin cabecera).
+          </div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <input
+              type="file"
+              accept=".csv,.txt"
+              onChange={handleCsvFile}
+              className={crud.input}
+              style={{ flex: 1 }}
+            />
+          </div>
+          <textarea
+            value={csvText}
+            onChange={(e) => setCsvText(e.target.value)}
+            placeholder={"일시,일강수량(mm)\n2026-04-01,2.5\n2026-04-02,0.0\n..."}
+            className={styles.mdTextarea}
+            style={{ minHeight: 140, marginBottom: 8 }}
+          />
+          <button
+            type="button"
+            onClick={handleCsvImport}
+            disabled={pending || !csvText.trim()}
+            className={crud.btnPrimary}
+          >
+            {pending ? "Importando..." : "Importar"}
+          </button>
+        </div>
+      )}
 
       {!analysis.has_prediction ? (
         <p style={{ fontSize: 13, color: "var(--text-muted)" }}>

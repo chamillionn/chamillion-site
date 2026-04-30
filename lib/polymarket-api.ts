@@ -170,6 +170,8 @@ interface GammaMarketRaw {
   closed?: boolean;
   clobTokenIds?: unknown;
   outcomes?: unknown;
+  outcomePrices?: unknown;
+  volume?: unknown;
   groupItemTitle?: string;
   description?: string;
   icon?: string;
@@ -263,6 +265,59 @@ export function formatDays(n: number): string {
 export function formatUSDC(n: number, digits = 2): string {
   if (!Number.isFinite(n)) return "—";
   return `${n.toFixed(digits)} USDC`;
+}
+
+/* ─── CLOB orderbook (server-side direct fetch) ─────────────────── */
+
+/**
+ * Fetch the orderbook for a CLOB token and return parsed numeric levels.
+ * Asks ascending (best ask first), bids descending (best bid first).
+ *
+ * Used server-side to compute live mid prices (best_bid + best_ask) / 2
+ * for owned positions — Polymarket's `/positions` `curPrice` doesn't
+ * always match the user-visible mark in their portfolio UI; the mid does.
+ */
+export async function fetchOrderbook(
+  tokenId: string,
+  opts?: { signal?: AbortSignal },
+): Promise<Orderbook | null> {
+  if (!tokenId) return null;
+  const url = `${POLYMARKET_CLOB_URL}/book?token_id=${encodeURIComponent(tokenId)}`;
+  try {
+    const res = await fetch(url, {
+      headers: { accept: "application/json" },
+      signal: opts?.signal ?? AbortSignal.timeout(6_000),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const raw = (await res.json()) as {
+      bids?: Array<{ price?: string | number; size?: string | number }>;
+      asks?: Array<{ price?: string | number; size?: string | number }>;
+    };
+    const parse = (
+      lv: Array<{ price?: string | number; size?: string | number }> | undefined,
+    ) =>
+      (lv ?? [])
+        .map((l) => ({ price: Number(l.price), size: Number(l.size) }))
+        .filter((l) => Number.isFinite(l.price) && Number.isFinite(l.size));
+    const asks = parse(raw.asks).sort((a, b) => a.price - b.price);
+    const bids = parse(raw.bids).sort((a, b) => b.price - a.price);
+    return { bids, asks };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Best-mid price from an orderbook: average of best bid and best ask.
+ * Returns null if either side is empty (no two-sided market).
+ */
+export function midFromBook(book: Orderbook | null): number | null {
+  if (!book) return null;
+  const bestBid = book.bids[0]?.price;
+  const bestAsk = book.asks[0]?.price;
+  if (!Number.isFinite(bestBid) || !Number.isFinite(bestAsk)) return null;
+  return (bestBid + bestAsk) / 2;
 }
 
 /* ─── Data API (user positions + activity + market prices) ─────── */
@@ -370,6 +425,11 @@ export interface MarketPriceSnapshot {
   volume: number | null;
   endDate: string | null;
   closed: boolean;
+  /** CLOB token ids — needed to fetch the orderbook for each side. */
+  yesTokenId: string | null;
+  noTokenId: string | null;
+  /** Pretty title from Gamma (e.g. "Will Seoul have less than 40mm of precipitation in April?"). */
+  question: string | null;
 }
 
 /**
@@ -426,11 +486,12 @@ export async function fetchMarketPrices(
   for (const m of markets) {
     const slug = (m.slug as string) ?? "";
     if (!slug) continue;
-    // Prices come as JSON-string arrays in Gamma responses, aligned to `outcomes`.
+    // Prices, outcomes y clobTokenIds vienen alineados — outcomes[i] ↔ outcomePrices[i] ↔ clobTokenIds[i].
     const outcomes = parseStringArray(m.outcomes);
     const outcomePrices = parseStringArray(m.outcomePrices).map((s) =>
       Number(s),
     );
+    const tokens = parseStringArray(m.clobTokenIds);
     const yesIdx = outcomes.findIndex((o) => /^yes$/i.test(o));
     const noIdx = outcomes.findIndex((o) => /^no$/i.test(o));
     const yesPrice =
@@ -441,6 +502,8 @@ export async function fetchMarketPrices(
       noIdx >= 0 && Number.isFinite(outcomePrices[noIdx])
         ? outcomePrices[noIdx]
         : outcomePrices[1] ?? null;
+    const yesTokenId = yesIdx >= 0 ? tokens[yesIdx] ?? null : tokens[0] ?? null;
+    const noTokenId = noIdx >= 0 ? tokens[noIdx] ?? null : tokens[1] ?? null;
     out[slug] = {
       slug,
       yesPrice,
@@ -448,6 +511,9 @@ export async function fetchMarketPrices(
       volume: typeof m.volume === "number" ? m.volume : Number(m.volume) || null,
       endDate: (m.endDate as string) ?? null,
       closed: !!m.closed,
+      yesTokenId,
+      noTokenId,
+      question: (m.question as string) ?? null,
     };
   }
 

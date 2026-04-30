@@ -1,0 +1,29 @@
+.sources {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  color: var(--text-muted);
+  border: 1px solid color-mix(in oklch, var(--border) 60%, transparent);
+  text-decoration: none;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--steel-blue);
+  border-color: var(--steel-blue);
+  background: color-mix(in oklch, var(--steel-blue) 6%, transparent);
+  outline: none;
+}
