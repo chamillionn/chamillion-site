@@ -123,7 +123,7 @@ export async function refreshStepKma(csvText: string): Promise<{
   const { admin, analysis } = r;
 
   // Strip UTF-8 BOM and normalize line endings
-  const text = csvText.replace(/^﻿/, "");
+  const text = csvText.replace(/^\uFEFF/, "");
   const allLines = text.split(/\r?\n/);
 
   // Strategy: scan every line looking for a column that matches YYYY-MM-DD.
@@ -132,7 +132,7 @@ export async function refreshStepKma(csvText: string): Promise<{
   //   - Garbled EUC-KR headers (Korean encoded as Latin-1 when FileReader reads as UTF-8)
   //   - Leading tab characters per row
   //   - Variable number of prefix columns (station number, station name, ...)
-  const DATE_RE = /^(\d{4})[.\-](\d{2})[.\-](\d{2})$/;
+  const DATE_RE = /^(\d{4})[.-](\d{2})[.-](\d{2})$/;
 
   const rows: { date: string; mm: number }[] = [];
   for (const raw of allLines) {
