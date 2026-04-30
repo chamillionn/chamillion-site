@@ -36,7 +36,11 @@ async function queryErc20Balance(token: string, wallet: string, signal?: AbortSi
       continue; // try next RPC
     }
   }
-  return 0; // all RPCs failed — treat as zero
+  // All RPCs failed — throw rather than silently zeroing the balance.
+  // Treating a failed read as 0 would cause syncPlatform to mark the USDC
+  // position as stale and deactivate it (data loss). Throwing aborts the
+  // Polymarket sync for this tick and leaves existing positions intact.
+  throw new Error(`Polygon RPCs unavailable for balanceOf(${token}, ${wallet.slice(0, 10)}…)`);
 }
 
 async function fetchUsdcBalance(wallet: string, signal?: AbortSignal): Promise<number> {
@@ -93,20 +97,19 @@ export const PolymarketAdapter: PlatformAdapter = {
       });
     }
 
-    // Fetch idle USDC balance on Polygon
-    try {
-      const usdcBalance = await fetchUsdcBalance(wallet, signal);
-      if (usdcBalance >= 0.01) {
-        positions.push({
-          asset: "USDC (Cash)",
-          size: usdcBalance,
-          cost_basis: usdcBalance,
-          current_value: usdcBalance,
-          notes: "Idle USDC balance on Polymarket",
-        });
-      }
-    } catch {
-      warnings.push("Could not fetch USDC balance from Polygon RPC");
+    // Fetch idle USDC balance on Polygon. If the RPC is unavailable we
+    // re-throw so syncPlatform aborts the whole Polymarket sync — that keeps
+    // existing positions intact instead of marking them stale and losing the
+    // USDC line until the next successful fetch.
+    const usdcBalance = await fetchUsdcBalance(wallet, signal);
+    if (usdcBalance >= 0.01) {
+      positions.push({
+        asset: "USDC (Cash)",
+        size: usdcBalance,
+        cost_basis: usdcBalance,
+        current_value: usdcBalance,
+        notes: "Idle USDC balance on Polymarket",
+      });
     }
 
     return { positions, warnings };
