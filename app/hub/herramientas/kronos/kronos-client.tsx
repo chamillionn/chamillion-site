@@ -569,6 +569,8 @@ export default function KronosClient({
         setSaveOpen(false);
         setSaveEmail("");
         setSaveComment("");
+      } else {
+        log(`ERROR al guardar (HTTP ${res.status}): ${data.error ?? data.message ?? "respuesta sin id"}`);
       }
     } catch (e) {
       log(`ERROR al guardar: ${e instanceof Error ? e.message : "desconocido"}`);

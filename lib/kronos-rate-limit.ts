@@ -321,7 +321,7 @@ const URL_REGEX = /\bhttps?:\/\/\S+|\bwww\.\S+|\b\S+\.(com|net|org|io|xyz|co|sh|
 const COMMENT_MAX_LEN = 140;
 const EMAIL_MAX_LEN = 254;
 // Binance USDT pair (BTCUSDT) or Twelve Data ticker (AAPL, SPX, EUR/USD, XAU/USD, BRK-B, BRENT)
-const SYMBOL_REGEX = /^[A-Z0-9./-]{1,15}$/;
+const SYMBOL_REGEX = /^[A-Z0-9.=^/-]{1,15}$/;
 const MAX_INPUT_CANDLES = 2048;
 const MAX_PRED_CANDLES = 64;
 const MAX_BODY_BYTES = 120_000;
@@ -350,7 +350,7 @@ export function validateSaveInput(body: unknown): { ok: true } | { ok: false; er
     return { ok: false, error: "Invalid model" };
   }
   if (typeof b.source !== "undefined" && b.source !== null) {
-    if (typeof b.source !== "string" || (b.source !== "binance" && b.source !== "twelvedata")) {
+    if (typeof b.source !== "string" || (b.source !== "binance" && b.source !== "twelvedata" && b.source !== "yahoo")) {
       return { ok: false, error: "Invalid source" };
     }
   }
