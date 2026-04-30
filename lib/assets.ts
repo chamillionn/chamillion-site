@@ -33,7 +33,7 @@ export const FREE_ASSETS: AssetMeta[] = [
   { id: "aapl",   symbol: "AAPL",    source: "twelvedata", label: "Apple",    sublabel: "AAPL",           category: "stock",     tier: "free", timeframes: ALL_TFS },
   { id: "googl",  symbol: "GOOGL",   source: "twelvedata", label: "Google",   sublabel: "GOOGL",          category: "stock",     tier: "free", timeframes: ALL_TFS },
   { id: "nvda",   symbol: "NVDA",    source: "twelvedata", label: "NVIDIA",   sublabel: "NVDA",           category: "stock",     tier: "free", timeframes: ALL_TFS },
-  { id: "sp500",  symbol: "SPX",     source: "twelvedata", label: "S&P 500",  sublabel: "SPX",            category: "index",     tier: "free", timeframes: ALL_TFS },
+  { id: "sp500",  symbol: "^GSPC",   source: "yahoo",      label: "S&P 500",  sublabel: "SPX",            category: "index",     tier: "free", timeframes: YAHOO_TFS },
   { id: "eurusd", symbol: "EUR/USD", source: "twelvedata", label: "EUR/USD",  sublabel: "EUR/USD",        category: "forex",     tier: "free", timeframes: ALL_TFS },
   { id: "usdjpy", symbol: "USD/JPY", source: "twelvedata", label: "USD/JPY",  sublabel: "USD/JPY",        category: "forex",     tier: "free", timeframes: ALL_TFS },
 ];
